@@ -1,0 +1,24 @@
+﻿@using Store.Entities
+@model List<Familia>
+
+    <h1>Familias</h1>
+    <p>
+        <a asp-action="Create">Crear</a>
+    </p>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Familia</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@Html.DisplayFor(m=>item.Description)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
