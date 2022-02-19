@@ -1,0 +1,13 @@
+--Instala entity framework cli
+dotnet tool install --global dotnet-ef
+
+--Verifica la instalacion
+dotnet ef
+
+--Agregar una migracion
+dotnet ef migrations add <Migration Name>
+
+--Actualizar la base de datos
+dotnet ef database update
+
+CinePlayHD

@@ -16413,4 +16413,10 @@
       "FileKind": "mvc"
     },
     {
-      "FilePath": "c:\\Proy\\StoreBackend
+      "FilePath": "c:\\Proy\\StoreBackend\\Store\\Views\\TipoNegocios\\Index.cshtml",
+      "TargetPath": "Views\\TipoNegocios\\Index.cshtml",
+      "FileKind": "mvc"
+    }
+  ],
+  "SerializationFormat": "0.2"
+}

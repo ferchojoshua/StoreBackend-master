@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Proy\\store\\Store\\Store.csproj": {}
+    "C:\\Proy\\StoreBackend\\Store\\Store.csproj": {}
   },
   "projects": {
-    "C:\\Proy\\store\\Store\\Store.csproj": {
+    "C:\\Proy\\StoreBackend\\Store\\Store.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Proy\\store\\Store\\Store.csproj",
+        "projectUniqueName": "C:\\Proy\\StoreBackend\\Store\\Store.csproj",
         "projectName": "Store",
-        "projectPath": "C:\\Proy\\store\\Store\\Store.csproj",
+        "projectPath": "C:\\Proy\\StoreBackend\\Store\\Store.csproj",
         "packagesPath": "C:\\Users\\LENOVO\\.nuget\\packages\\",
-        "outputPath": "C:\\Proy\\store\\Store\\obj\\",
+        "outputPath": "C:\\Proy\\StoreBackend\\Store\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
