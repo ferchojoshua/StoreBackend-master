@@ -1,13 +1,9 @@
 ﻿#nullable disable
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Store.Data;
 using Store.Entities;
+using Store.Models.ViewModels;
 
 namespace Store.Controllers.API
 {
@@ -26,14 +22,23 @@ namespace Store.Controllers.API
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ProductIn>>> GetProductIns()
         {
-            return await _context.ProductIns.Include(p => p.ProductInDetails).Include(p => p.Provider).ToListAsync();
+            return await _context.ProductIns
+                    .Include(p => p.Provider)
+                    .OrderByDescending(p => p.Id)
+                    .Include(p => p.ProductInDetails)
+                    .ToListAsync();
         }
 
         // GET: api/ProductIns/5
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductIn>> GetProductIn(int id)
         {
-            var productIn = await _context.ProductIns.FindAsync(id);
+            var productIn = await _context.ProductIns
+                .Include(p => p.Almacen)
+                .Include(p => p.Provider)
+                .Include(p => p.ProductInDetails)
+                .ThenInclude(pi => pi.Product)
+                .FirstOrDefaultAsync(pI => pI.Id == id);
 
             if (productIn == null)
             {
@@ -75,10 +80,39 @@ namespace Store.Controllers.API
 
         // POST: api/ProductIns
         [HttpPost]
-        public async Task<ActionResult<ProductIn>> PostProductIn(ProductIn productIn)
+        public async Task<ActionResult<ProductIn>> PostProductIn(AddEntradaProductoViewModel model)
         {
+            DateTime fechaV = DateTime.Now;
+            fechaV.AddDays(15);
+            Almacen alm = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == 1);
+            Provider prov = await _context.Providers.FirstOrDefaultAsync(p => p.Id == model.Provider.Id);
+            ProductIn productIn = new();
+            productIn.TipoEntrada = model.TipoEntrada;
+            productIn.TipoPago = model.TipoPago;
+            productIn.NoFactura = model.NoFactura;
+            productIn.FechaIngreso = DateTime.Now;
+            productIn.FechaVencimiento = model.TipoPago == "Pago de Credito" ? fechaV : null;
+            productIn.Provider = prov;
+            productIn.Almacen = alm;
+            productIn.MontoFactura = model.MontoFactura;
+            List<ProductInDetails> detalles = new List<ProductInDetails>();
+            foreach (var item in model.ProductInDetails)
+            {
+                ProductInDetails pd = new();
+                pd.Product = await _context.Productos.FirstOrDefaultAsync(p => p.Id == item.Product.Id);
+                pd.Cantidad = item.Cantidad;
+                pd.CostoCompra = item.CostoCompra;
+                pd.CostoUnitario = item.CostoUnitario;
+                pd.Descuento = item.Descuento;
+                pd.Impuesto = item.Impuesto;
+                pd.PrecioVentaMayor = item.PrecioVentaMayor;
+                pd.PrecioVentaDetalle = item.PrecioVentaDetalle;
+                detalles.Add(pd);
+            }
+            productIn.ProductInDetails = detalles;
             _context.ProductIns.Add(productIn);
             await _context.SaveChangesAsync();
+
 
             return CreatedAtAction("GetProductIn", new { id = productIn.Id }, productIn);
         }

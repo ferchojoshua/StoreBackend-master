@@ -787,3 +787,8 @@ C:\Proy\StoreBackend\Store\obj\Debug\net6.0\Store.dll
 C:\Proy\StoreBackend\Store\obj\Debug\net6.0\ref\Store.dll
 C:\Proy\StoreBackend\Store\obj\Debug\net6.0\Store.pdb
 C:\Proy\StoreBackend\Store\obj\Debug\net6.0\Store.genruntimeconfig.cache
+C:\Proy\StoreBackend\Store\bin\Debug\net6.0\Microsoft.AspNetCore.Cryptography.Internal.dll
+C:\Proy\StoreBackend\Store\bin\Debug\net6.0\Microsoft.AspNetCore.Cryptography.KeyDerivation.dll
+C:\Proy\StoreBackend\Store\bin\Debug\net6.0\Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
+C:\Proy\StoreBackend\Store\bin\Debug\net6.0\Microsoft.Extensions.Identity.Core.dll
+C:\Proy\StoreBackend\Store\bin\Debug\net6.0\Microsoft.Extensions.Identity.Stores.dll

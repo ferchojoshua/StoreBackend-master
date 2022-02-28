@@ -6,6 +6,8 @@
 
         public string TipoEntrada { get; set; }
 
+        public string TipoPago { get; set; }
+
         public string NoFactura { get; set; }
 
         public DateTime FechaIngreso { get; set; }
