@@ -44,7 +44,7 @@ namespace Store.Controllers
 
         private async Task<Store.Entities.User> CheckUserAsync(string firstName, string lastName, string email, string phone, string address, UserType userType)
         {
-           Store.Entities.User user = await _userHelper.GetUserAsync(email);
+            Store.Entities.User user = await _userHelper.GetUserAsync(email);
             if (user == null)
             {
                 user = new Entities.User
@@ -54,6 +54,10 @@ namespace Store.Controllers
                     Email = email,
                     PhoneNumber = phone,
                     UserType = userType,
+                    UserName = email,
+                    Address = address,
+                    SecondName = "",
+                    SecondLastName = ""
                 };
                 await _userHelper.AddUserAsync(user, "123456");
                 await _userHelper.AddUserToRoleAsync(user, userType.ToString());

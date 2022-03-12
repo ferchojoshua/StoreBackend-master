@@ -1,35 +1,72 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Store.Data;
+using Store.Helpers.User;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddDbContext<DataContext>(opt => opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnetion")));
+builder.Services.AddDbContext<DataContext>(
+    opt => opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnetion"))
+);
 
-builder.Services.AddIdentity<Store.Entities.User, IdentityRole>(cfg =>
-{
-    cfg.User.RequireUniqueEmail = true;
-    cfg.Password.RequireDigit = false;
-    cfg.Password.RequiredUniqueChars = 0;
-    cfg.Password.RequireLowercase = false;
-    cfg.Password.RequireNonAlphanumeric = false;
-    cfg.Password.RequireUppercase = false;
-}).AddEntityFrameworkStores<DataContext>();
+builder.Services
+    .AddIdentity<Store.Entities.User, IdentityRole>(
+        cfg =>
+        {
+            cfg.User.RequireUniqueEmail = true;
+            cfg.Password.RequireDigit = false;
+            cfg.Password.RequiredUniqueChars = 0;
+            cfg.Password.RequireLowercase = false;
+            cfg.Password.RequireNonAlphanumeric = false;
+            cfg.Password.RequireUppercase = false;
+        }
+    )
+    .AddEntityFrameworkStores<DataContext>();
+
+builder.Services
+    .AddAuthentication()
+    .AddCookie()
+    .AddJwtBearer(
+        cfg =>
+        {
+            cfg.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidIssuer = builder.Configuration["Tokens:Issuer"],
+                ValidAudience = builder.Configuration["Tokens:Audience"],
+                IssuerSigningKey = new SymmetricSecurityKey(
+                    Encoding.UTF8.GetBytes(builder.Configuration["Tokens:Key"])
+                )
+            };
+        }
+    );
+
+builder.Services.Configure<SecurityStampValidatorOptions>(
+    options =>
+    {
+        options.ValidationInterval = TimeSpan.Zero;
+    }
+);
+
+builder.Services.AddScoped<IUserHelper, UserHelper>();
 
 var MyAllowSpecificOrigins = "http://localhost:3000/";
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy(name: MyAllowSpecificOrigins,
-                      builder =>
-                      {
-                          builder.AllowAnyOrigin()
-                            .AllowAnyHeader()
-                            .AllowAnyMethod();
-                      });
-});
+builder.Services.AddCors(
+    options =>
+    {
+        options.AddPolicy(
+            name: MyAllowSpecificOrigins,
+            builder =>
+            {
+                builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+            }
+        );
+    }
+);
 
 var app = builder.Build();
 
@@ -51,8 +88,6 @@ app.UseCors(MyAllowSpecificOrigins);
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();

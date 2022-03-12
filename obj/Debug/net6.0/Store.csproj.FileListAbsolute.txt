@@ -792,3 +792,4 @@ C:\Proy\StoreBackend\Store\bin\Debug\net6.0\Microsoft.AspNetCore.Cryptography.Ke
 C:\Proy\StoreBackend\Store\bin\Debug\net6.0\Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
 C:\Proy\StoreBackend\Store\bin\Debug\net6.0\Microsoft.Extensions.Identity.Core.dll
 C:\Proy\StoreBackend\Store\bin\Debug\net6.0\Microsoft.Extensions.Identity.Stores.dll
+C:\Proy\StoreBackend\Store\bin\Debug\net6.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
