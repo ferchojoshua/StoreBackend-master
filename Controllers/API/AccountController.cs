@@ -20,20 +20,12 @@ namespace Store.Controllers.API
     public class AccountController : ControllerBase
     {
         private readonly IUserHelper _userHelper;
-
-        private readonly DataContext _context;
-
         private readonly IConfiguration _configuration;
 
-        public AccountController(
-            IUserHelper userHelper,
-            IConfiguration configuration,
-            DataContext context
-        )
+        public AccountController(IUserHelper userHelper, IConfiguration configuration)
         {
             _userHelper = userHelper;
             _configuration = configuration;
-            _context = context;
         }
 
         [HttpPost]
@@ -79,13 +71,13 @@ namespace Store.Controllers.API
             return BadRequest();
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        [HttpGet]
-        public async Task<IActionResult> GetUsers()
-        {
-            List<User> users = await _context.Users.ToListAsync();
-            return Ok(users);
-        }
+        // [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        // [HttpGet]
+        // public async Task<IActionResult> GetUsers()
+        // {
+        //     List<User> users = await _context.Users.ToListAsync();
+        //     return Ok(users);
+        // }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost]

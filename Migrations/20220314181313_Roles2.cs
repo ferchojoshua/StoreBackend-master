@@ -4,7 +4,7 @@
 
 namespace Store.Migrations
 {
-    public partial class MejorandoStore2 : Migration
+    public partial class Roles2 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

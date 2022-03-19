@@ -12,8 +12,8 @@ using Store.Data;
 namespace Store.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20220228175249_AddUserEntitites")]
-    partial class AddUserEntitites
+    [Migration("20220315231900_Seed10")]
+    partial class Seed10
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -166,7 +166,6 @@ namespace Store.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -183,15 +182,39 @@ namespace Store.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Description")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[Description] IS NOT NULL");
 
                     b.ToTable("Familias");
+                });
+
+            modelBuilder.Entity("Store.Entities.Permission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsEnable")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("RolId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RolId");
+
+                    b.ToTable("Permissions");
                 });
 
             modelBuilder.Entity("Store.Entities.ProductIn", b =>
@@ -202,7 +225,7 @@ namespace Store.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<int>("AlmacenId")
+                    b.Property<int?>("AlmacenId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("FechaIngreso")
@@ -215,18 +238,15 @@ namespace Store.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("NoFactura")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ProviderId")
+                    b.Property<int?>("ProviderId")
                         .HasColumnType("int");
 
                     b.Property<string>("TipoEntrada")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TipoPago")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -267,7 +287,7 @@ namespace Store.Migrations
                     b.Property<decimal>("PrecioVentaMayor")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("ProductId")
+                    b.Property<int?>("ProductId")
                         .HasColumnType("int");
 
                     b.Property<int?>("ProductInId")
@@ -291,35 +311,31 @@ namespace Store.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<string>("BarCode")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("FamiliaId")
+                    b.Property<int?>("FamiliaId")
                         .HasColumnType("int");
 
                     b.Property<string>("Marca")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Modelo")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("TipoNegocioId")
+                    b.Property<int?>("TipoNegocioId")
                         .HasColumnType("int");
 
                     b.Property<string>("UM")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Description")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[Description] IS NOT NULL");
 
                     b.HasIndex("FamiliaId");
 
@@ -337,18 +353,15 @@ namespace Store.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<string>("Address")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Nombre")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Phone")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -364,11 +377,10 @@ namespace Store.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<int>("AlmacenId")
+                    b.Property<int?>("AlmacenId")
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -376,6 +388,26 @@ namespace Store.Migrations
                     b.HasIndex("AlmacenId");
 
                     b.ToTable("Racks");
+                });
+
+            modelBuilder.Entity("Store.Entities.Rol", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("RoleName")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleName")
+                        .IsUnique()
+                        .HasFilter("[RoleName] IS NOT NULL");
+
+                    b.ToTable("Rols");
                 });
 
             modelBuilder.Entity("Store.Entities.TipoNegocio", b =>
@@ -387,13 +419,13 @@ namespace Store.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Description")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[Description] IS NOT NULL");
 
                     b.ToTable("TipoNegocios");
                 });
@@ -407,7 +439,6 @@ namespace Store.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Address")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ConcurrencyStamp")
@@ -422,11 +453,9 @@ namespace Store.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("FirstName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LastName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("LockoutEnabled")
@@ -452,12 +481,13 @@ namespace Store.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<int?>("RolId")
+                        .HasColumnType("int");
+
                     b.Property<string>("SecondLastName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SecondName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SecurityStamp")
@@ -470,9 +500,6 @@ namespace Store.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.Property<int>("UserType")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("NormalizedEmail")
@@ -482,6 +509,8 @@ namespace Store.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.HasIndex("RolId");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -537,19 +566,24 @@ namespace Store.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Store.Entities.Permission", b =>
+                {
+                    b.HasOne("Store.Entities.Rol", "Rol")
+                        .WithMany("Permissions")
+                        .HasForeignKey("RolId");
+
+                    b.Navigation("Rol");
+                });
+
             modelBuilder.Entity("Store.Entities.ProductIn", b =>
                 {
                     b.HasOne("Store.Entities.Almacen", "Almacen")
                         .WithMany()
-                        .HasForeignKey("AlmacenId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("AlmacenId");
 
                     b.HasOne("Store.Entities.Provider", "Provider")
                         .WithMany()
-                        .HasForeignKey("ProviderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ProviderId");
 
                     b.Navigation("Almacen");
 
@@ -560,9 +594,7 @@ namespace Store.Migrations
                 {
                     b.HasOne("Store.Entities.Producto", "Product")
                         .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ProductId");
 
                     b.HasOne("Store.Entities.ProductIn", null)
                         .WithMany("ProductInDetails")
@@ -575,15 +607,11 @@ namespace Store.Migrations
                 {
                     b.HasOne("Store.Entities.Familia", "Familia")
                         .WithMany()
-                        .HasForeignKey("FamiliaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("FamiliaId");
 
                     b.HasOne("Store.Entities.TipoNegocio", "TipoNegocio")
                         .WithMany()
-                        .HasForeignKey("TipoNegocioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("TipoNegocioId");
 
                     b.Navigation("Familia");
 
@@ -594,16 +622,28 @@ namespace Store.Migrations
                 {
                     b.HasOne("Store.Entities.Almacen", "Almacen")
                         .WithMany()
-                        .HasForeignKey("AlmacenId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("AlmacenId");
 
                     b.Navigation("Almacen");
+                });
+
+            modelBuilder.Entity("Store.Entities.User", b =>
+                {
+                    b.HasOne("Store.Entities.Rol", "Rol")
+                        .WithMany()
+                        .HasForeignKey("RolId");
+
+                    b.Navigation("Rol");
                 });
 
             modelBuilder.Entity("Store.Entities.ProductIn", b =>
                 {
                     b.Navigation("ProductInDetails");
+                });
+
+            modelBuilder.Entity("Store.Entities.Rol", b =>
+                {
+                    b.Navigation("Permissions");
                 });
 #pragma warning restore 612, 618
         }

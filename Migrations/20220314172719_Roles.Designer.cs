@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Store.Data;
 
@@ -11,9 +12,10 @@ using Store.Data;
 namespace Store.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220314172719_Roles")]
+    partial class Roles
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -202,15 +204,7 @@ namespace Store.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsEnable")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("RolId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("RolId");
 
                     b.ToTable("Permissions");
                 });
@@ -405,7 +399,7 @@ namespace Store.Migrations
                         .IsUnique()
                         .HasFilter("[RoleName] IS NOT NULL");
 
-                    b.ToTable("Rols");
+                    b.ToTable("UserRol");
                 });
 
             modelBuilder.Entity("Store.Entities.TipoNegocio", b =>
@@ -452,9 +446,6 @@ namespace Store.Migrations
 
                     b.Property<string>("FirstName")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
 
                     b.Property<string>("LastName")
                         .HasColumnType("nvarchar(max)");
@@ -516,6 +507,29 @@ namespace Store.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("Store.Entities.UserRol", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int?>("PermisosId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("RolesId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PermisosId");
+
+                    b.HasIndex("RolesId");
+
+                    b.ToTable("UserRols");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -565,13 +579,6 @@ namespace Store.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Store.Entities.Permission", b =>
-                {
-                    b.HasOne("Store.Entities.Rol", null)
-                        .WithMany("Permissions")
-                        .HasForeignKey("RolId");
                 });
 
             modelBuilder.Entity("Store.Entities.ProductIn", b =>
@@ -635,6 +642,21 @@ namespace Store.Migrations
                     b.Navigation("Rol");
                 });
 
+            modelBuilder.Entity("Store.Entities.UserRol", b =>
+                {
+                    b.HasOne("Store.Entities.Permission", "Permisos")
+                        .WithMany()
+                        .HasForeignKey("PermisosId");
+
+                    b.HasOne("Store.Entities.Rol", "Roles")
+                        .WithMany("UserRols")
+                        .HasForeignKey("RolesId");
+
+                    b.Navigation("Permisos");
+
+                    b.Navigation("Roles");
+                });
+
             modelBuilder.Entity("Store.Entities.ProductIn", b =>
                 {
                     b.Navigation("ProductInDetails");
@@ -642,7 +664,7 @@ namespace Store.Migrations
 
             modelBuilder.Entity("Store.Entities.Rol", b =>
                 {
-                    b.Navigation("Permissions");
+                    b.Navigation("UserRols");
                 });
 #pragma warning restore 612, 618
         }

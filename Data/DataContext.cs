@@ -6,10 +6,7 @@ namespace Store.Data
 {
     public class DataContext : IdentityDbContext<User>
     {
-        public DataContext(DbContextOptions<DataContext> options) : base(options)
-        { 
-
-        }
+        public DataContext(DbContextOptions<DataContext> options) : base(options) { }
 
         public DbSet<Almacen> Almacen { get; set; }
         public DbSet<Familia> Familias { get; set; }
@@ -20,21 +17,21 @@ namespace Store.Data
         public DbSet<Rack> Racks { get; set; }
         public DbSet<TipoNegocio> TipoNegocios { get; set; }
 
+        public DbSet<Rol> Rols { get; set; }
+        public DbSet<Permission> Permissions { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Familia>()
-                .HasIndex(t => t.Description)
-                .IsUnique();
+            modelBuilder.Entity<Rol>().HasIndex(t => t.RoleName).IsUnique();
 
-            modelBuilder.Entity<TipoNegocio>()
-                .HasIndex(t => t.Description)
-                .IsUnique();
+            modelBuilder.Entity<Familia>().HasIndex(t => t.Description).IsUnique();
 
-            modelBuilder.Entity<Producto>()
-                .HasIndex(t => t.Description)
-                .IsUnique();
+            modelBuilder.Entity<TipoNegocio>().HasIndex(t => t.Description).IsUnique();
+
+            modelBuilder.Entity<Producto>().HasIndex(t => t.Description).IsUnique();
+
         }
     }
 }

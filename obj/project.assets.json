@@ -9658,11 +9658,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Proy\\StoreBackend\\Store\\Store.csproj",
+      "projectUniqueName": "C:\\Proy\\StoreBackend\\Store.csproj",
       "projectName": "Store",
-      "projectPath": "C:\\Proy\\StoreBackend\\Store\\Store.csproj",
+      "projectPath": "C:\\Proy\\StoreBackend\\Store.csproj",
       "packagesPath": "C:\\Users\\LENOVO\\.nuget\\packages\\",
-      "outputPath": "C:\\Proy\\StoreBackend\\Store\\obj\\",
+      "outputPath": "C:\\Proy\\StoreBackend\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

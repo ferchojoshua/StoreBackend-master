@@ -95,7 +95,7 @@ namespace Store.Controllers.API
             productIn.Provider = prov;
             productIn.Almacen = alm;
             productIn.MontoFactura = model.MontoFactura;
-            List<ProductInDetails> detalles = new List<ProductInDetails>();
+            List<ProductInDetails> detalles = new();
             foreach (var item in model.ProductInDetails)
             {
                 ProductInDetails pd = new();

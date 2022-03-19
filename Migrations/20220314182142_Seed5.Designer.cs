@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Store.Data;
 
@@ -11,9 +12,10 @@ using Store.Data;
 namespace Store.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220314182142_Seed5")]
+    partial class Seed5
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -202,15 +204,7 @@ namespace Store.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsEnable")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("RolId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("RolId");
 
                     b.ToTable("Permissions");
                 });
@@ -453,9 +447,6 @@ namespace Store.Migrations
                     b.Property<string>("FirstName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
                     b.Property<string>("LastName")
                         .HasColumnType("nvarchar(max)");
 
@@ -567,13 +558,6 @@ namespace Store.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Store.Entities.Permission", b =>
-                {
-                    b.HasOne("Store.Entities.Rol", null)
-                        .WithMany("Permissions")
-                        .HasForeignKey("RolId");
-                });
-
             modelBuilder.Entity("Store.Entities.ProductIn", b =>
                 {
                     b.HasOne("Store.Entities.Almacen", "Almacen")
@@ -638,11 +622,6 @@ namespace Store.Migrations
             modelBuilder.Entity("Store.Entities.ProductIn", b =>
                 {
                     b.Navigation("ProductInDetails");
-                });
-
-            modelBuilder.Entity("Store.Entities.Rol", b =>
-                {
-                    b.Navigation("Permissions");
                 });
 #pragma warning restore 612, 618
         }

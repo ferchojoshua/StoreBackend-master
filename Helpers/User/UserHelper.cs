@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Store.Data;
+using Store.Entities;
 using Store.Models.ViewModels;
 
 namespace Store.Helpers.User
@@ -8,24 +9,40 @@ namespace Store.Helpers.User
     public class UserHelper : IUserHelper
     {
         private readonly DataContext _context;
-
         private readonly UserManager<Entities.User> _userManager;
-
-        private readonly RoleManager<IdentityRole> _roleManager;
-
         private readonly SignInManager<Entities.User> _signInManager;
 
         public UserHelper(
             DataContext context,
             UserManager<Entities.User> userManager,
-            RoleManager<IdentityRole> roleManager,
             SignInManager<Entities.User> signInManager
         )
         {
             _context = context;
             _userManager = userManager;
-            _roleManager = roleManager;
             _signInManager = signInManager;
+        }
+
+        #region Metodos User
+        public async Task<ICollection<Entities.User>> GetActiveUsersAsync()
+        {
+            return await _context.Users
+                .Where(u => u.IsActive == true)
+                .Include(u => u.Rol)
+                .ToListAsync();
+        }
+
+        public async Task<ICollection<Entities.User>> GetInactiveUsersAsync()
+        {
+            return await _context.Users
+                .Where(u => u.IsActive == false)
+                .Include(u => u.Rol)
+                .ToListAsync();
+        }
+
+        public async Task<ICollection<Entities.User>> GetAllUsersAsync()
+        {
+            return await _context.Users.Include(u => u.Rol).ToListAsync();
         }
 
         public async Task<IdentityResult> AddUserAsync(Entities.User user, string password)
@@ -33,23 +50,12 @@ namespace Store.Helpers.User
             return await _userManager.CreateAsync(user, password);
         }
 
-        public async Task AddUserToRoleAsync(Entities.User user, string roleName)
+        public async Task<Entities.User> GetUserAsync(string userName)
         {
-            await _userManager.AddToRoleAsync(user, roleName);
-        }
-
-        public async Task CheckRoleAsync(string roleName)
-        {
-            bool roleExists = await _roleManager.RoleExistsAsync(roleName);
-            if (!roleExists)
-            {
-                await _roleManager.CreateAsync(new IdentityRole { Name = roleName });
-            }
-        }
-
-        public async Task<Entities.User> GetUserAsync(string email)
-        {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            return await _context.Users
+                .Where(u => u.IsActive == true)
+                .Include(u => u.Rol)
+                .FirstOrDefaultAsync(u => u.UserName == userName);
         }
 
         public async Task<SignInResult> LoginAsync(LoginViewModel model)
@@ -92,5 +98,99 @@ namespace Store.Helpers.User
         {
             return await _userManager.UpdateAsync(user);
         }
+
+        public async Task AddUserToRoleAsync(Entities.User user, int rolId)
+        {
+            Rol rol = await _context.Rols.Where(r => r.Id == rolId).FirstOrDefaultAsync();
+            user.Rol = rol;
+            _context.Entry(user).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<Entities.User> DeactivateUserAsync(string userName)
+        {
+            Entities.User user = await _context.Users
+                .Where(u => u.UserName == userName)
+                .FirstOrDefaultAsync();
+            if (user == null)
+            {
+                return user;
+            }
+            user.IsActive = !user.IsActive;
+            _context.Entry(user).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return user;
+        }
+
+         public async Task<Entities.User> ResetPasswordAsync(string id)
+        {
+            Entities.User user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return user;
+            }
+            await _userManager.RemovePasswordAsync(user);
+            await _userManager.AddPasswordAsync(user, "123456");
+            return user;
+        }
+
+        #endregion
+
+        #region Metodos Roles
+        public async Task<ICollection<Rol>> GetRolesAsync()
+        {
+            return await _context.Rols.Include(r => r.Permissions).ToListAsync();
+        }
+
+        public async Task<Rol> GetRoleAsync(string roleName)
+        {
+            return await _context.Rols
+                .Include(r => r.Permissions)
+                .Where(r => r.RoleName == roleName)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<Rol> CreateRoleAsync(AddRolViewModel model)
+        {
+            List<Permission> permisos = new();
+            foreach (var item in model.Permissions)
+            {
+                Permission newPermiso =
+                    new() { Description = item.Description, IsEnable = item.IsEnable };
+                permisos.Add(newPermiso);
+            }
+            Rol newRol = new() { RoleName = model.RoleName, Permissions = permisos };
+            _context.Add(newRol);
+            await _context.SaveChangesAsync();
+            return newRol;
+        }
+
+        public async Task<Rol> UpdateRoleAsync(Rol model)
+        {
+            Rol rol = await GetRoleAsync(model.RoleName);
+            if (rol == null)
+            {
+                return rol;
+            }
+            rol.RoleName = model.RoleName;
+            foreach (var item in model.Permissions)
+            {
+                Permission permiso = await _context.Permissions
+                    .Where(p => p.Id == item.Id)
+                    .FirstOrDefaultAsync();
+                permiso.IsEnable = item.IsEnable;
+                _context.Entry(permiso).State = EntityState.Modified;
+            }
+            _context.Entry(rol).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return rol;
+        }
+
+        public async Task DeleteRolAsync(Rol rol)
+        {
+            _context.RemoveRange(rol);
+            await _context.SaveChangesAsync();
+        }
+        #endregion
     }
 }

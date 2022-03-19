@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "PDzOZ9TOnK+TUg9ro/D1ANlgSwWhHcwcjr/2Kdgt2QMW3VvBkP1nQWoV05q+PLYdDshdCrXvvettaN1bYNXulA==",
+  "dgSpecHash": "aTAQFD1dYYu7nRJsX/h9G8Lj4bLRUQ8USo3h+T6wQgCygfqR/XelFKXhTp7tdZHPnKt/zy3/t7BOrJjDGLGafQ==",
   "success": true,
-  "projectFilePath": "C:\\Proy\\StoreBackend\\Store\\Store.csproj",
+  "projectFilePath": "C:\\Proy\\StoreBackend\\Store.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\LENOVO\\.nuget\\packages\\humanizer.core\\2.8.26\\humanizer.core.2.8.26.nupkg.sha512",
     "C:\\Users\\LENOVO\\.nuget\\packages\\messagepack\\2.1.152\\messagepack.2.1.152.nupkg.sha512",

@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Identity;
-using Store.Enums;
 
 namespace Store.Entities
 {
@@ -10,7 +9,8 @@ namespace Store.Entities
         public string LastName { get; set; }
         public string SecondLastName { get; set; }
         public string Address { get; set; }
-        public UserType UserType { get; set; }
         public string FullName => $"{FirstName} {LastName}";
+        public Rol Rol { get; set; }
+        public bool IsActive { get; set; }
     }
 }
