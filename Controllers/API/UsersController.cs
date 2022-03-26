@@ -71,9 +71,11 @@ namespace Store.Controllers.API
                     UserName = model.UserName,
                     NormalizedUserName = model.UserName.ToUpper(),
                     Address = model.Address,
-                    IsActive = true
+                    IsActive = true,
+                    IsDefaultPass = true,
+                    UserSession = new UserSession { UserDevice = "", UserToken = "" }
                 };
-                await _userHelper.AddUserAsync(user, model.Password);
+                await _userHelper.AddUserAsync(user, "123456");
                 await _userHelper.AddUserToRoleAsync(user, model.RolId);
                 return Ok(user);
             }

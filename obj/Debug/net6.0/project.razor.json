@@ -16298,11 +16298,6 @@
   "RootNamespace": "Store",
   "Documents": [
     {
-      "FilePath": "c:\\Proy\\StoreBackend\\Views\\TipoNegocios\\Index.cshtml",
-      "TargetPath": "Views\\TipoNegocios\\Index.cshtml",
-      "FileKind": "mvc"
-    },
-    {
       "FilePath": "c:\\Proy\\StoreBackend\\Views\\_ViewStart.cshtml",
       "TargetPath": "Views\\_ViewStart.cshtml",
       "FileKind": "mvc"
@@ -16310,46 +16305,6 @@
     {
       "FilePath": "c:\\Proy\\StoreBackend\\Views\\Home\\Privacy.cshtml",
       "TargetPath": "Views\\Home\\Privacy.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Proy\\StoreBackend\\Views\\Productos\\Index.cshtml",
-      "TargetPath": "Views\\Productos\\Index.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Proy\\StoreBackend\\Views\\Productos\\Details.cshtml",
-      "TargetPath": "Views\\Productos\\Details.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Proy\\StoreBackend\\Views\\Familias\\Create.cshtml",
-      "TargetPath": "Views\\Familias\\Create.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Proy\\StoreBackend\\Views\\TipoNegocios\\Edit.cshtml",
-      "TargetPath": "Views\\TipoNegocios\\Edit.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Proy\\StoreBackend\\Views\\Familias\\Edit.cshtml",
-      "TargetPath": "Views\\Familias\\Edit.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Proy\\StoreBackend\\Views\\TipoNegocios\\Details.cshtml",
-      "TargetPath": "Views\\TipoNegocios\\Details.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Proy\\StoreBackend\\Views\\Familias\\Details.cshtml",
-      "TargetPath": "Views\\Familias\\Details.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Proy\\StoreBackend\\Views\\Familia\\Index.cshtml",
-      "TargetPath": "Views\\Familia\\Index.cshtml",
       "FileKind": "mvc"
     },
     {
@@ -16368,53 +16323,13 @@
       "FileKind": "mvc"
     },
     {
-      "FilePath": "c:\\Proy\\StoreBackend\\Views\\Productos\\Delete.cshtml",
-      "TargetPath": "Views\\Productos\\Delete.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Proy\\StoreBackend\\Views\\Familias\\Delete.cshtml",
-      "TargetPath": "Views\\Familias\\Delete.cshtml",
-      "FileKind": "mvc"
-    },
-    {
       "FilePath": "c:\\Proy\\StoreBackend\\Views\\Home\\Index.cshtml",
       "TargetPath": "Views\\Home\\Index.cshtml",
       "FileKind": "mvc"
     },
     {
-      "FilePath": "c:\\Proy\\StoreBackend\\Views\\Familias\\Index.cshtml",
-      "TargetPath": "Views\\Familias\\Index.cshtml",
-      "FileKind": "mvc"
-    },
-    {
       "FilePath": "c:\\Proy\\StoreBackend\\Views\\Shared\\_ValidationScriptsPartial.cshtml",
       "TargetPath": "Views\\Shared\\_ValidationScriptsPartial.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Proy\\StoreBackend\\Views\\Familia\\Create.cshtml",
-      "TargetPath": "Views\\Familia\\Create.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Proy\\StoreBackend\\Views\\TipoNegocios\\Create.cshtml",
-      "TargetPath": "Views\\TipoNegocios\\Create.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Proy\\StoreBackend\\Views\\Productos\\Create.cshtml",
-      "TargetPath": "Views\\Productos\\Create.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Proy\\StoreBackend\\Views\\Productos\\Edit.cshtml",
-      "TargetPath": "Views\\Productos\\Edit.cshtml",
-      "FileKind": "mvc"
-    },
-    {
-      "FilePath": "c:\\Proy\\StoreBackend\\Views\\TipoNegocios\\Delete.cshtml",
-      "TargetPath": "Views\\TipoNegocios\\Delete.cshtml",
       "FileKind": "mvc"
     }
   ],

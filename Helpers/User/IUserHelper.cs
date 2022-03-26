@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 using Store.Entities;
 using Store.Models.ViewModels;
 
@@ -11,9 +13,20 @@ namespace Store.Helpers.User
         Task<ICollection<Entities.User>> GetInactiveUsersAsync();
 
         Task<ICollection<Entities.User>> GetAllUsersAsync();
+
         Task<Entities.User> GetUserAsync(string email);
 
+        Task<Entities.User> GetUserByEmailAsync(string email);
+
+        Task<bool> IsAutorized(Rol rol, string permiso);
+
+        bool IsLogged(Entities.User user, string token);
+
+        bool IsFirstLogged(Entities.User user);
+
         Task<IdentityResult> AddUserAsync(Entities.User user, string password);
+
+        Task<IdentityResult> SaveSession(Entities.User user, string token);
 
         Task<SignInResult> LoginAsync(LoginViewModel model);
 

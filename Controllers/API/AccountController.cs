@@ -1,14 +1,10 @@
-using System;
-using System.Reflection.Metadata;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Store.Data;
 using Store.Entities;
 using Store.Helpers.User;
 using Store.Models.ViewModels;
@@ -37,8 +33,7 @@ namespace Store.Controllers.API
                 User user = await _userHelper.GetUserAsync(model.Username);
                 if (user != null)
                 {
-                    Microsoft.AspNetCore.Identity.SignInResult result =
-                        await _userHelper.ValidatePasswordAsync(user, model.Password);
+                    var result = await _userHelper.ValidatePasswordAsync(user, model.Password);
                     if (result.Succeeded)
                     {
                         Claim[] claims = new[]
@@ -54,7 +49,7 @@ namespace Store.Controllers.API
                                 _configuration["tokens:Issuer"],
                                 _configuration["tokens:Audience"],
                                 claims,
-                                expires: DateTime.UtcNow.AddYears(5),
+                                expires: DateTime.UtcNow.AddMonths(3),
                                 signingCredentials: credentials
                             );
                         var results = new
@@ -63,6 +58,7 @@ namespace Store.Controllers.API
                             expiration = token.ValidTo,
                             user
                         };
+                        await _userHelper.SaveSession(results.user, results.token);
                         return Created(String.Empty, results);
                     }
                 }
@@ -70,14 +66,6 @@ namespace Store.Controllers.API
 
             return BadRequest();
         }
-
-        // [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        // [HttpGet]
-        // public async Task<IActionResult> GetUsers()
-        // {
-        //     List<User> users = await _context.Users.ToListAsync();
-        //     return Ok(users);
-        // }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost]
@@ -106,12 +94,19 @@ namespace Store.Controllers.API
             }
             string email =
                 User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
-            User user = await _userHelper.GetUserAsync(email);
-            if (user == null)
+            try
             {
-                return NotFound("01");
+                User user = await _userHelper.GetUserByEmailAsync(email);
+                if (user == null)
+                {
+                    return NotFound("01");
+                }
+                return Ok(user);
             }
-            return Ok(user);
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -141,15 +136,17 @@ namespace Store.Controllers.API
             }
             string email =
                 User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
-            User user = await _userHelper.GetUserAsync(email);
+            User user = await _userHelper.GetUserByEmailAsync(email);
             if (user == null)
             {
-                return NotFound("01");
+                return NotFound("Usuario no encontrado");
             }
             try
             {
                 await _userHelper.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
-                return Ok();
+                user.IsDefaultPass = false;
+                await _userHelper.UpdateUserAsync(user);
+                return Ok(user);
             }
             catch (System.Exception ex)
             {

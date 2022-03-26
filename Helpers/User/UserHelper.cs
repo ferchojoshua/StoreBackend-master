@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Store.Data;
 using Store.Entities;
@@ -50,12 +51,55 @@ namespace Store.Helpers.User
             return await _userManager.CreateAsync(user, password);
         }
 
+        public async Task<IdentityResult> SaveSession(Entities.User user, string token)
+        {
+            return await _userManager.SetAuthenticationTokenAsync(user, "Jwt Bearer", "JWT", token);
+        }
+
         public async Task<Entities.User> GetUserAsync(string userName)
         {
             return await _context.Users
                 .Where(u => u.IsActive == true)
                 .Include(u => u.Rol)
                 .FirstOrDefaultAsync(u => u.UserName == userName);
+        }
+
+        public async Task<Entities.User> GetUserByEmailAsync(string email)
+        {
+            var user = await _context.Users
+                .Where(u => u.IsActive == true)
+                .Include(u => u.Rol)
+                .Include(u => u.UserSession)
+                .FirstOrDefaultAsync(u => u.Email == email);
+            return user;
+        }
+
+        public async Task<bool> IsAutorized(Rol rol, string permiso)
+        {
+            bool result = true;
+            Rol r = await _context.Rols
+                .Where(r => r == rol)
+                .Include(p => p.Permissions)
+                .FirstOrDefaultAsync();
+            Permission p = r.Permissions.FirstOrDefault(x => x.Description == permiso);
+            if (!p.IsEnable)
+            {
+                return result = false;
+            }
+            return result;
+        }
+
+        public bool IsLogged(Entities.User user, string token)
+        {
+            bool result = false;
+
+            return result;
+        }
+
+        public bool IsFirstLogged(Entities.User user)
+        {
+            bool result = false;
+            return result;
         }
 
         public async Task<SignInResult> LoginAsync(LoginViewModel model)
@@ -122,15 +166,18 @@ namespace Store.Helpers.User
             return user;
         }
 
-         public async Task<Entities.User> ResetPasswordAsync(string id)
+        public async Task<Entities.User> ResetPasswordAsync(string id)
         {
             Entities.User user = await _userManager.FindByIdAsync(id);
             if (user == null)
             {
                 return user;
             }
+            user.IsDefaultPass = true;
+            await UpdateUserAsync(user);
             await _userManager.RemovePasswordAsync(user);
             await _userManager.AddPasswordAsync(user, "123456");
+            await LogoutUserAsync(user);
             return user;
         }
 

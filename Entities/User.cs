@@ -12,5 +12,7 @@ namespace Store.Entities
         public string FullName => $"{FirstName} {LastName}";
         public Rol Rol { get; set; }
         public bool IsActive { get; set; }
+        public bool IsDefaultPass { get; set; }
+        public UserSession UserSession { get; set; }
     }
 }

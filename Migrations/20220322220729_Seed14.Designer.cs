@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Store.Data;
 
@@ -11,9 +12,10 @@ using Store.Data;
 namespace Store.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220322220729_Seed14")]
+    partial class Seed14
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -180,12 +182,16 @@ namespace Store.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int?>("TipoNegocioId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Description")
+                        .IsUnique()
+                        .HasFilter("[Description] IS NOT NULL");
 
                     b.HasIndex("TipoNegocioId");
 
@@ -313,7 +319,7 @@ namespace Store.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int?>("FamiliaId")
                         .HasColumnType("int");
@@ -331,6 +337,10 @@ namespace Store.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Description")
+                        .IsUnique()
+                        .HasFilter("[Description] IS NOT NULL");
 
                     b.HasIndex("FamiliaId");
 
@@ -453,9 +463,6 @@ namespace Store.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsDefaultPass")
-                        .HasColumnType("bit");
-
                     b.Property<string>("LastName")
                         .HasColumnType("nvarchar(max)");
 
@@ -501,9 +508,6 @@ namespace Store.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.Property<int?>("UserSessionId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("NormalizedEmail")
@@ -516,28 +520,7 @@ namespace Store.Migrations
 
                     b.HasIndex("RolId");
 
-                    b.HasIndex("UserSessionId");
-
                     b.ToTable("AspNetUsers", (string)null);
-                });
-
-            modelBuilder.Entity("Store.Entities.UserSession", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<string>("UserDevice")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserToken")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("UserSession");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -593,9 +576,11 @@ namespace Store.Migrations
 
             modelBuilder.Entity("Store.Entities.Familia", b =>
                 {
-                    b.HasOne("Store.Entities.TipoNegocio", null)
+                    b.HasOne("Store.Entities.TipoNegocio", "TipoNegocio")
                         .WithMany("Familias")
                         .HasForeignKey("TipoNegocioId");
+
+                    b.Navigation("TipoNegocio");
                 });
 
             modelBuilder.Entity("Store.Entities.Permission", b =>
@@ -663,13 +648,7 @@ namespace Store.Migrations
                         .WithMany()
                         .HasForeignKey("RolId");
 
-                    b.HasOne("Store.Entities.UserSession", "UserSession")
-                        .WithMany()
-                        .HasForeignKey("UserSessionId");
-
                     b.Navigation("Rol");
-
-                    b.Navigation("UserSession");
                 });
 
             modelBuilder.Entity("Store.Entities.ProductIn", b =>

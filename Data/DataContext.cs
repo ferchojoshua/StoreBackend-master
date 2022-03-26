@@ -26,11 +26,11 @@ namespace Store.Data
 
             modelBuilder.Entity<Rol>().HasIndex(t => t.RoleName).IsUnique();
 
-            modelBuilder.Entity<Familia>().HasIndex(t => t.Description).IsUnique();
+            // modelBuilder.Entity<Familia>().HasIndex(t => t.Description).IsUnique();
 
             modelBuilder.Entity<TipoNegocio>().HasIndex(t => t.Description).IsUnique();
 
-            modelBuilder.Entity<Producto>().HasIndex(t => t.Description).IsUnique();
+            // modelBuilder.Entity<Producto>().HasIndex(t => t.Description).IsUnique();
 
         }
     }

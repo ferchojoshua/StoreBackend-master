@@ -1,21 +1,27 @@
-﻿#nullable disable
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Store.Data;
 using Store.Entities;
+using Store.Helpers.User;
 using Store.Models.Responses;
 using Store.Models.ViewModels;
 
 namespace Store.Controllers.API
 {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     [ApiController]
     public class AlmacensController : ControllerBase
     {
+        private readonly IUserHelper _userHelper;
         private readonly DataContext _context;
 
-        public AlmacensController(DataContext context)
+        public AlmacensController(DataContext context, IUserHelper userHelper)
         {
+            _userHelper = userHelper;
             _context = context;
         }
 
@@ -23,25 +29,44 @@ namespace Store.Controllers.API
         [HttpGet]
         public async Task<ActionResult<IEnumerable<AlmacenResponse>>> GetAlmacen()
         {
-            List<AlmacenResponse> aR = new();                
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS VER"))
+            {
+                return Unauthorized();
+            }
+            List<AlmacenResponse> aR = new();
             var almacen = await _context.Almacen.ToListAsync();
 
             foreach (var item in almacen)
             {
                 var racks = await _context.Racks.Where(r => r.Almacen == item).ToListAsync();
-                aR.Add(new AlmacenResponse
-                {
-                    Almacen = item,
-                    RacksNumber = racks.Count,
-                });               
+                aR.Add(new AlmacenResponse { Almacen = item, RacksNumber = racks.Count, });
             }
-            return Ok(aR);
+            return Ok(aR.OrderBy(a => a.Almacen.Name));
         }
 
         // GET: api/Almacens/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Almacen>> GetAlmacen(int id)
         {
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+
+            if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS VER"))
+            {
+                return Unauthorized();
+            }
             var almacen = await _context.Almacen.FirstOrDefaultAsync(p => p.Id == id);
 
             if (almacen == null)
@@ -55,8 +80,19 @@ namespace Store.Controllers.API
         // PUT: api/Almacens/
         [HttpPut]
         [Route("UpdateAlmacen")]
-        public async Task<IActionResult> UpdateAlmacen([FromBody]Almacen almacen)
-        {            
+        public async Task<IActionResult> UpdateAlmacen([FromBody] Almacen almacen)
+        {
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS UPDATE"))
+            {
+                return Unauthorized();
+            }
             _context.Entry(almacen).State = EntityState.Modified;
             try
             {
@@ -80,6 +116,17 @@ namespace Store.Controllers.API
         [HttpPost]
         public async Task<ActionResult<Almacen>> PostAlmacen(Almacen almacen)
         {
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS CREATE"))
+            {
+                return Unauthorized();
+            }
             _context.Almacen.Add(almacen);
             await _context.SaveChangesAsync();
             return CreatedAtAction("GetAlmacen", new { id = almacen.Id }, almacen);
@@ -89,6 +136,17 @@ namespace Store.Controllers.API
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAlmacen(int id)
         {
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS DELETE"))
+            {
+                return Unauthorized();
+            }
             var almacen = await _context.Almacen.FindAsync(id);
             if (almacen == null)
             {
@@ -109,12 +167,34 @@ namespace Store.Controllers.API
         [HttpGet("GetRacksByStore/{id}")]
         public async Task<ActionResult<IEnumerable<Rack>>> GetRacksByStore(int id)
         {
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS VER"))
+            {
+                return Unauthorized();
+            }
             return await _context.Racks.Where(r => r.Almacen.Id == id).ToListAsync();
         }
 
         [HttpPost("AddRacksToStore")]
-        public async Task<ActionResult<Almacen>> AddRacksToStore([FromBody]AddRackViewModel model)
+        public async Task<ActionResult<Almacen>> AddRacksToStore([FromBody] AddRackViewModel model)
         {
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS CREATE"))
+            {
+                return Unauthorized();
+            }
             Rack rack = new();
             rack.Almacen = await _context.Almacen.FirstOrDefaultAsync(p => p.Id == model.AlmacenId);
             rack.Description = model.Description;
@@ -127,6 +207,17 @@ namespace Store.Controllers.API
         [HttpGet("GetRackById/{id}")]
         public async Task<ActionResult<Rack>> GetRackById(int id)
         {
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS VER"))
+            {
+                return Unauthorized();
+            }
             var rack = await _context.Racks.FirstOrDefaultAsync(p => p.Id == id);
 
             if (rack == null)
@@ -139,6 +230,17 @@ namespace Store.Controllers.API
         [HttpPut("UpdateRack")]
         public async Task<IActionResult> UpdateRack([FromBody] UpdateRackViewModel model)
         {
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS UPDATE"))
+            {
+                return Unauthorized();
+            }
             Rack r = await _context.Racks.FirstOrDefaultAsync(rac => rac.Id == model.Id);
             r.Description = model.Description;
             _context.Entry(r).State = EntityState.Modified;
@@ -164,6 +266,17 @@ namespace Store.Controllers.API
         [HttpDelete("DeleteRack/{id}")]
         public async Task<IActionResult> DeleteRack(int id)
         {
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS DELETE"))
+            {
+                return Unauthorized();
+            }
             var rack = await _context.Racks.FindAsync(id);
             if (rack == null)
             {

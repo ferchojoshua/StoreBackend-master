@@ -24,7 +24,7 @@ namespace Store.Controllers.API
         public async Task<IActionResult> GetRoles()
         {
             var roles = await _userHelper.GetRolesAsync();
-            return Ok(roles);
+            return Ok(roles.OrderBy(r => r.RoleName));
         }
 
         [HttpPost]

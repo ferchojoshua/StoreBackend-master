@@ -21,9 +21,6 @@ namespace Store.Models.ViewModels
         public string UserName { get; set; }
 
         [Required]
-        public string Password { get; set; }
-
-        [Required]
         public int RolId { get; set; }
     }
 
@@ -51,7 +48,10 @@ namespace Store.Models.ViewModels
 
     public class ChangePasswordViewModel
     {
+        [Required]
         public string OldPassword { get; set; }
+
+        [Required]
         public string NewPassword { get; set; }
     }
 
@@ -62,6 +62,9 @@ namespace Store.Models.ViewModels
 
         [Required]
         public string Password { get; set; }
+
+        [Required]
+        public string Device { get; set; }
 
         public bool RememberMe { get; set; }
     }

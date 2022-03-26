@@ -1,20 +1,26 @@
-﻿#nullable disable
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Store.Data;
 using Store.Entities;
+using Store.Helpers.User;
 using Store.Models.ViewModels;
 
 namespace Store.Controllers.API
 {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     [ApiController]
     public class ProductosController : ControllerBase
     {
+        private readonly IUserHelper _userHelper;
         private readonly DataContext _context;
 
-        public ProductosController(DataContext context)
+        public ProductosController(DataContext context, IUserHelper userHelper)
         {
+            _userHelper = userHelper;
             _context = context;
         }
 
@@ -22,14 +28,43 @@ namespace Store.Controllers.API
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Producto>>> GetProductos()
         {
-            return await _context.Productos.Include(p => p.TipoNegocio).Include(p => p.Familia).ToListAsync();
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS VER"))
+            {
+                return Unauthorized();
+            }
+            return await _context.Productos
+                .Include(p => p.TipoNegocio)
+                .Include(p => p.Familia)
+                .OrderBy(p => p.Description)
+                .ToListAsync();
         }
 
         // GET: api/Productos/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Producto>> GetProducto(int id)
         {
-            Producto producto = await _context.Productos.Include(p => p.TipoNegocio).Include(p => p.Familia).FirstOrDefaultAsync(p => p.Id == id);
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS VER"))
+            {
+                return Unauthorized();
+            }
+            Producto producto = await _context.Productos
+                .Include(p => p.TipoNegocio)
+                .Include(p => p.Familia)
+                .FirstOrDefaultAsync(p => p.Id == id);
 
             if (producto == null)
             {
@@ -44,6 +79,17 @@ namespace Store.Controllers.API
         [Route("UpdateProduct")]
         public async Task<IActionResult> PutProducto([FromBody] UpdateProductViewModel model)
         {
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS UPDATE"))
+            {
+                return Unauthorized();
+            }
             Producto producto = await _context.Productos.FindAsync(model.Id);
             producto.Description = model.Description;
             producto.Familia = await _context.Familias.FindAsync(model.FamiliaId);
@@ -76,6 +122,17 @@ namespace Store.Controllers.API
         [HttpPost]
         public async Task<ActionResult<Producto>> PostProducto([FromBody] ProductViewModel model)
         {
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS CREATE"))
+            {
+                return Unauthorized();
+            }
             Producto producto = new();
             producto.Description = model.Description;
             producto.Familia = await _context.Familias.FindAsync(model.FamiliaId);
@@ -95,6 +152,17 @@ namespace Store.Controllers.API
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProducto(int id)
         {
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS DELETE"))
+            {
+                return Unauthorized();
+            }
             Producto producto = await _context.Productos.FindAsync(id);
             if (producto == null)
             {

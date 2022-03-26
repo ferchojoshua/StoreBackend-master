@@ -1,20 +1,27 @@
 ﻿#nullable disable
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Store.Data;
 using Store.Entities;
+using Store.Helpers.User;
 using Store.Models.ViewModels;
 
 namespace Store.Controllers.API
 {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     [ApiController]
     public class ProductInsController : ControllerBase
     {
+        private readonly IUserHelper _userHelper;
         private readonly DataContext _context;
 
-        public ProductInsController(DataContext context)
+        public ProductInsController(DataContext context, IUserHelper userHelper)
         {
+            _userHelper = userHelper;
             _context = context;
         }
 
@@ -22,17 +29,39 @@ namespace Store.Controllers.API
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ProductIn>>> GetProductIns()
         {
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "ENTRADAPRODUCTOS VER"))
+            {
+                return Unauthorized();
+            }
             return await _context.ProductIns
-                    .Include(p => p.Provider)
-                    .OrderByDescending(p => p.Id)
-                    .Include(p => p.ProductInDetails)
-                    .ToListAsync();
+                .Include(p => p.Provider)
+                .OrderByDescending(p => p.Id)
+                .Include(p => p.ProductInDetails)
+                .ToListAsync();
         }
 
         // GET: api/ProductIns/5
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductIn>> GetProductIn(int id)
         {
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "ENTRADAPRODUCTOS VER"))
+            {
+                return Unauthorized();
+            }
             var productIn = await _context.ProductIns
                 .Include(p => p.Almacen)
                 .Include(p => p.Provider)
@@ -52,6 +81,17 @@ namespace Store.Controllers.API
         [HttpPut("{id}")]
         public async Task<IActionResult> PutProductIn(int id, ProductIn productIn)
         {
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "ENTRADAPRODUCTOS UPDATE"))
+            {
+                return Unauthorized();
+            }
             if (id != productIn.Id)
             {
                 return BadRequest();
@@ -82,10 +122,23 @@ namespace Store.Controllers.API
         [HttpPost]
         public async Task<ActionResult<ProductIn>> PostProductIn(AddEntradaProductoViewModel model)
         {
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "ENTRADAPRODUCTOS CREATE"))
+            {
+                return Unauthorized();
+            }
             DateTime fechaV = DateTime.Now;
             fechaV.AddDays(15);
             Almacen alm = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == 1);
-            Provider prov = await _context.Providers.FirstOrDefaultAsync(p => p.Id == model.Provider.Id);
+            Provider prov = await _context.Providers.FirstOrDefaultAsync(
+                p => p.Id == model.Provider.Id
+            );
             ProductIn productIn = new();
             productIn.TipoEntrada = model.TipoEntrada;
             productIn.TipoPago = model.TipoPago;
@@ -99,7 +152,9 @@ namespace Store.Controllers.API
             foreach (var item in model.ProductInDetails)
             {
                 ProductInDetails pd = new();
-                pd.Product = await _context.Productos.FirstOrDefaultAsync(p => p.Id == item.Product.Id);
+                pd.Product = await _context.Productos.FirstOrDefaultAsync(
+                    p => p.Id == item.Product.Id
+                );
                 pd.Cantidad = item.Cantidad;
                 pd.CostoCompra = item.CostoCompra;
                 pd.CostoUnitario = item.CostoUnitario;
@@ -113,7 +168,6 @@ namespace Store.Controllers.API
             _context.ProductIns.Add(productIn);
             await _context.SaveChangesAsync();
 
-
             return CreatedAtAction("GetProductIn", new { id = productIn.Id }, productIn);
         }
 
@@ -121,6 +175,17 @@ namespace Store.Controllers.API
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProductIn(int id)
         {
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "ENTRADAPRODUCTOS DELETE"))
+            {
+                return Unauthorized();
+            }
             var productIn = await _context.ProductIns.FindAsync(id);
             if (productIn == null)
             {
