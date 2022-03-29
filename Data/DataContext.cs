@@ -16,6 +16,7 @@ namespace Store.Data
         public DbSet<Provider> Providers { get; set; }
         public DbSet<Rack> Racks { get; set; }
         public DbSet<TipoNegocio> TipoNegocios { get; set; }
+        public DbSet<UserSession> UserSession { get; set; }
 
         public DbSet<Rol> Rols { get; set; }
         public DbSet<Permission> Permissions { get; set; }

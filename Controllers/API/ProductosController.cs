@@ -39,6 +39,14 @@ namespace Store.Controllers.API
             {
                 return Unauthorized();
             }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
             return await _context.Productos
                 .Include(p => p.TipoNegocio)
                 .Include(p => p.Familia)
@@ -60,6 +68,14 @@ namespace Store.Controllers.API
             if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS VER"))
             {
                 return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
             }
             Producto producto = await _context.Productos
                 .Include(p => p.TipoNegocio)
@@ -89,6 +105,14 @@ namespace Store.Controllers.API
             if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS UPDATE"))
             {
                 return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
             }
             Producto producto = await _context.Productos.FindAsync(model.Id);
             producto.Description = model.Description;
@@ -133,6 +157,15 @@ namespace Store.Controllers.API
             {
                 return Unauthorized();
             }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+
             Producto producto = new();
             producto.Description = model.Description;
             producto.Familia = await _context.Familias.FindAsync(model.FamiliaId);
@@ -163,6 +196,15 @@ namespace Store.Controllers.API
             {
                 return Unauthorized();
             }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+
             Producto producto = await _context.Productos.FindAsync(id);
             if (producto == null)
             {

@@ -36,6 +36,13 @@ namespace Store.Controllers.API
             {
                 return Ok(user);
             }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
             if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS VER"))
             {
                 return Unauthorized();
@@ -61,6 +68,14 @@ namespace Store.Controllers.API
             if (user.IsDefaultPass)
             {
                 return Ok(user);
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
             }
 
             if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS VER"))
@@ -92,6 +107,14 @@ namespace Store.Controllers.API
             if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS UPDATE"))
             {
                 return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
             }
             _context.Entry(almacen).State = EntityState.Modified;
             try
@@ -127,6 +150,14 @@ namespace Store.Controllers.API
             {
                 return Unauthorized();
             }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
             _context.Almacen.Add(almacen);
             await _context.SaveChangesAsync();
             return CreatedAtAction("GetAlmacen", new { id = almacen.Id }, almacen);
@@ -146,6 +177,14 @@ namespace Store.Controllers.API
             if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS DELETE"))
             {
                 return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
             }
             var almacen = await _context.Almacen.FindAsync(id);
             if (almacen == null)
@@ -195,6 +234,14 @@ namespace Store.Controllers.API
             {
                 return Unauthorized();
             }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
             Rack rack = new();
             rack.Almacen = await _context.Almacen.FirstOrDefaultAsync(p => p.Id == model.AlmacenId);
             rack.Description = model.Description;
@@ -218,6 +265,14 @@ namespace Store.Controllers.API
             {
                 return Unauthorized();
             }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
             var rack = await _context.Racks.FirstOrDefaultAsync(p => p.Id == id);
 
             if (rack == null)
@@ -240,6 +295,14 @@ namespace Store.Controllers.API
             if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS UPDATE"))
             {
                 return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
             }
             Rack r = await _context.Racks.FirstOrDefaultAsync(rac => rac.Id == model.Id);
             r.Description = model.Description;
@@ -272,6 +335,14 @@ namespace Store.Controllers.API
             if (user.IsDefaultPass)
             {
                 return Ok(user);
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
             }
             if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS DELETE"))
             {

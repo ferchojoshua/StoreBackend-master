@@ -41,6 +41,14 @@ namespace Store.Controllers.API
                 return Unauthorized();
             }
 
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+
             return await _context.TipoNegocios
                 .Include(tn => tn.Familias)
                 .OrderByDescending(t => t.Id)
@@ -61,6 +69,14 @@ namespace Store.Controllers.API
             if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS VER"))
             {
                 return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
             }
             TipoNegocio tipoNegocio = await _context.TipoNegocios.FindAsync(id);
 
@@ -87,6 +103,14 @@ namespace Store.Controllers.API
             if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS UPDATE"))
             {
                 return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
             }
             _context.Entry(tipoNegocio).State = EntityState.Modified;
             try
@@ -123,6 +147,14 @@ namespace Store.Controllers.API
             {
                 return Unauthorized();
             }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
             _context.TipoNegocios.Add(tipoNegocio);
             await _context.SaveChangesAsync();
 
@@ -143,6 +175,14 @@ namespace Store.Controllers.API
             if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS DELETE"))
             {
                 return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
             }
             TipoNegocio tipoNegocio = await _context.TipoNegocios.FindAsync(id);
             if (tipoNegocio == null)
@@ -175,6 +215,14 @@ namespace Store.Controllers.API
             {
                 return Unauthorized();
             }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
             var data = await _context.TipoNegocios
                 .Include(tn => tn.Familias)
                 .FirstOrDefaultAsync(tn => tn.Id == id);
@@ -196,6 +244,14 @@ namespace Store.Controllers.API
             if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS CREATE"))
             {
                 return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
             }
             Familia f = new() { Description = model.Description };
             await _context.SaveChangesAsync();
@@ -224,6 +280,14 @@ namespace Store.Controllers.API
             {
                 return Unauthorized();
             }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
             Familia familia = await _context.Familias.FindAsync(id);
 
             if (familia == null)
@@ -247,6 +311,14 @@ namespace Store.Controllers.API
             if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS UPDATE"))
             {
                 return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
             }
             Familia f = await _context.Familias.FirstOrDefaultAsync(fam => fam.Id == model.Id);
             if (f == null)
@@ -280,6 +352,14 @@ namespace Store.Controllers.API
             {
                 return Unauthorized();
             }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
             var fam = await _context.Familias.FindAsync(id);
             if (fam == null)
             {
@@ -293,3 +373,4 @@ namespace Store.Controllers.API
         }
     }
 }
+

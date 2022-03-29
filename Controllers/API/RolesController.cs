@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,6 +24,25 @@ namespace Store.Controllers.API
         [Route("GetRoles")]
         public async Task<IActionResult> GetRoles()
         {
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "ROLES VER"))
+            {
+                return Unauthorized();
+            }
+
             var roles = await _userHelper.GetRolesAsync();
             return Ok(roles.OrderBy(r => r.RoleName));
         }
@@ -34,6 +54,25 @@ namespace Store.Controllers.API
             if (!ModelState.IsValid)
             {
                 return BadRequest();
+            }
+
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "ROLES CREATE"))
+            {
+                return Unauthorized();
             }
 
             Rol rol = await _userHelper.GetRoleAsync(model.RoleName);
@@ -60,6 +99,26 @@ namespace Store.Controllers.API
             {
                 return BadRequest();
             }
+
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "ROLES UPDATE"))
+            {
+                return Unauthorized();
+            }
+
             try
             {
                 Rol rol = await _userHelper.UpdateRoleAsync(model);
@@ -82,6 +141,25 @@ namespace Store.Controllers.API
             if (!ModelState.IsValid)
             {
                 return BadRequest();
+            }
+
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "ROLES DELETE"))
+            {
+                return Unauthorized();
             }
             Rol rol = await _userHelper.GetRoleAsync(rolName);
             if (rol == null)

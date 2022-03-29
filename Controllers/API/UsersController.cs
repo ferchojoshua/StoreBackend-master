@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,6 +24,25 @@ namespace Store.Controllers.API
         [Route("GetActiveUsers")]
         public async Task<IActionResult> GetActiveUsers()
         {
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "USER VER"))
+            {
+                return Unauthorized();
+            }
+
             var users = await _userHelper.GetActiveUsersAsync();
             return Ok(users);
         }
@@ -31,6 +51,25 @@ namespace Store.Controllers.API
         [Route("GetInactiveUsers")]
         public async Task<IActionResult> GetInactiveUsers()
         {
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "USER VER"))
+            {
+                return Unauthorized();
+            }
+
             var users = await _userHelper.GetInactiveUsersAsync();
             return Ok(users);
         }
@@ -39,6 +78,25 @@ namespace Store.Controllers.API
         [Route("GetAllUsers")]
         public async Task<IActionResult> GetAllUsers()
         {
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "USER VER"))
+            {
+                return Unauthorized();
+            }
+
             var users = await _userHelper.GetAllUsersAsync();
             return Ok(users);
         }
@@ -50,6 +108,25 @@ namespace Store.Controllers.API
             if (!ModelState.IsValid)
             {
                 return BadRequest();
+            }
+
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User usr = await _userHelper.GetUserByEmailAsync(email);
+            if (usr.IsDefaultPass)
+            {
+                return Ok(usr);
+            }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (usr.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+            if (!await _userHelper.IsAutorized(usr.Rol, "USER VER"))
+            {
+                return Unauthorized();
             }
 
             User user = await _userHelper.GetUserAsync(model.UserName);
@@ -73,7 +150,12 @@ namespace Store.Controllers.API
                     Address = model.Address,
                     IsActive = true,
                     IsDefaultPass = true,
-                    UserSession = new UserSession { UserDevice = "", UserToken = "" }
+                    UserSession = new UserSession
+                    {
+                        UserBrowser = "",
+                        UserToken = "",
+                        UserSO = ""
+                    }
                 };
                 await _userHelper.AddUserAsync(user, "123456");
                 await _userHelper.AddUserToRoleAsync(user, model.RolId);
@@ -92,6 +174,25 @@ namespace Store.Controllers.API
             if (!ModelState.IsValid)
             {
                 return BadRequest();
+            }
+
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User usr = await _userHelper.GetUserByEmailAsync(email);
+            if (usr.IsDefaultPass)
+            {
+                return Ok(usr);
+            }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (usr.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+            if (!await _userHelper.IsAutorized(usr.Rol, "USER UPDATE"))
+            {
+                return Unauthorized();
             }
 
             User user = await _userHelper.GetUserAsync(model.UserName);
@@ -126,6 +227,25 @@ namespace Store.Controllers.API
                 return BadRequest();
             }
 
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User usr = await _userHelper.GetUserByEmailAsync(email);
+            if (usr.IsDefaultPass)
+            {
+                return Ok(usr);
+            }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (usr.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+            if (!await _userHelper.IsAutorized(usr.Rol, "USER DELETE"))
+            {
+                return Unauthorized();
+            }
+
             User user = await _userHelper.DeactivateUserAsync(userName);
             if (user == null)
             {
@@ -150,6 +270,26 @@ namespace Store.Controllers.API
             {
                 return BadRequest();
             }
+
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User usr = await _userHelper.GetUserByEmailAsync(email);
+            if (usr.IsDefaultPass)
+            {
+                return Ok(usr);
+            }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (usr.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+            if (!await _userHelper.IsAutorized(usr.Rol, "USER UPDATE"))
+            {
+                return Unauthorized();
+            }
+
             try
             {
                 User user = await _userHelper.ResetPasswordAsync(id);

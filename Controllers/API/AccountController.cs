@@ -58,7 +58,12 @@ namespace Store.Controllers.API
                             expiration = token.ValidTo,
                             user
                         };
-                        await _userHelper.SaveSession(results.user, results.token);
+
+                        user.UserSession.UserToken = results.token;
+                        user.UserSession.ExpirationDateToken = results.expiration;
+                        user.UserSession.UserBrowser = model.UserBrowser;
+                        user.UserSession.UserSO = model.UserSO;
+                        await _userHelper.UpdateUserAsync(user);
                         return Created(String.Empty, results);
                     }
                 }
@@ -92,6 +97,8 @@ namespace Store.Controllers.API
             {
                 return BadRequest();
             }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
             string email =
                 User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
             try
@@ -100,6 +107,11 @@ namespace Store.Controllers.API
                 if (user == null)
                 {
                     return NotFound("01");
+                }
+                if (user.UserSession.UserToken != token)
+                {
+                    await _userHelper.LogoutAsync();
+                    return Ok("eX01");
                 }
                 return Ok(user);
             }
@@ -141,6 +153,13 @@ namespace Store.Controllers.API
             {
                 return NotFound("Usuario no encontrado");
             }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
             try
             {
                 await _userHelper.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
@@ -169,6 +188,13 @@ namespace Store.Controllers.API
             if (user == null)
             {
                 return NotFound("01");
+            }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
             }
             try
             {

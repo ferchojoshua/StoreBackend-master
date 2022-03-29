@@ -51,16 +51,12 @@ namespace Store.Helpers.User
             return await _userManager.CreateAsync(user, password);
         }
 
-        public async Task<IdentityResult> SaveSession(Entities.User user, string token)
-        {
-            return await _userManager.SetAuthenticationTokenAsync(user, "Jwt Bearer", "JWT", token);
-        }
-
         public async Task<Entities.User> GetUserAsync(string userName)
         {
             return await _context.Users
                 .Where(u => u.IsActive == true)
                 .Include(u => u.Rol)
+                .Include(s => s.UserSession)
                 .FirstOrDefaultAsync(u => u.UserName == userName);
         }
 
@@ -71,6 +67,21 @@ namespace Store.Helpers.User
                 .Include(u => u.Rol)
                 .Include(u => u.UserSession)
                 .FirstOrDefaultAsync(u => u.Email == email);
+                 if (user.UserSession == null)
+                {
+                    await LogoutAsync();
+                    UserSession us =
+                        new()
+                        {
+                            UserBrowser = "",
+                            UserToken = "",
+                            UserSO = ""
+                        };
+                    user.UserSession = us;
+                    await UpdateUserAsync(user);
+                    await LogoutAsync();
+                    return user;
+                }
             return user;
         }
 
@@ -93,12 +104,6 @@ namespace Store.Helpers.User
         {
             bool result = false;
 
-            return result;
-        }
-
-        public bool IsFirstLogged(Entities.User user)
-        {
-            bool result = false;
             return result;
         }
 

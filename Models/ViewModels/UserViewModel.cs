@@ -63,8 +63,9 @@ namespace Store.Models.ViewModels
         [Required]
         public string Password { get; set; }
 
-        [Required]
-        public string Device { get; set; }
+        public string UserBrowser { get; set; }
+
+        public string UserSO { get; set; }
 
         public bool RememberMe { get; set; }
     }

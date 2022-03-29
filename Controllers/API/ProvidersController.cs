@@ -38,6 +38,14 @@ namespace Store.Controllers.API
             {
                 return Unauthorized();
             }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
             return await _context.Providers.OrderBy(p => p.Nombre).ToListAsync();
         }
 
@@ -55,6 +63,14 @@ namespace Store.Controllers.API
             if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS VER"))
             {
                 return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
             }
             Provider provider = await _context.Providers.FindAsync(id);
             if (provider == null)
@@ -80,6 +96,14 @@ namespace Store.Controllers.API
             if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS UPDATE"))
             {
                 return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
             }
             _context.Entry(provider).State = EntityState.Modified;
             try
@@ -116,6 +140,14 @@ namespace Store.Controllers.API
             {
                 return Unauthorized();
             }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
             _context.Providers.Add(provider);
             await _context.SaveChangesAsync();
 
@@ -136,6 +168,14 @@ namespace Store.Controllers.API
             if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS DELETE"))
             {
                 return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
             }
             Provider provider = await _context.Providers.FindAsync(id);
             if (provider == null)

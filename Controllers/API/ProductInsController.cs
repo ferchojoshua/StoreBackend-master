@@ -40,6 +40,14 @@ namespace Store.Controllers.API
             {
                 return Unauthorized();
             }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
             return await _context.ProductIns
                 .Include(p => p.Provider)
                 .OrderByDescending(p => p.Id)
@@ -61,6 +69,14 @@ namespace Store.Controllers.API
             if (!await _userHelper.IsAutorized(user.Rol, "ENTRADAPRODUCTOS VER"))
             {
                 return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
             }
             var productIn = await _context.ProductIns
                 .Include(p => p.Almacen)
@@ -87,6 +103,14 @@ namespace Store.Controllers.API
             if (user.IsDefaultPass)
             {
                 return Ok(user);
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
             }
             if (!await _userHelper.IsAutorized(user.Rol, "ENTRADAPRODUCTOS UPDATE"))
             {
@@ -132,6 +156,14 @@ namespace Store.Controllers.API
             if (!await _userHelper.IsAutorized(user.Rol, "ENTRADAPRODUCTOS CREATE"))
             {
                 return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
             }
             DateTime fechaV = DateTime.Now;
             fechaV.AddDays(15);
@@ -181,6 +213,14 @@ namespace Store.Controllers.API
             if (user.IsDefaultPass)
             {
                 return Ok(user);
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
             }
             if (!await _userHelper.IsAutorized(user.Rol, "ENTRADAPRODUCTOS DELETE"))
             {
