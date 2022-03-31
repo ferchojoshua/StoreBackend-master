@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Store.Data;
 
@@ -11,9 +12,10 @@ using Store.Data;
 namespace Store.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220330150113_Seed24")]
+    partial class Seed24
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -227,11 +229,8 @@ namespace Store.Migrations
                     b.Property<int?>("AlmacenId")
                         .HasColumnType("int");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("EditBy")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("EditBy")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("EditDate")
                         .HasColumnType("datetime2");
@@ -257,11 +256,16 @@ namespace Store.Migrations
                     b.Property<string>("TipoPago")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("UsuarioId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AlmacenId");
 
                     b.HasIndex("ProviderId");
+
+                    b.HasIndex("UsuarioId");
 
                     b.ToTable("ProductIns");
                 });
@@ -630,9 +634,15 @@ namespace Store.Migrations
                         .WithMany()
                         .HasForeignKey("ProviderId");
 
+                    b.HasOne("Store.Entities.User", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId");
+
                     b.Navigation("Almacen");
 
                     b.Navigation("Provider");
+
+                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("Store.Entities.ProductInDetails", b =>

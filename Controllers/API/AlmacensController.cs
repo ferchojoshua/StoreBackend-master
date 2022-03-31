@@ -97,6 +97,10 @@ namespace Store.Controllers.API
         [Route("UpdateAlmacen")]
         public async Task<IActionResult> UpdateAlmacen([FromBody] Almacen almacen)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
             string email =
                 User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
@@ -137,8 +141,12 @@ namespace Store.Controllers.API
 
         // POST: api/Almacens
         [HttpPost]
-        public async Task<ActionResult<Almacen>> PostAlmacen(Almacen almacen)
+        public async Task<ActionResult<Almacen>> PostAlmacen([FromBody] Almacen almacen)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
             string email =
                 User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
@@ -223,6 +231,10 @@ namespace Store.Controllers.API
         [HttpPost("AddRacksToStore")]
         public async Task<ActionResult<Almacen>> AddRacksToStore([FromBody] AddRackViewModel model)
         {
+             if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
             string email =
                 User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
@@ -285,6 +297,10 @@ namespace Store.Controllers.API
         [HttpPut("UpdateRack")]
         public async Task<IActionResult> UpdateRack([FromBody] UpdateRackViewModel model)
         {
+             if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
             string email =
                 User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
             User user = await _userHelper.GetUserByEmailAsync(email);

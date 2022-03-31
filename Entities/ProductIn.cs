@@ -18,6 +18,12 @@
 
         public Almacen Almacen { get; set; }
 
+        public string CreatedBy { get; set; }
+
+        public string EditBy { get; set; }
+        
+        public DateTime EditDate { get; set; }
+
         public decimal MontoFactura { get; set; }
 
         public List<ProductInDetails> ProductInDetails { get; set; }

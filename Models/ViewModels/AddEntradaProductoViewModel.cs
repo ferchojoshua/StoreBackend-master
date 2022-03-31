@@ -10,7 +10,7 @@ namespace Store.Models.ViewModels
 
         public string TipoPago { get; set; }
 
-        public Provider Provider { get; set; }
+        public int ProviderId { get; set; }
 
         public decimal MontoFactura { get; set; }
 

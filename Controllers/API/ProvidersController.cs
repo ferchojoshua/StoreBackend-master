@@ -86,6 +86,10 @@ namespace Store.Controllers.API
         [Route("UpdateProvider")]
         public async Task<IActionResult> PutProvider([FromBody] Provider provider)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
             string email =
                 User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
@@ -127,8 +131,12 @@ namespace Store.Controllers.API
 
         // POST: api/Providers
         [HttpPost]
-        public async Task<ActionResult<Provider>> PostProvider(Provider provider)
+        public async Task<ActionResult<Provider>> PostProvider([FromBody] Provider provider)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
             string email =
                 User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
             User user = await _userHelper.GetUserByEmailAsync(email);

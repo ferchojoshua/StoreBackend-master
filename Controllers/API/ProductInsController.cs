@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Store.Data;
 using Store.Entities;
+using Store.Helpers.EntradaProductos;
 using Store.Helpers.User;
 using Store.Models.ViewModels;
 
@@ -17,11 +18,17 @@ namespace Store.Controllers.API
     public class ProductInsController : ControllerBase
     {
         private readonly IUserHelper _userHelper;
+        private readonly IProductsInHelper _productsInHelper;
         private readonly DataContext _context;
 
-        public ProductInsController(DataContext context, IUserHelper userHelper)
+        public ProductInsController(
+            DataContext context,
+            IUserHelper userHelper,
+            IProductsInHelper productsInHelper
+        )
         {
             _userHelper = userHelper;
+            _productsInHelper = productsInHelper;
             _context = context;
         }
 
@@ -36,6 +43,7 @@ namespace Store.Controllers.API
             {
                 return Ok(user);
             }
+
             if (!await _userHelper.IsAutorized(user.Rol, "ENTRADAPRODUCTOS VER"))
             {
                 return Unauthorized();
@@ -144,8 +152,14 @@ namespace Store.Controllers.API
 
         // POST: api/ProductIns
         [HttpPost]
-        public async Task<ActionResult<ProductIn>> PostProductIn(AddEntradaProductoViewModel model)
+        public async Task<ActionResult<ProductIn>> PostProductIn(
+            [FromBody] AddEntradaProductoViewModel model
+        )
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
             string email =
                 User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
@@ -153,6 +167,7 @@ namespace Store.Controllers.API
             {
                 return Ok(user);
             }
+
             if (!await _userHelper.IsAutorized(user.Rol, "ENTRADAPRODUCTOS CREATE"))
             {
                 return Unauthorized();
@@ -165,42 +180,8 @@ namespace Store.Controllers.API
                 await _userHelper.LogoutAsync();
                 return Ok("eX01");
             }
-            DateTime fechaV = DateTime.Now;
-            fechaV.AddDays(15);
-            Almacen alm = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == 1);
-            Provider prov = await _context.Providers.FirstOrDefaultAsync(
-                p => p.Id == model.Provider.Id
-            );
-            ProductIn productIn = new();
-            productIn.TipoEntrada = model.TipoEntrada;
-            productIn.TipoPago = model.TipoPago;
-            productIn.NoFactura = model.NoFactura;
-            productIn.FechaIngreso = DateTime.Now;
-            productIn.FechaVencimiento = model.TipoPago == "Pago de Credito" ? fechaV : null;
-            productIn.Provider = prov;
-            productIn.Almacen = alm;
-            productIn.MontoFactura = model.MontoFactura;
-            List<ProductInDetails> detalles = new();
-            foreach (var item in model.ProductInDetails)
-            {
-                ProductInDetails pd = new();
-                pd.Product = await _context.Productos.FirstOrDefaultAsync(
-                    p => p.Id == item.Product.Id
-                );
-                pd.Cantidad = item.Cantidad;
-                pd.CostoCompra = item.CostoCompra;
-                pd.CostoUnitario = item.CostoUnitario;
-                pd.Descuento = item.Descuento;
-                pd.Impuesto = item.Impuesto;
-                pd.PrecioVentaMayor = item.PrecioVentaMayor;
-                pd.PrecioVentaDetalle = item.PrecioVentaDetalle;
-                detalles.Add(pd);
-            }
-            productIn.ProductInDetails = detalles;
-            _context.ProductIns.Add(productIn);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetProductIn", new { id = productIn.Id }, productIn);
+            var productIn = await _productsInHelper.AddProductInAsync(model, email);
+            return Ok(productIn);
         }
 
         // DELETE: api/ProductIns/5

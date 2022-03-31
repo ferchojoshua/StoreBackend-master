@@ -95,6 +95,10 @@ namespace Store.Controllers.API
         [Route("UpdateProduct")]
         public async Task<IActionResult> PutProducto([FromBody] UpdateProductViewModel model)
         {
+             if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
             string email =
                 User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
@@ -146,6 +150,10 @@ namespace Store.Controllers.API
         [HttpPost]
         public async Task<ActionResult<Producto>> PostProducto([FromBody] ProductViewModel model)
         {
+             if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
             string email =
                 User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
             User user = await _userHelper.GetUserByEmailAsync(email);

@@ -93,6 +93,10 @@ namespace Store.Controllers.API
         [Route("UpdateTipoNegocio")]
         public async Task<IActionResult> PutTipoNegocio([FromBody] TipoNegocio tipoNegocio)
         {
+             if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
             string email =
                 User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
@@ -134,8 +138,12 @@ namespace Store.Controllers.API
 
         // POST: api/TipoNegocios
         [HttpPost]
-        public async Task<ActionResult<TipoNegocio>> PostTipoNegocio(TipoNegocio tipoNegocio)
+        public async Task<ActionResult<TipoNegocio>> PostTipoNegocio([FromBody]TipoNegocio tipoNegocio)
         {
+             if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
             string email =
                 User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
@@ -234,6 +242,10 @@ namespace Store.Controllers.API
             [FromBody] AddFamiliaViewModel model
         )
         {
+             if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
             string email =
                 User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
@@ -301,6 +313,10 @@ namespace Store.Controllers.API
         [HttpPut("UpdateFamilia")]
         public async Task<IActionResult> UpdateRack([FromBody] Familia model)
         {
+             if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
             string email =
                 User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
