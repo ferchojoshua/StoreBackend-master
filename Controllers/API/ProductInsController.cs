@@ -102,8 +102,11 @@ namespace Store.Controllers.API
         }
 
         // PUT: api/ProductIns/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutProductIn(int id, ProductIn productIn)
+        [HttpPut]
+        [Route("PutProductIn")]
+        public async Task<IActionResult> PutProductIn(
+            [FromBody] UpdateEntradaProductoViewModel model
+        )
         {
             string email =
                 User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
@@ -124,30 +127,20 @@ namespace Store.Controllers.API
             {
                 return Unauthorized();
             }
-            if (id != productIn.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(productIn).State = EntityState.Modified;
 
             try
             {
-                await _context.SaveChangesAsync();
+                var productIn = await _productsInHelper.UpdateProductInAsync(model, user);
+                if (productIn == null)
+                {
+                    return NotFound("Orden de compra no encontrada");
+                }
+                return Ok(productIn);
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception ex)
             {
-                if (!ProductInExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return BadRequest(ex.Message);
             }
-
-            return NoContent();
         }
 
         // POST: api/ProductIns
@@ -180,7 +173,7 @@ namespace Store.Controllers.API
                 await _userHelper.LogoutAsync();
                 return Ok("eX01");
             }
-            var productIn = await _productsInHelper.AddProductInAsync(model, email);
+            var productIn = await _productsInHelper.AddProductInAsync(model, user);
             return Ok(productIn);
         }
 
@@ -217,11 +210,6 @@ namespace Store.Controllers.API
             await _context.SaveChangesAsync();
 
             return NoContent();
-        }
-
-        private bool ProductInExists(int id)
-        {
-            return _context.ProductIns.Any(e => e.Id == id);
         }
     }
 }

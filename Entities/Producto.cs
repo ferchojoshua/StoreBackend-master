@@ -17,5 +17,9 @@
         public string Modelo { get; set; }
 
         public string UM { get; set; }
+
+        public int Existencia { get; set; }
+        public decimal PrecioVentaMayor { get; set; }
+        public decimal PrecioVentaDetalle { get; set; }
     }
 }

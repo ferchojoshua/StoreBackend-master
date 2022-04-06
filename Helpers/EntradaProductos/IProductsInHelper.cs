@@ -5,6 +5,8 @@ namespace Store.Helpers.EntradaProductos
 {
     public interface IProductsInHelper
     {
-        Task<ProductIn> AddProductInAsync(AddEntradaProductoViewModel model, string createdBy);
+        Task<ProductIn> AddProductInAsync(AddEntradaProductoViewModel model, Entities.User user);
+
+        Task<ProductIn> UpdateProductInAsync(UpdateEntradaProductoViewModel model, Entities.User user);
     }
 }

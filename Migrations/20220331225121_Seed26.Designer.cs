@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Store.Data;
 
@@ -11,9 +12,10 @@ using Store.Data;
 namespace Store.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220331225121_Seed26")]
+    partial class Seed26
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -190,49 +192,6 @@ namespace Store.Migrations
                     b.HasIndex("TipoNegocioId");
 
                     b.ToTable("Familias");
-                });
-
-            modelBuilder.Entity("Store.Entities.Kardex", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<int?>("AlmacenId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Concepto")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Entradas")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("Fecha")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("ProductId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Saldo")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Salidas")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AlmacenId");
-
-                    b.HasIndex("ProductId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Kardex");
                 });
 
             modelBuilder.Entity("Store.Entities.Permission", b =>
@@ -663,27 +622,6 @@ namespace Store.Migrations
                     b.HasOne("Store.Entities.TipoNegocio", null)
                         .WithMany("Familias")
                         .HasForeignKey("TipoNegocioId");
-                });
-
-            modelBuilder.Entity("Store.Entities.Kardex", b =>
-                {
-                    b.HasOne("Store.Entities.Almacen", "Almacen")
-                        .WithMany()
-                        .HasForeignKey("AlmacenId");
-
-                    b.HasOne("Store.Entities.Producto", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId");
-
-                    b.HasOne("Store.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("Almacen");
-
-                    b.Navigation("Product");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Store.Entities.Permission", b =>

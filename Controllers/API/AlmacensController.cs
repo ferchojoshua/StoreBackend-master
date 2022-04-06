@@ -254,9 +254,11 @@ namespace Store.Controllers.API
                 await _userHelper.LogoutAsync();
                 return Ok("eX01");
             }
-            Rack rack = new();
-            rack.Almacen = await _context.Almacen.FirstOrDefaultAsync(p => p.Id == model.AlmacenId);
-            rack.Description = model.Description;
+            Rack rack = new()
+            {
+                Almacen = await _context.Almacen.FirstOrDefaultAsync(p => p.Id == model.AlmacenId),
+                Description = model.Description
+            };
 
             _context.Racks.Add(rack);
             await _context.SaveChangesAsync();

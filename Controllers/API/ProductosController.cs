@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Store.Data;
 using Store.Entities;
+using Store.Helpers.ProductHelper;
 using Store.Helpers.User;
 using Store.Models.ViewModels;
 
@@ -16,11 +17,17 @@ namespace Store.Controllers.API
     public class ProductosController : ControllerBase
     {
         private readonly IUserHelper _userHelper;
+        private readonly IProductHelper _productHelper;
         private readonly DataContext _context;
 
-        public ProductosController(DataContext context, IUserHelper userHelper)
+        public ProductosController(
+            DataContext context,
+            IUserHelper userHelper,
+            IProductHelper productHelper
+        )
         {
             _userHelper = userHelper;
+            _productHelper = productHelper;
             _context = context;
         }
 
@@ -95,7 +102,7 @@ namespace Store.Controllers.API
         [Route("UpdateProduct")]
         public async Task<IActionResult> PutProducto([FromBody] UpdateProductViewModel model)
         {
-             if (!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
@@ -118,39 +125,23 @@ namespace Store.Controllers.API
                 await _userHelper.LogoutAsync();
                 return Ok("eX01");
             }
-            Producto producto = await _context.Productos.FindAsync(model.Id);
-            producto.Description = model.Description;
-            producto.Familia = await _context.Familias.FindAsync(model.FamiliaId);
-            producto.TipoNegocio = await _context.TipoNegocios.FindAsync(model.TipoNegocioId);
-            producto.BarCode = model.BarCode;
-            producto.Modelo = model.Modelo;
-            producto.Marca = model.Marca;
-            producto.UM = model.UM;
-            _context.Entry(producto).State = EntityState.Modified;
+
             try
             {
-                await _context.SaveChangesAsync();
+                var prod = await _productHelper.UpdateProductAsync(model);
+                return Ok(prod);
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception ex)
             {
-                if (!ProductoExists(producto.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return BadRequest(ex.Message);
             }
-
-            return NoContent();
         }
 
         // POST: api/Productos
         [HttpPost]
         public async Task<ActionResult<Producto>> PostProducto([FromBody] ProductViewModel model)
         {
-             if (!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
@@ -174,19 +165,15 @@ namespace Store.Controllers.API
                 return Ok("eX01");
             }
 
-            Producto producto = new();
-            producto.Description = model.Description;
-            producto.Familia = await _context.Familias.FindAsync(model.FamiliaId);
-            producto.TipoNegocio = await _context.TipoNegocios.FindAsync(model.TipoNegocioId);
-            producto.BarCode = model.BarCode;
-            producto.Modelo = model.Modelo;
-            producto.Marca = model.Marca;
-            producto.UM = model.UM;
-
-            _context.Productos.Add(producto);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetProducto", new { id = producto.Id }, producto);
+            try
+            {
+                var prod = await _productHelper.AddProductAsync(model);
+                return Ok(prod);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         // DELETE: api/Productos/5
@@ -223,11 +210,6 @@ namespace Store.Controllers.API
             await _context.SaveChangesAsync();
 
             return NoContent();
-        }
-
-        private bool ProductoExists(int id)
-        {
-            return _context.Productos.Any(e => e.Id == id);
         }
     }
 }

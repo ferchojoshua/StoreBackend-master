@@ -10,16 +10,16 @@ namespace Store.Data
 
         public DbSet<Almacen> Almacen { get; set; }
         public DbSet<Familia> Familias { get; set; }
+         public DbSet<Kardex> Kardex { get; set; }
+        public DbSet<Permission> Permissions { get; set; }
         public DbSet<ProductIn> ProductIns { get; set; }
         public DbSet<ProductInDetails> ProductInDetails { get; set; }
         public DbSet<Producto> Productos { get; set; }
         public DbSet<Provider> Providers { get; set; }
         public DbSet<Rack> Racks { get; set; }
         public DbSet<TipoNegocio> TipoNegocios { get; set; }
-        public DbSet<UserSession> UserSession { get; set; }
-
         public DbSet<Rol> Rols { get; set; }
-        public DbSet<Permission> Permissions { get; set; }
+        public DbSet<UserSession> UserSession { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
