@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Store.Data;
 
@@ -11,9 +12,10 @@ using Store.Data;
 namespace Store.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220408172807_Seed28")]
+    partial class Seed28
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -383,32 +385,6 @@ namespace Store.Migrations
                     b.HasIndex("ProductInId");
 
                     b.ToTable("ProductInDetails");
-                });
-
-            modelBuilder.Entity("Store.Entities.ProductMovments", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<DateTime>("Fecha")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("ProductoId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductoId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("ProductMovments");
                 });
 
             modelBuilder.Entity("Store.Entities.Producto", b =>
@@ -783,21 +759,6 @@ namespace Store.Migrations
                         .HasForeignKey("ProductInId");
 
                     b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("Store.Entities.ProductMovments", b =>
-                {
-                    b.HasOne("Store.Entities.Producto", "Producto")
-                        .WithMany()
-                        .HasForeignKey("ProductoId");
-
-                    b.HasOne("Store.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("Producto");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Store.Entities.Producto", b =>

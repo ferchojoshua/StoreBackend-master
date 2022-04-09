@@ -9,11 +9,13 @@ namespace Store.Data
         public DataContext(DbContextOptions<DataContext> options) : base(options) { }
 
         public DbSet<Almacen> Almacen { get; set; }
+        public DbSet<Existence> Existences { get; set; }
         public DbSet<Familia> Familias { get; set; }
-         public DbSet<Kardex> Kardex { get; set; }
+        public DbSet<Kardex> Kardex { get; set; }
         public DbSet<Permission> Permissions { get; set; }
         public DbSet<ProductIn> ProductIns { get; set; }
         public DbSet<ProductInDetails> ProductInDetails { get; set; }
+        public DbSet<ProductMovments> ProductMovments { get; set; }
         public DbSet<Producto> Productos { get; set; }
         public DbSet<Provider> Providers { get; set; }
         public DbSet<Rack> Racks { get; set; }

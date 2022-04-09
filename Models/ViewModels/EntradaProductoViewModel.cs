@@ -10,9 +10,6 @@ namespace Store.Models.ViewModels
         public string NoFactura { get; set; }
 
         [Required]
-        public string TipoEntrada { get; set; }
-
-        [Required]
         public string TipoPago { get; set; }
 
         [Required]

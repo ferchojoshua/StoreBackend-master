@@ -1,5 +1,3 @@
-using System;
-using System.Net.Http.Headers;
 using Microsoft.EntityFrameworkCore;
 using Store.Data;
 using Store.Entities;
@@ -30,7 +28,7 @@ namespace Store.Helpers.EntradaProductos
             ProductIn productIn =
                 new()
                 {
-                    TipoEntrada = model.TipoEntrada,
+                    TipoEntrada = "CCOMPRA",
                     TipoPago = model.TipoPago,
                     NoFactura = model.NoFactura,
                     FechaIngreso = DateTime.Now,
@@ -57,10 +55,27 @@ namespace Store.Helpers.EntradaProductos
                 pd.PrecioVentaDetalle = item.PrecioVentaDetalle;
                 detalles.Add(pd);
 
-                prod.Existencia += pd.Cantidad;
-                prod.PrecioVentaDetalle = item.PrecioVentaDetalle;
-                prod.PrecioVentaMayor = item.PrecioVentaMayor;
-                _context.Entry(prod).State = EntityState.Modified;
+                Existence existence = await _context.Existences.FirstOrDefaultAsync(
+                    e => e.Producto == prod
+                );
+                if (existence == null)
+                {
+                    existence.Almacen = alm;
+                    existence.Producto = prod;
+                    existence.Existencia = pd.Cantidad;
+                    existence.PrecioVentaMayor = item.PrecioVentaMayor;
+                    existence.PrecioVentaDetalle = item.PrecioVentaDetalle;
+                    _context.Add(existence);
+                }
+                else
+                {
+                    existence.Almacen = alm;
+                    existence.Producto = prod;
+                    existence.Existencia += pd.Cantidad;
+                    existence.PrecioVentaMayor = item.PrecioVentaMayor;
+                    existence.PrecioVentaDetalle = item.PrecioVentaDetalle;
+                    _context.Entry(existence).State = EntityState.Modified;
+                }
 
                 int totalEntradas = _context.Kardex
                     .Where(k => k.Product.Id == item.Product.Id)
@@ -147,16 +162,18 @@ namespace Store.Helpers.EntradaProductos
                 pd.PrecioVentaMayor = item.PrecioVentaMayor;
                 pd.PrecioVentaDetalle = item.PrecioVentaDetalle;
 
+                Existence existence = await _context.Existences.FirstOrDefaultAsync(
+                    e => e.Producto == prod
+                );
+
                 if (diferencia == 0)
                 {
                     pd.Cantidad = item.Cantidad;
                     _context.Entry(pd).State = EntityState.Modified;
-
-                    prod.PrecioVentaDetalle = item.PrecioVentaDetalle;
-                    prod.PrecioVentaMayor = item.PrecioVentaMayor;
-                    _context.Entry(prod).State = EntityState.Modified;
+                    existence.PrecioVentaDetalle = item.PrecioVentaDetalle;
+                    existence.PrecioVentaMayor = item.PrecioVentaMayor;
+                    _context.Entry(existence).State = EntityState.Modified;
                 }
-                
                 //hay que restarle al sistema
                 else if (diferencia < 0)
                 {
@@ -164,9 +181,9 @@ namespace Store.Helpers.EntradaProductos
                     pd.Cantidad = item.Cantidad;
                     _context.Entry(pd).State = EntityState.Modified;
 
-                    prod.Existencia -= restar;
-                    prod.PrecioVentaDetalle = item.PrecioVentaDetalle;
-                    prod.PrecioVentaMayor = item.PrecioVentaMayor;
+                    existence.Existencia -= restar;
+                    existence.PrecioVentaDetalle = item.PrecioVentaDetalle;
+                    existence.PrecioVentaMayor = item.PrecioVentaMayor;
                     _context.Entry(prod).State = EntityState.Modified;
 
                     int totalEntradas = _context.Kardex
@@ -191,16 +208,15 @@ namespace Store.Helpers.EntradaProductos
                         };
                     _context.Kardex.Add(kardex);
                 }
-               
                 //Hay que sumarle al sistema
                 else
                 {
                     pd.Cantidad = item.Cantidad;
                     _context.Entry(pd).State = EntityState.Modified;
 
-                    prod.Existencia += diferencia;
-                    prod.PrecioVentaDetalle = item.PrecioVentaDetalle;
-                    prod.PrecioVentaMayor = item.PrecioVentaMayor;
+                    existence.Existencia += diferencia;
+                    existence.PrecioVentaDetalle = item.PrecioVentaDetalle;
+                    existence.PrecioVentaMayor = item.PrecioVentaMayor;
                     _context.Entry(prod).State = EntityState.Modified;
 
                     int totalEntradas = _context.Kardex
@@ -224,7 +240,7 @@ namespace Store.Helpers.EntradaProductos
                             User = user
                         };
                     _context.Kardex.Add(kardex);
-                }               
+                }
                 _context.Entry(prod).State = EntityState.Modified;
             }
             _context.Entry(productIn).State = EntityState.Modified;

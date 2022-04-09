@@ -27,12 +27,20 @@ namespace Store.Helpers.EntradaProductos
                     Modelo = model.Modelo,
                     Marca = model.Marca,
                     UM = model.UM,
-                    Existencia = 0,
-                    PrecioVentaDetalle = 0,
-                    PrecioVentaMayor = 0,
                 };
 
             _context.Productos.Add(producto);
+
+            Existence existence =
+                new()
+                {
+                    Almacen = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == 4),
+                    Producto = producto,
+                    Existencia = 0,
+                    PrecioVentaMayor = 0,
+                    PrecioVentaDetalle = 0
+                };
+
             await _context.SaveChangesAsync();
             return producto;
         }
@@ -48,8 +56,8 @@ namespace Store.Helpers.EntradaProductos
             producto.Marca = model.Marca;
             producto.UM = model.UM;
             _context.Entry(producto).State = EntityState.Modified;
-             await _context.SaveChangesAsync();
-             return producto;
+            await _context.SaveChangesAsync();
+            return producto;
         }
     }
 }
