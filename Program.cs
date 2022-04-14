@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Store.Helpers.EntradaProductos;
 using Store.Helpers.ProductHelper;
+using Store.Helpers.ProdMovements;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -57,6 +58,7 @@ builder.Services.Configure<SecurityStampValidatorOptions>(
 builder.Services.AddScoped<IUserHelper, UserHelper>();
 builder.Services.AddScoped<IProductsInHelper, ProductsInHelper>();
 builder.Services.AddScoped<IProductHelper, ProductHelper>();
+builder.Services.AddScoped<IProductMovementsHelper, ProductMovementsHelper>();
 
 var MyAllowSpecificOrigins = "http://localhost:3000/";
 builder.Services.AddCors(

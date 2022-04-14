@@ -1,4 +1,3 @@
-#nullable disable
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -6,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Store.Data;
 using Store.Entities;
-using Store.Helpers.EntradaProductos;
+using Store.Helpers.ProdMovements;
 using Store.Helpers.User;
 using Store.Models.ViewModels;
 
@@ -18,17 +17,25 @@ namespace Store.Controllers.API
     public class ExistenceController : ControllerBase
     {
         private readonly IUserHelper _userHelper;
+        private readonly IProductMovementsHelper _pMHelper;
         private readonly DataContext _context;
 
-        public ExistenceController(DataContext context, IUserHelper userHelper)
+        public ExistenceController(
+            DataContext context,
+            IUserHelper userHelper,
+            IProductMovementsHelper pMHelper
+        )
         {
             _userHelper = userHelper;
+            _pMHelper = pMHelper;
             _context = context;
         }
 
-        // GET: api/ProductIns
-        [HttpGet("{productId}")]
-        public async Task<ActionResult<Existence>> GetExistenciesByProduct(int productId)
+        [HttpPost]
+        [Route("GetExistencesByProduct")]
+        public async Task<ActionResult<Existence>> GetExistenciesByProduct(
+            [FromBody] GetExistencesViewModel model
+        )
         {
             string email =
                 User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
@@ -51,10 +58,95 @@ namespace Store.Controllers.API
                 return Ok("eX01");
             }
 
-            return await _context.Existences
+            var result = await _context.Existences
                 .Include(e => e.Almacen)
                 .Include(e => e.Producto)
-                .FirstOrDefaultAsync(e => e.Producto.Id == productId);
+                .FirstOrDefaultAsync(
+                    e => e.Producto.Id == model.IdProduct && e.Almacen.Id == model.IdAlmacen
+                );
+            return Ok(result);
+        }
+
+        [HttpPost]
+        [Route("GetExistencesByStore")]
+        public async Task<ActionResult<ICollection<Existence>>> GetExistencesByStore(
+            [FromBody] GetExistencesByStoreViewModel model
+        )
+        {
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+
+            if (!await _userHelper.IsAutorized(user.Rol, "EXISTANCE VER"))
+            {
+                return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+
+            var result = await _context.Existences
+                .Include(e => e.Almacen)
+                .Include(e => e.Producto)
+                .ThenInclude(p => p.TipoNegocio)
+                .Where(e => e.Almacen.Id == model.IdAlmacen)
+                .ToListAsync();
+
+            return Ok(result);
+        }
+
+        [HttpPost]
+        [Route("AddProductMover")]
+        public async Task<ActionResult> AddProductMover(
+            [FromBody] AddProductMovementViewModel model
+        )
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "EXISTANCE CREATE"))
+            {
+                return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+
+            try
+            {
+                var result = await _pMHelper.AddMoverProductAsync(model, user);
+                if (result == null)
+                {
+                    return NoContent();
+                }
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

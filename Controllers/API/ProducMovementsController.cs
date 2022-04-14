@@ -7,7 +7,7 @@ using Store.Data;
 using Store.Entities;
 using Store.Helpers.EntradaProductos;
 using Store.Helpers.User;
-using Store.Models.ViewModels;
+using Store.Models.Responses;
 
 namespace Store.Controllers.API
 {
@@ -31,9 +31,9 @@ namespace Store.Controllers.API
             _context = context;
         }
 
-          // GET: api/ProductIns
+        // GET: api/
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProductMovments>>> GetProductIns()
+        public async Task<ActionResult<IEnumerable<ProductMovments>>> GetProductMovments()
         {
             string email =
                 User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
@@ -55,10 +55,34 @@ namespace Store.Controllers.API
                 await _userHelper.LogoutAsync();
                 return Ok("eX01");
             }
-            return await _context.ProductMovments
+
+            var result = await _context.ProductMovments
                 .Include(p => p.Producto)
                 .Include(p => p.User)
                 .ToListAsync();
+
+            List<ProductMovementsResponse> pMList = new();
+            foreach (var item in result)
+            {
+                ProductMovementsResponse pM =
+                    new()
+                    {
+                        Id = item.Id,
+                        Producto = item.Producto,
+                        AlmacenProcedencia = await _context.Almacen.FirstOrDefaultAsync(
+                            a => a.Id == item.AlmacenProcedenciaId
+                        ),
+                        AlmacenDestino = await _context.Almacen.FirstOrDefaultAsync(
+                            a => a.Id == item.AlmacenDestinoId
+                        ),
+                        Cantidad = item.Cantidad,
+                        Concepto = item.Concepto,
+                        User = item.User,
+                        Fecha = item.Fecha
+                    };
+                pMList.Add(pM);
+            }
+            return Ok(pMList);
         }
     }
 }

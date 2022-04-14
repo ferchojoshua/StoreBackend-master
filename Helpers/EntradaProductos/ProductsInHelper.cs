@@ -78,11 +78,11 @@ namespace Store.Helpers.EntradaProductos
                 }
 
                 int totalEntradas = _context.Kardex
-                    .Where(k => k.Product.Id == item.Product.Id)
+                    .Where(k => k.Product.Id == item.Product.Id && k.Almacen == alm)
                     .Sum(k => k.Entradas);
 
                 int totaSalidas = _context.Kardex
-                    .Where(k => k.Product.Id == item.Product.Id)
+                    .Where(k => k.Product.Id == item.Product.Id && k.Almacen == alm)
                     .Sum(k => k.Salidas);
 
                 int saldo = totalEntradas - totaSalidas;
