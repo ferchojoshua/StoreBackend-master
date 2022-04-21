@@ -225,13 +225,21 @@ namespace Store.Controllers.API
             {
                 return Unauthorized();
             }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
             return await _context.Racks.Where(r => r.Almacen.Id == id).ToListAsync();
         }
 
         [HttpPost("AddRacksToStore")]
         public async Task<ActionResult<Almacen>> AddRacksToStore([FromBody] AddRackViewModel model)
         {
-             if (!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
@@ -254,11 +262,14 @@ namespace Store.Controllers.API
                 await _userHelper.LogoutAsync();
                 return Ok("eX01");
             }
-            Rack rack = new()
-            {
-                Almacen = await _context.Almacen.FirstOrDefaultAsync(p => p.Id == model.AlmacenId),
-                Description = model.Description
-            };
+            Rack rack =
+                new()
+                {
+                    Almacen = await _context.Almacen.FirstOrDefaultAsync(
+                        p => p.Id == model.AlmacenId
+                    ),
+                    Description = model.Description
+                };
 
             _context.Racks.Add(rack);
             await _context.SaveChangesAsync();
@@ -299,7 +310,7 @@ namespace Store.Controllers.API
         [HttpPut("UpdateRack")]
         public async Task<IActionResult> UpdateRack([FromBody] UpdateRackViewModel model)
         {
-             if (!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return BadRequest();
             }

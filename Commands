@@ -10,4 +10,51 @@ dotnet ef migrations add <Migration Name>
 --Actualizar la base de datos
 dotnet ef database update
 
-CinePlayHD
+Agregar a los modulos
+
+-- insert into Permissions values('CLIENTS VER', 1, 1) 
+-- insert into Permissions values('CLIENTS CREATE', 1, 1) 
+-- insert into Permissions values('CLIENTS UPDATE', 1, 1) 
+-- insert into Permissions values('CLIENTS DELETE', 1, 1) 
+
+-- insert into Permissions values('CLIENTS VER', 0, 2) 
+-- insert into Permissions values('CLIENTS CREATE', 0, 2) 
+-- insert into Permissions values('CLIENTS UPDATE', 0, 2) 
+-- insert into Permissions values('CLIENTS DELETE', 0, 2) 
+
+-- insert into Permissions values('CLIENTS VER', 0, 6) 
+-- insert into Permissions values('CLIENTS CREATE', 0, 6) 
+-- insert into Permissions values('CLIENTS UPDATE', 0, 6) 
+-- insert into Permissions values('CLIENTS DELETE', 0, 6)
+-- ---------------------------------------------------------------
+
+-- insert into Permissions values('COMMUNITIES VER', 1, 1) 
+-- insert into Permissions values('COMMUNITIES CREATE', 1, 1) 
+-- insert into Permissions values('COMMUNITIES UPDATE', 1, 1) 
+-- insert into Permissions values('COMMUNITIES DELETE', 1, 1) 
+
+-- insert into Permissions values('COMMUNITIES VER', 0, 2) 
+-- insert into Permissions values('COMMUNITIES CREATE', 0, 2) 
+-- insert into Permissions values('COMMUNITIES UPDATE', 0, 2) 
+-- insert into Permissions values('COMMUNITIES DELETE', 0, 2) 
+
+-- insert into Permissions values('COMMUNITIES VER', 0, 6) 
+-- insert into Permissions values('COMMUNITIES CREATE', 0, 6) 
+-- insert into Permissions values('COMMUNITIES UPDATE', 0, 6) 
+-- insert into Permissions values('COMMUNITIES DELETE', 0, 6) 
+-- ----------------------------------------------------------
+
+-- insert into Permissions values('SALES VER', 1, 1) 
+-- insert into Permissions values('SALES CREATE', 1, 1) 
+-- insert into Permissions values('SALES UPDATE', 1, 1) 
+-- insert into Permissions values('SALES DELETE', 1, 1) 
+
+-- insert into Permissions values('SALES VER', 0, 2) 
+-- insert into Permissions values('SALES CREATE', 0, 2) 
+-- insert into Permissions values('SALES UPDATE', 0, 2) 
+-- insert into Permissions values('SALES DELETE', 0, 2) 
+
+-- insert into Permissions values('SALES VER', 0, 6) 
+-- insert into Permissions values('SALES CREATE', 0, 6) 
+-- insert into Permissions values('SALES UPDATE', 0, 6) 
+-- insert into Permissions values('SALES DELETE', 0, 6) 

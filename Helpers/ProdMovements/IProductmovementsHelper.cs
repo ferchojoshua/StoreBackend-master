@@ -9,5 +9,10 @@ namespace Store.Helpers.ProdMovements
             AddProductMovementViewModel model,
             Entities.User user
         );
+
+        Task<Existence> UpdateProductExistencesAsync(
+            UpdateExistencesByStoreViewModel model,
+            Entities.User user
+        );
     }
 }

@@ -7,6 +7,8 @@ using System.Text;
 using Store.Helpers.EntradaProductos;
 using Store.Helpers.ProductHelper;
 using Store.Helpers.ProdMovements;
+using Store.Helpers.ClientService;
+using Store.Helpers.Locations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -59,6 +61,8 @@ builder.Services.AddScoped<IUserHelper, UserHelper>();
 builder.Services.AddScoped<IProductsInHelper, ProductsInHelper>();
 builder.Services.AddScoped<IProductHelper, ProductHelper>();
 builder.Services.AddScoped<IProductMovementsHelper, ProductMovementsHelper>();
+builder.Services.AddScoped<IClientsHelper, ClientsHelper>();
+builder.Services.AddScoped<ILocationsHelper, LocationsHelper>();
 
 var MyAllowSpecificOrigins = "http://localhost:3000/";
 builder.Services.AddCors(

@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Store.Data;
 using Store.Entities;
-using Store.Helpers.EntradaProductos;
 using Store.Helpers.User;
 using Store.Models.Responses;
 
@@ -17,17 +16,11 @@ namespace Store.Controllers.API
     public class ProductMovementsController : ControllerBase
     {
         private readonly IUserHelper _userHelper;
-        private readonly IProductsInHelper _productsInHelper;
         private readonly DataContext _context;
 
-        public ProductMovementsController(
-            DataContext context,
-            IUserHelper userHelper,
-            IProductsInHelper productsInHelper
-        )
+        public ProductMovementsController(DataContext context, IUserHelper userHelper)
         {
             _userHelper = userHelper;
-            _productsInHelper = productsInHelper;
             _context = context;
         }
 

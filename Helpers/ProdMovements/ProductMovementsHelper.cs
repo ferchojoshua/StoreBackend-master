@@ -152,5 +152,94 @@ namespace Store.Helpers.ProdMovements
             await _context.SaveChangesAsync();
             return pM;
         }
+
+        public async Task<Existence> UpdateProductExistencesAsync(
+            UpdateExistencesByStoreViewModel model,
+            Entities.User user
+        )
+        {
+            Existence exist = await _context.Existences
+                .Include(e => e.Producto)
+                .Include(e => e.Almacen)
+                .FirstOrDefaultAsync(p => p.Id == model.Id);
+            if (exist == null)
+            {
+                return exist;
+            }
+            int diferencia = model.NewExistencias - exist.Existencia;
+
+            //Este solo modifica la existencia, el kardex no
+            if (diferencia == 0)
+            {
+                exist.PrecioVentaDetalle = model.NewPVD;
+                exist.PrecioVentaMayor = model.NewPVM;
+            }
+            else if (diferencia < 0)
+            {
+                exist.PrecioVentaDetalle = model.NewPVD;
+                exist.PrecioVentaMayor = model.NewPVM;
+                exist.Existencia = model.NewExistencias;
+
+                //Agregamos el Kardex de entrada al almacen destino
+                int totalEntradas = _context.Kardex
+                    .Where(k => k.Product.Id == exist.Producto.Id && k.Almacen == exist.Almacen)
+                    .Sum(k => k.Entradas);
+
+                int totaSalidas = _context.Kardex
+                    .Where(k => k.Product.Id == exist.Producto.Id && k.Almacen == exist.Almacen)
+                    .Sum(k => k.Salidas);
+
+                int saldo = totalEntradas - totaSalidas;
+
+                Kardex kardex =
+                    new()
+                    {
+                        Product = exist.Producto,
+                        Fecha = DateTime.Now,
+                        Concepto = "AJUSTE DE INVENTARIO",
+                        Almacen = exist.Almacen,
+                        Entradas = 0,
+                        Salidas = diferencia,
+                        Saldo = saldo + diferencia,
+                        User = user
+                    };
+                _context.Kardex.Add(kardex);
+            }
+            else
+            {
+                exist.PrecioVentaDetalle = model.NewPVD;
+                exist.PrecioVentaMayor = model.NewPVM;
+                exist.Existencia = model.NewExistencias;
+
+                //Agregamos el Kardex de entrada al almacen destino
+                int totalEntradas = _context.Kardex
+                    .Where(k => k.Product.Id == exist.Producto.Id && k.Almacen == exist.Almacen)
+                    .Sum(k => k.Entradas);
+
+                int totaSalidas = _context.Kardex
+                    .Where(k => k.Product.Id == exist.Producto.Id && k.Almacen == exist.Almacen)
+                    .Sum(k => k.Salidas);
+
+                int saldo = totalEntradas - totaSalidas;
+
+                Kardex kardex =
+                    new()
+                    {
+                        Product = exist.Producto,
+                        Fecha = DateTime.Now,
+                        Concepto = "AJUSTE DE INVENTARIO",
+                        Almacen = exist.Almacen,
+                        Entradas = diferencia,
+                        Salidas = 0,
+                        Saldo = saldo + diferencia,
+                        User = user
+                    };
+                _context.Kardex.Add(kardex);
+            }
+
+            _context.Entry(exist).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return exist;
+        }
     }
 }
