@@ -35,7 +35,9 @@ namespace Store.Helpers.Locations
 
         public async Task<Municipality> GetMunicipalityAsync(int id)
         {
-            return await _context.Municipalities.FirstOrDefaultAsync(m => m.Id == id);
+            return await _context.Municipalities
+                .Include(m => m.Department)
+                .FirstOrDefaultAsync(m => m.Id == id);
         }
 
         public async Task<ICollection<Department>> GetDepartmentListAsync()
@@ -51,6 +53,31 @@ namespace Store.Helpers.Locations
         public async Task<ICollection<Community>> GetCommunitiesByMunAsync(int id)
         {
             return await _context.Communities.Where(c => c.Municipality.Id == id).ToListAsync();
+        }
+
+        public async Task<Community> UpdateCommunityAsync(UpdateCommunityViewModel model)
+        {
+            Community comm = await _context.Communities.FirstOrDefaultAsync(c => c.Id == model.Id);
+            if (comm == null)
+            {
+                return comm;
+            }
+            comm.Name = model.Name;
+            _context.Entry(comm).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return comm;
+        }
+
+        public async Task<Community> DeleteCommunityAsync(int id)
+        {
+            Community comm = await _context.Communities.FirstOrDefaultAsync(c => c.Id == id);
+            if (comm == null)
+            {
+                return comm;
+            }
+            _context.Communities.Remove(comm);
+            await _context.SaveChangesAsync();
+            return comm;
         }
     }
 }

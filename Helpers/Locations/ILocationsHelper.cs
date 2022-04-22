@@ -11,5 +11,7 @@ namespace Store.Helpers.ClientService
         Task<Department> GetDepartmentAsync(int id);
         Task<Municipality> GetMunicipalityAsync(int id);
         Task<Community> AddCommunityAsync(AddCommunityViewModel model);
+        Task<Community> UpdateCommunityAsync(UpdateCommunityViewModel model);
+        Task<Community> DeleteCommunityAsync(int id);
     }
 }

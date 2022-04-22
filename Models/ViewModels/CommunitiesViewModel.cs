@@ -10,4 +10,13 @@ namespace Store.Models.ViewModels
         [Required]
         public int IdMunicipality { get; set; }
     }
+
+    public class UpdateCommunityViewModel
+    {
+        [Required]
+        public int Id { get; set; }
+
+        [Required]
+        public string Name { get; set; }
+    }
 }

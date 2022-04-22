@@ -23,6 +23,8 @@ namespace Store.Helpers.ClientService
         {
             return await _context.Clients
                 .Include(c => c.Community)
+                .ThenInclude(m => m.Municipality)
+                .ThenInclude(d => d.Department)
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
 

@@ -108,7 +108,7 @@ namespace Store.Controllers.API
             {
                 return Ok(user);
             }
-            if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS UPDATE"))
+            if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS UPD ATE"))
             {
                 return Unauthorized();
             }

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Store.Entities;
 using Store.Helpers.ClientService;
 using Store.Helpers.User;
+using Store.Models.Responses;
 using Store.Models.ViewModels;
 
 namespace Store.Controllers.API
@@ -56,6 +57,91 @@ namespace Store.Controllers.API
             }
         }
 
+        [HttpGet]
+        [Route("GetDeptosWithMunCount")]
+        public async Task<ActionResult<IEnumerable<Department>>> GetDeptosWithMunCount()
+        {
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "COMMUNITIES VER"))
+            {
+                return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+            try
+            {
+                List<DeptoResponse> dR = new();
+                var deptoList = await _locationsHelper.GetDepartmentListAsync();
+
+                foreach (var item in deptoList)
+                {
+                    var depto = await _locationsHelper.GetMunicipalitiesByDeptoAsync(item.Id);
+                    dR.Add(
+                        new DeptoResponse { Department = item, MunicipalitiesCount = depto.Count }
+                    );
+                }
+                return Ok(dR);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("GetMunsWithCommsCountCount/{id}")]
+        public async Task<ActionResult<IEnumerable<Municipality>>> GetMunsWithCommsCountCount(
+            int id
+        )
+        {
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "COMMUNITIES VER"))
+            {
+                return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+            try
+            {
+                List<MunResponse> mR = new();
+                var municipalityList = await _locationsHelper.GetMunicipalitiesByDeptoAsync(id);
+
+                foreach (var item in municipalityList)
+                {
+                    var mun = await _locationsHelper.GetCommunitiesByMunAsync(item.Id);
+                    mR.Add(new MunResponse { Municipality = item, CommunitiesCount = mun.Count });
+                }
+                return Ok(mR);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<Department>> GetDepartment(int id)
         {
@@ -90,7 +176,7 @@ namespace Store.Controllers.API
         }
 
         [HttpGet("GetMunicipality/{id}")]
-        public async Task<ActionResult<IEnumerable<Municipality>>> GetMunicipality(int id)
+        public async Task<ActionResult<Municipality>> GetMunicipality(int id)
         {
             string email =
                 User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
@@ -180,7 +266,7 @@ namespace Store.Controllers.API
             try
             {
                 var communityList = await _locationsHelper.GetCommunitiesByMunAsync(id);
-                return Ok(communityList);
+                return Ok(communityList.OrderBy(c => c.Name));
             }
             catch (Exception ex)
             {
@@ -220,6 +306,94 @@ namespace Store.Controllers.API
             try
             {
                 var comm = await _locationsHelper.AddCommunityAsync(model);
+                return Ok(comm);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("UpdateCommunity")]
+        public async Task<ActionResult<Community>> UpdateCommunity(
+            [FromBody] UpdateCommunityViewModel model
+        )
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "COMMUNITIES UPDATE"))
+            {
+                return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+
+            try
+            {
+                var comm = await _locationsHelper.UpdateCommunityAsync(model);
+                if (comm == null)
+                {
+                    return NoContent();
+                }
+                return Ok(comm);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("DeleteCommunity/{id}")]
+        public async Task<ActionResult<Community>> DeleteCommunity(int id)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "COMMUNITIES DELETE"))
+            {
+                return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+
+            try
+            {
+                var comm = await _locationsHelper.DeleteCommunityAsync(id);
+                if (comm == null)
+                {
+                    return NoContent();
+                }
                 return Ok(comm);
             }
             catch (Exception ex)
