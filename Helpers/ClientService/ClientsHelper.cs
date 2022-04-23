@@ -49,5 +49,41 @@ namespace Store.Helpers.ClientService
             await _context.SaveChangesAsync();
             return cl;
         }
+
+        public async Task<Client> UpdateClientAsync(UpdateClientViewModel model, Entities.User user)
+        {
+            Community com = await _context.Communities.FirstOrDefaultAsync(
+                c => c.Id == model.IdCommunity
+            );
+            Client cl = await _context.Clients.FirstOrDefaultAsync(c => c.Id == model.Id);
+            if (cl == null)
+            {
+                return cl;
+            }
+            cl.NombreCliente = model.NombreCliente;
+            cl.Cedula = model.Cedula;
+            cl.Correo = model.Correo;
+            cl.Telefono = model.Telefono;
+            cl.Community = com;
+            cl.Direccion = model.Direccion;
+            cl.EditadoPor = user.UserName;
+            cl.FechaEdicion = DateTime.Now;
+
+            _context.Entry(cl).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return cl;
+        }
+
+        public async Task<Client> DeleteClientAsync(int id)
+        {
+            Client cl = await _context.Clients.FirstOrDefaultAsync(c => c.Id == id);
+            if (cl == null)
+            {
+                return cl;
+            }
+            _context.Clients.Remove(cl);
+            await _context.SaveChangesAsync();
+            return cl;
+        }
     }
 }
