@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Store.Data;
 
@@ -11,9 +12,10 @@ using Store.Data;
 namespace Store.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220427154903_Seed34")]
+    partial class Seed34
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,21 +23,6 @@ namespace Store.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
-
-            modelBuilder.Entity("AlmacenUser", b =>
-                {
-                    b.Property<int>("StoreAccessId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UsersId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("StoreAccessId", "UsersId");
-
-                    b.HasIndex("UsersId");
-
-                    b.ToTable("AlmacenUser");
-                });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
@@ -181,7 +168,12 @@ namespace Store.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Almacen");
                 });
@@ -806,21 +798,6 @@ namespace Store.Migrations
                     b.ToTable("UserSession");
                 });
 
-            modelBuilder.Entity("AlmacenUser", b =>
-                {
-                    b.HasOne("Store.Entities.Almacen", null)
-                        .WithMany()
-                        .HasForeignKey("StoreAccessId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Store.Entities.User", null)
-                        .WithMany()
-                        .HasForeignKey("UsersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -870,6 +847,13 @@ namespace Store.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Store.Entities.Almacen", b =>
+                {
+                    b.HasOne("Store.Entities.User", null)
+                        .WithMany("StoreAccess")
+                        .HasForeignKey("UserId");
                 });
 
             modelBuilder.Entity("Store.Entities.Client", b =>
@@ -1059,6 +1043,11 @@ namespace Store.Migrations
             modelBuilder.Entity("Store.Entities.TipoNegocio", b =>
                 {
                     b.Navigation("Familias");
+                });
+
+            modelBuilder.Entity("Store.Entities.User", b =>
+                {
+                    b.Navigation("StoreAccess");
                 });
 #pragma warning restore 612, 618
         }

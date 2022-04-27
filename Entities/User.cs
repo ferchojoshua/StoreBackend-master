@@ -14,5 +14,6 @@ namespace Store.Entities
         public bool IsActive { get; set; }
         public bool IsDefaultPass { get; set; }
         public UserSession UserSession { get; set; }
+        public ICollection<Almacen> StoreAccess { get; set; }
     }
 }

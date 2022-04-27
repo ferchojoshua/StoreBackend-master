@@ -11,7 +11,7 @@ using Store.Models.ViewModels;
 
 namespace Store.Controllers.API
 {
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     [ApiController]
     public class AlmacensController : ControllerBase

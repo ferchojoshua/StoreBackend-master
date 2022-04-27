@@ -30,6 +30,7 @@ namespace Store.Helpers.User
             return await _context.Users
                 .Where(u => u.IsActive == true)
                 .Include(u => u.Rol)
+                .Include(u => u.StoreAccess)
                 .ToListAsync();
         }
 
@@ -38,12 +39,16 @@ namespace Store.Helpers.User
             return await _context.Users
                 .Where(u => u.IsActive == false)
                 .Include(u => u.Rol)
+                .Include(u => u.StoreAccess)
                 .ToListAsync();
         }
 
         public async Task<ICollection<Entities.User>> GetAllUsersAsync()
         {
-            return await _context.Users.Include(u => u.Rol).ToListAsync();
+            return await _context.Users
+                .Include(u => u.Rol)
+                .Include(u => u.StoreAccess)
+                .ToListAsync();
         }
 
         public async Task<IdentityResult> AddUserAsync(Entities.User user, string password)
@@ -57,6 +62,7 @@ namespace Store.Helpers.User
                 .Where(u => u.IsActive == true)
                 .Include(u => u.Rol)
                 .Include(s => s.UserSession)
+                .Include(u => u.StoreAccess)
                 .FirstOrDefaultAsync(u => u.UserName == userName);
         }
 
@@ -66,22 +72,23 @@ namespace Store.Helpers.User
                 .Where(u => u.IsActive == true)
                 .Include(u => u.Rol)
                 .Include(u => u.UserSession)
+                .Include(u => u.StoreAccess)
                 .FirstOrDefaultAsync(u => u.Email == email);
-                 if (user.UserSession == null)
-                {
-                    await LogoutAsync();
-                    UserSession us =
-                        new()
-                        {
-                            UserBrowser = "",
-                            UserToken = "",
-                            UserSO = ""
-                        };
-                    user.UserSession = us;
-                    await UpdateUserAsync(user);
-                    await LogoutAsync();
-                    return user;
-                }
+            if (user.UserSession == null)
+            {
+                await LogoutAsync();
+                UserSession us =
+                    new()
+                    {
+                        UserBrowser = "",
+                        UserToken = "",
+                        UserSO = ""
+                    };
+                user.UserSession = us;
+                await UpdateUserAsync(user);
+                await LogoutAsync();
+                return user;
+            }
             return user;
         }
 

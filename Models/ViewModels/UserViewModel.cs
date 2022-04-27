@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Store.Entities;
 
 namespace Store.Models.ViewModels
 {
@@ -22,6 +23,9 @@ namespace Store.Models.ViewModels
 
         [Required]
         public int RolId { get; set; }
+
+        [Required]
+        public ICollection<Almacen> Stores { get; set; }
     }
 
     public class UpdateUserViewModel
@@ -44,6 +48,9 @@ namespace Store.Models.ViewModels
 
         [Required]
         public int RolId { get; set; }
+
+        [Required]
+        public ICollection<Almacen> Stores { get; set; }
     }
 
     public class ChangePasswordViewModel

@@ -2,6 +2,8 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Store.Data;
 using Store.Entities;
 using Store.Helpers.User;
 using Store.Models.ViewModels;
@@ -14,10 +16,12 @@ namespace Store.Controllers.API
     public class UsersController : ControllerBase
     {
         private readonly IUserHelper _userHelper;
+        private readonly DataContext _context;
 
-        public UsersController(IUserHelper userHelper)
+        public UsersController(IUserHelper userHelper, DataContext context)
         {
             _userHelper = userHelper;
+            _context = context;
         }
 
         [HttpGet]
@@ -124,7 +128,7 @@ namespace Store.Controllers.API
                 await _userHelper.LogoutAsync();
                 return Ok("eX01");
             }
-            if (!await _userHelper.IsAutorized(usr.Rol, "USER VER"))
+            if (!await _userHelper.IsAutorized(usr.Rol, "USER CREATE"))
             {
                 return Unauthorized();
             }
@@ -136,6 +140,13 @@ namespace Store.Controllers.API
             }
             try
             {
+                List<Almacen> storelist = new();
+                foreach (var item in model.Stores)
+                {
+                    Almacen alm = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == item.Id);
+                    storelist.Add(alm);
+                }
+
                 user = new User
                 {
                     FirstName = model.FirstName,
@@ -150,6 +161,7 @@ namespace Store.Controllers.API
                     Address = model.Address,
                     IsActive = true,
                     IsDefaultPass = true,
+                    StoreAccess = storelist,
                     UserSession = new UserSession
                     {
                         UserBrowser = "",
@@ -202,12 +214,19 @@ namespace Store.Controllers.API
             }
             try
             {
+                List<Almacen> storelist = new();
+                foreach (var item in model.Stores)
+                {
+                    Almacen alm = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == item.Id);
+                    storelist.Add(alm);
+                }
                 user.FirstName = model.FirstName;
                 user.SecondName = model.SecondName;
                 user.LastName = model.LastName;
                 user.SecondLastName = model.SecondLastName;
                 user.PhoneNumber = model.PhoneNumber;
                 user.Address = model.Address;
+                user.StoreAccess = storelist;
                 await _userHelper.UpdateUserAsync(user);
                 await _userHelper.AddUserToRoleAsync(user, model.RolId);
                 return Ok(user);

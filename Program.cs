@@ -9,11 +9,16 @@ using Store.Helpers.ProductHelper;
 using Store.Helpers.ProdMovements;
 using Store.Helpers.ClientService;
 using Store.Helpers.Locations;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(s => s.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
 builder.Services.AddDbContext<DataContext>(
     opt => opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnetion"))
