@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Store.Data;
 
@@ -11,9 +12,10 @@ using Store.Data;
 namespace Store.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220429144012_Seed36")]
+    partial class Seed36
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -676,17 +678,12 @@ namespace Store.Migrations
                     b.Property<int?>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("SalesId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("StoreId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ProductId");
-
-                    b.HasIndex("SalesId");
 
                     b.HasIndex("StoreId");
 
@@ -707,17 +704,8 @@ namespace Store.Migrations
                     b.Property<string>("FacturedById")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<DateTime>("FechaVencimiento")
-                        .HasColumnType("datetime2");
-
                     b.Property<DateTime>("FechaVenta")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsCanceled")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsContado")
-                        .HasColumnType("bit");
 
                     b.Property<bool>("IsEventual")
                         .HasColumnType("bit");
@@ -731,14 +719,16 @@ namespace Store.Migrations
                     b.Property<int>("ProductsCount")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("Saldo")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<int?>("SaleDetailId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ClientId");
 
                     b.HasIndex("FacturedById");
+
+                    b.HasIndex("SaleDetailId");
 
                     b.ToTable("Sales");
                 });
@@ -1106,10 +1096,6 @@ namespace Store.Migrations
                         .WithMany()
                         .HasForeignKey("ProductId");
 
-                    b.HasOne("Store.Entities.Sales", null)
-                        .WithMany("SaleDetails")
-                        .HasForeignKey("SalesId");
-
                     b.HasOne("Store.Entities.Almacen", "Store")
                         .WithMany()
                         .HasForeignKey("StoreId");
@@ -1129,9 +1115,15 @@ namespace Store.Migrations
                         .WithMany()
                         .HasForeignKey("FacturedById");
 
+                    b.HasOne("Store.Entities.SaleDetail", "SaleDetail")
+                        .WithMany()
+                        .HasForeignKey("SaleDetailId");
+
                     b.Navigation("Client");
 
                     b.Navigation("FacturedBy");
+
+                    b.Navigation("SaleDetail");
                 });
 
             modelBuilder.Entity("Store.Entities.User", b =>
@@ -1157,11 +1149,6 @@ namespace Store.Migrations
             modelBuilder.Entity("Store.Entities.Rol", b =>
                 {
                     b.Navigation("Permissions");
-                });
-
-            modelBuilder.Entity("Store.Entities.Sales", b =>
-                {
-                    b.Navigation("SaleDetails");
                 });
 
             modelBuilder.Entity("Store.Entities.TipoNegocio", b =>

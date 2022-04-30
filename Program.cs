@@ -10,6 +10,7 @@ using Store.Helpers.ProdMovements;
 using Store.Helpers.ClientService;
 using Store.Helpers.Locations;
 using System.Text.Json.Serialization;
+using Store.Helpers.SalesHelper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -68,6 +69,7 @@ builder.Services.AddScoped<IProductHelper, ProductHelper>();
 builder.Services.AddScoped<IProductMovementsHelper, ProductMovementsHelper>();
 builder.Services.AddScoped<IClientsHelper, ClientsHelper>();
 builder.Services.AddScoped<ILocationsHelper, LocationsHelper>();
+builder.Services.AddScoped<ISalesService, SalesService>();
 
 var MyAllowSpecificOrigins = "http://localhost:3000/";
 builder.Services.AddCors(
