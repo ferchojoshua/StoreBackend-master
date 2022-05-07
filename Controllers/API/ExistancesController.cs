@@ -58,13 +58,30 @@ namespace Store.Controllers.API
                 return Ok("eX01");
             }
 
-            var result = await _context.Existences
+            Existence existence = await _context.Existences
                 .Include(e => e.Almacen)
                 .Include(e => e.Producto)
                 .FirstOrDefaultAsync(
                     e => e.Producto.Id == model.IdProduct && e.Almacen.Id == model.IdAlmacen
                 );
-            return Ok(result);
+            if (existence == null)
+            {
+                existence = new()
+                {
+                    Almacen = await _context.Almacen.FirstOrDefaultAsync(
+                        a => a.Id == model.IdAlmacen
+                    ),
+                    Producto = await _context.Productos.FirstOrDefaultAsync(
+                        p => p.Id == model.IdProduct
+                    ),
+                    Existencia = 0,
+                    PrecioVentaMayor = 0,
+                    PrecioVentaDetalle = 0
+                };
+                _context.Existences.Add(existence);
+                await _context.SaveChangesAsync();
+            }
+            return Ok(existence);
         }
 
         [HttpPost]
@@ -101,7 +118,7 @@ namespace Store.Controllers.API
                 .Where(e => e.Almacen.Id == model.IdAlmacen)
                 .ToListAsync();
 
-            return Ok(result);
+            return Ok(result.OrderBy(e => e.Producto.Description));
         }
 
         [HttpPost]

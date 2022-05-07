@@ -8,7 +8,9 @@ namespace Store.Data
     {
         public DataContext(DbContextOptions<DataContext> options) : base(options) { }
 
+        public DbSet<Abono> Abonos { get; set; }
         public DbSet<Almacen> Almacen { get; set; }
+        public DbSet<AnuladaSales> AnuladaSales { get; set; }
         public DbSet<Client> Clients { get; set; }
         public DbSet<Community> Communities { get; set; }
         public DbSet<Department> Departments { get; set; }

@@ -96,15 +96,11 @@ namespace Store.Helpers.ProdMovements
                 }
 
                 //Agregamos el Kardex de entrada al almacen destino
-                int totalEntradas = _context.Kardex
+                var karListDest = await _context.Kardex
                     .Where(k => k.Product.Id == pM.Producto.Id && k.Almacen == existDestino.Almacen)
-                    .Sum(k => k.Entradas);
+                    .ToListAsync();
 
-                int totaSalidas = _context.Kardex
-                    .Where(k => k.Product.Id == pM.Producto.Id && k.Almacen == existDestino.Almacen)
-                    .Sum(k => k.Salidas);
-
-                int saldo = totalEntradas - totaSalidas;
+                Kardex karDest = karListDest.Where(k => k.Id == karListDest.Max(k => k.Id)).FirstOrDefault();
 
                 Kardex kardex =
                     new()
@@ -115,7 +111,7 @@ namespace Store.Helpers.ProdMovements
                         Almacen = existDestino.Almacen,
                         Entradas = existDestino.Existencia,
                         Salidas = 0,
-                        Saldo = saldo + existDestino.Existencia,
+                        Saldo = karDest.Saldo + existDestino.Existencia,
                         User = user
                     };
                 _context.Kardex.Add(kardex);
@@ -124,16 +120,12 @@ namespace Store.Helpers.ProdMovements
             existProcedencia.Existencia -= pM.Cantidad;
             _context.Entry(existProcedencia).State = EntityState.Modified;
 
-            //Agregamos el Kardex de salida al almacen procedencia
-            int totalEntradasProcedencia = _context.Kardex
+            //Agregamos el Kardex de entrada al almacen destino
+            var karList = await _context.Kardex
                 .Where(k => k.Product.Id == pM.Producto.Id && k.Almacen == existProcedencia.Almacen)
-                .Sum(k => k.Entradas);
+                .ToListAsync();
 
-            int totaSalidasProcedencia = _context.Kardex
-                .Where(k => k.Product.Id == pM.Producto.Id && k.Almacen == existProcedencia.Almacen)
-                .Sum(k => k.Salidas);
-
-            int saldoProcedencia = totalEntradasProcedencia - totaSalidasProcedencia;
+            Kardex kar = karList.Where(k => k.Id == karList.Max(k => k.Id)).FirstOrDefault();
 
             Kardex kardexProcedencia =
                 new()
@@ -144,7 +136,7 @@ namespace Store.Helpers.ProdMovements
                     Almacen = existProcedencia.Almacen,
                     Entradas = 0,
                     Salidas = model.Cantidad,
-                    Saldo = saldoProcedencia - model.Cantidad,
+                    Saldo = kar.Saldo - model.Cantidad,
                     User = user
                 };
             _context.Kardex.Add(kardexProcedencia);
@@ -181,15 +173,11 @@ namespace Store.Helpers.ProdMovements
                 exist.Existencia = model.NewExistencias;
 
                 //Agregamos el Kardex de entrada al almacen destino
-                int totalEntradas = _context.Kardex
+                var karList = await _context.Kardex
                     .Where(k => k.Product.Id == exist.Producto.Id && k.Almacen == exist.Almacen)
-                    .Sum(k => k.Entradas);
+                    .ToListAsync();
 
-                int totaSalidas = _context.Kardex
-                    .Where(k => k.Product.Id == exist.Producto.Id && k.Almacen == exist.Almacen)
-                    .Sum(k => k.Salidas);
-
-                int saldo = totalEntradas - totaSalidas;
+                Kardex kar = karList.Where(k => k.Id == karList.Max(k => k.Id)).FirstOrDefault();
 
                 Kardex kardex =
                     new()
@@ -199,8 +187,8 @@ namespace Store.Helpers.ProdMovements
                         Concepto = "AJUSTE DE INVENTARIO",
                         Almacen = exist.Almacen,
                         Entradas = 0,
-                        Salidas = diferencia,
-                        Saldo = saldo + diferencia,
+                        Salidas = Math.Abs(diferencia),
+                        Saldo = kar.Saldo + diferencia,
                         User = user
                     };
                 _context.Kardex.Add(kardex);
@@ -212,15 +200,11 @@ namespace Store.Helpers.ProdMovements
                 exist.Existencia = model.NewExistencias;
 
                 //Agregamos el Kardex de entrada al almacen destino
-                int totalEntradas = _context.Kardex
+                var karList = await _context.Kardex
                     .Where(k => k.Product.Id == exist.Producto.Id && k.Almacen == exist.Almacen)
-                    .Sum(k => k.Entradas);
+                    .ToListAsync();
 
-                int totaSalidas = _context.Kardex
-                    .Where(k => k.Product.Id == exist.Producto.Id && k.Almacen == exist.Almacen)
-                    .Sum(k => k.Salidas);
-
-                int saldo = totalEntradas - totaSalidas;
+                Kardex kar = karList.Where(k => k.Id == karList.Max(k => k.Id)).FirstOrDefault();
 
                 Kardex kardex =
                     new()
@@ -231,7 +215,7 @@ namespace Store.Helpers.ProdMovements
                         Almacen = exist.Almacen,
                         Entradas = diferencia,
                         Salidas = 0,
-                        Saldo = saldo + diferencia,
+                        Saldo = kar.Saldo + diferencia,
                         User = user
                     };
                 _context.Kardex.Add(kardex);

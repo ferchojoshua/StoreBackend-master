@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Store.Data;
 
@@ -11,9 +12,10 @@ using Store.Data;
 namespace Store.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220505151217_Seed41")]
+    partial class Seed41
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -213,32 +215,6 @@ namespace Store.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Almacen");
-                });
-
-            modelBuilder.Entity("Store.Entities.AnuladaSales", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<string>("AnuledById")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("FechaAnulacion")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("SaleId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AnuledById");
-
-                    b.HasIndex("SaleId");
-
-                    b.ToTable("AnuladaSales");
                 });
 
             modelBuilder.Entity("Store.Entities.Client", b =>
@@ -722,9 +698,6 @@ namespace Store.Migrations
                     b.Property<int>("Descuento")
                         .HasColumnType("int");
 
-                    b.Property<bool>("IsAnulado")
-                        .HasColumnType("bit");
-
                     b.Property<decimal>("PVD")
                         .HasColumnType("decimal(18,2)");
 
@@ -770,9 +743,6 @@ namespace Store.Migrations
 
                     b.Property<DateTime>("FechaVenta")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsAnulado")
-                        .HasColumnType("bit");
 
                     b.Property<bool>("IsCanceled")
                         .HasColumnType("bit");
@@ -1022,21 +992,6 @@ namespace Store.Migrations
                         .HasForeignKey("SaleId");
 
                     b.Navigation("RealizedBy");
-
-                    b.Navigation("Sale");
-                });
-
-            modelBuilder.Entity("Store.Entities.AnuladaSales", b =>
-                {
-                    b.HasOne("Store.Entities.User", "AnuledBy")
-                        .WithMany()
-                        .HasForeignKey("AnuledById");
-
-                    b.HasOne("Store.Entities.Sales", "Sale")
-                        .WithMany()
-                        .HasForeignKey("SaleId");
-
-                    b.Navigation("AnuledBy");
 
                     b.Navigation("Sale");
                 });

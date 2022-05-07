@@ -11,6 +11,6 @@ namespace Store.Entities
         public decimal PVM { get; set; }
         public decimal PVD { get; set; }
         public decimal CostoTotal { get; set; }
-       
+        public bool IsAnulado { get; set; }
     }
 }

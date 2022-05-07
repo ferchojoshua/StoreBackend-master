@@ -23,6 +23,20 @@ namespace Store.Helpers.SalesHelper
                 .ThenInclude(sd => sd.Store)
                 .Include(s => s.SaleDetails)
                 .ThenInclude(sd => sd.Product)
+                .Where(s => s.IsAnulado == false)
+                .ToListAsync();
+        }
+
+        public async Task<ICollection<Sales>> GetAnuledSalesListAsync()
+        {
+            return await _context.Sales
+                .Include(s => s.Client)
+                .Include(s => s.FacturedBy)
+                .Include(s => s.SaleDetails)
+                .ThenInclude(sd => sd.Store)
+                .Include(s => s.SaleDetails)
+                .ThenInclude(sd => sd.Product)
+                .Where(s => s.IsAnulado == true)
                 .ToListAsync();
         }
 
@@ -71,25 +85,19 @@ namespace Store.Helpers.SalesHelper
 
                 //Modificamos las existencias
                 Existence existence = await _context.Existences.FirstOrDefaultAsync(
-                    e => e.Producto == prod
+                    e => e.Producto == prod && e.Almacen == alm
                 );
-                existence.Almacen = alm;
-                existence.Producto = prod;
                 existence.Existencia -= saleDetail.Cantidad;
                 existence.PrecioVentaDetalle = item.PVD;
                 existence.PrecioVentaMayor = item.PVM;
                 _context.Entry(existence).State = EntityState.Modified;
 
-                //Modificamos el Kardex
-                int totalEntradas = _context.Kardex
-                    .Where(k => k.Product.Id == item.Product.Id && k.Almacen == alm)
-                    .Sum(k => k.Entradas);
+                //Agregamos el Kardex de entrada al almacen destino
+                var karList = await _context.Kardex
+                    .Where(k => k.Product.Id == item.Product.Id && k.Almacen == item.Store)
+                    .ToListAsync();
 
-                int totaSalidas = _context.Kardex
-                    .Where(k => k.Product.Id == item.Product.Id && k.Almacen == alm)
-                    .Sum(k => k.Salidas);
-
-                int saldo = totalEntradas - totaSalidas;
+                Kardex kar = karList.Where(k => k.Id == karList.Max(k => k.Id)).FirstOrDefault();
 
                 Kardex kardex =
                     new()
@@ -100,15 +108,165 @@ namespace Store.Helpers.SalesHelper
                         Almacen = alm,
                         Entradas = 0,
                         Salidas = item.Cantidad,
-                        Saldo = saldo - item.Cantidad,
+                        Saldo = kar.Saldo - item.Cantidad,
                         User = user
                     };
                 _context.Kardex.Add(kardex);
             }
+
             //Unificamos objetos y los mandamos a la DB
             sale.SaleDetails = detalles;
             _context.Sales.Add(sale);
             await _context.SaveChangesAsync();
+            return sale;
+        }
+
+        public async Task<ICollection<Abono>> GetQuoteListAsync(int id)
+        {
+            return await _context.Abonos
+                .Include(a => a.Sale)
+                .Include(s => s.RealizedBy)
+                .Where(a => a.Sale.Id == id)
+                .ToListAsync();
+        }
+
+        public async Task<Abono> AddAbonoAsync(AddAbonoViewModel model, Entities.User user)
+        {
+            Sales sale = await _context.Sales.FirstOrDefaultAsync(s => s.Id == model.IdSale);
+            sale.Saldo -= model.Monto;
+            if (sale.Saldo == 0)
+            {
+                sale.IsCanceled = true;
+            }
+            Abono abono =
+                new()
+                {
+                    Sale = sale,
+                    Monto = model.Monto,
+                    RealizedBy = user,
+                    FechaAbono = DateTime.Now
+                };
+            _context.Entry(sale).State = EntityState.Modified;
+            _context.Abonos.Add(abono);
+            await _context.SaveChangesAsync();
+            return abono;
+        }
+
+        public async Task<Sales> AnularSaleAsync(int id, Entities.User user)
+        {
+            Sales sale = await _context.Sales
+                .Include(s => s.SaleDetails)
+                .ThenInclude(sd => sd.Store)
+                .Include(s => s.SaleDetails)
+                .ThenInclude(sd => sd.Product)
+                .FirstOrDefaultAsync(s => s.Id == id);
+            if (sale == null)
+            {
+                return sale;
+            }
+            foreach (var item in sale.SaleDetails)
+            {
+                item.IsAnulado = true;
+
+                //Modificamos las existencias
+                Existence existence = await _context.Existences.FirstOrDefaultAsync(
+                    e => e.Producto == item.Product && e.Almacen == item.Store
+                );
+
+                existence.Existencia += item.Cantidad;
+                _context.Entry(existence).State = EntityState.Modified;
+
+                //Agregamos el Kardex de entrada al almacen destino
+                var karList = await _context.Kardex
+                    .Where(k => k.Product.Id == item.Product.Id && k.Almacen == item.Store)
+                    .ToListAsync();
+
+                Kardex kar = karList.Where(k => k.Id == karList.Max(k => k.Id)).FirstOrDefault();
+
+                Kardex kardex =
+                    new()
+                    {
+                        Product = item.Product,
+                        Fecha = DateTime.Now,
+                        Concepto = "DEVOLUCION TOTAL DE VENTA",
+                        Almacen = item.Store,
+                        Entradas = item.Cantidad,
+                        Salidas = 0,
+                        Saldo = kar.Saldo + item.Cantidad,
+                        User = user
+                    };
+                _context.Kardex.Add(kardex);
+            }
+            sale.IsAnulado = true;
+            _context.Entry(sale).State = EntityState.Modified;
+
+            AnuladaSales anuladaSales =
+                new()
+                {
+                    Sale = sale,
+                    FechaAnulacion = DateTime.Now,
+                    AnuledBy = user
+                };
+
+            _context.AnuladaSales.Add(anuladaSales);
+            await _context.SaveChangesAsync();
+            return sale;
+        }
+
+        public async Task<Sales> AnularSaleParcialAsync(int id, int productId, Entities.User user)
+        {
+            Sales sale = await _context.Sales
+                .Include(s => s.SaleDetails)
+                .ThenInclude(sd => sd.Store)
+                .Include(s => s.SaleDetails)
+                .ThenInclude(sd => sd.Product)
+                .FirstOrDefaultAsync(s => s.Id == id);
+            if (sale == null)
+            {
+                return sale;
+            }
+
+            foreach (var item in sale.SaleDetails)
+            {
+                if (item.Product.Id == productId)
+                {
+                    item.IsAnulado = true;
+
+                    sale.MontoVenta -= item.CostoTotal;
+
+                    //Modificamos las existencias
+                    Existence existence = await _context.Existences.FirstOrDefaultAsync(
+                        e => e.Producto == item.Product && e.Almacen == item.Store
+                    );
+
+                    existence.Existencia += item.Cantidad;
+                    _context.Entry(existence).State = EntityState.Modified;
+
+                    //Agregamos el Kardex de entrada al almacen destino
+                    var karList = await _context.Kardex
+                        .Where(k => k.Product.Id == item.Product.Id && k.Almacen == item.Store)
+                        .ToListAsync();
+
+                    Kardex kar = karList
+                        .Where(k => k.Id == karList.Max(k => k.Id))
+                        .FirstOrDefault();
+
+                    Kardex kardex =
+                        new()
+                        {
+                            Product = item.Product,
+                            Fecha = DateTime.Now,
+                            Concepto = "DEVOLUCION TOTAL DE VENTA",
+                            Almacen = item.Store,
+                            Entradas = item.Cantidad,
+                            Salidas = 0,
+                            Saldo = kar.Saldo + item.Cantidad,
+                            User = user
+                        };
+                    _context.Kardex.Add(kardex);
+                }
+            }
+
             return sale;
         }
     }

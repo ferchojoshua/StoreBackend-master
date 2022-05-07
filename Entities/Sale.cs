@@ -15,5 +15,6 @@ namespace Store.Entities
         public bool IsCanceled { get; set; }
         public decimal Saldo { get; set; }
         public DateTime FechaVencimiento { get; set; }
+        public bool IsAnulado { get; set; }
     }
 }

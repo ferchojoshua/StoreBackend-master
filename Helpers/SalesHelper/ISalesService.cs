@@ -7,9 +7,11 @@ namespace Store.Helpers.SalesHelper
     {
         Task<ICollection<Sales>> GetSalesListAsync();
 
-        // Task<Client> GetClientAsync(int id);
+        Task<ICollection<Abono>> GetQuoteListAsync(int id);
+
+        Task<Sales> AnularSaleAsync(int id, Entities.User user);
+        Task<Sales> AnularSaleParcialAsync(int id, int productId, Entities.User user);
         Task<Sales> AddSaleAsync(AddSaleViewModel model, Entities.User user);
-        // Task<Client> UpdateClientAsync(UpdateClientViewModel model, Entities.User user);
-        // Task<Client> DeleteClientAsync(int id);
+        Task<Abono> AddAbonoAsync(AddAbonoViewModel model, Entities.User user);
     }
 }

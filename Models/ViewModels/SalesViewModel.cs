@@ -21,4 +21,12 @@ namespace Store.Models.ViewModels
         [Required]
         public bool IsContado { get; set; }
     }
+
+    public class AddAbonoViewModel
+    {
+        [Required]
+        public int IdSale { get; set; }
+
+        public decimal Monto { get; set; }
+    }
 }
