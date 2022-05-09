@@ -6,5 +6,6 @@ namespace Store.Entities
         public Sales Sale { get; set; }
         public DateTime FechaAnulacion { get; set; }
         public User AnuledBy { get; set; }
+        
     }
 }

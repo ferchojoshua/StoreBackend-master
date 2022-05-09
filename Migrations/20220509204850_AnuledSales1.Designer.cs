@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Store.Data;
 
@@ -11,9 +12,10 @@ using Store.Data;
 namespace Store.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220509204850_AnuledSales1")]
+    partial class AnuledSales1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -213,6 +215,32 @@ namespace Store.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Almacen");
+                });
+
+            modelBuilder.Entity("Store.Entities.AnuladaSales", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("AnuledById")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("FechaAnulacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("SaleId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AnuledById");
+
+                    b.HasIndex("SaleId");
+
+                    b.ToTable("AnuladaSales");
                 });
 
             modelBuilder.Entity("Store.Entities.Client", b =>
@@ -684,9 +712,6 @@ namespace Store.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<string>("AnulatedById")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<int>("Cantidad")
                         .HasColumnType("int");
 
@@ -698,9 +723,6 @@ namespace Store.Migrations
 
                     b.Property<int>("Descuento")
                         .HasColumnType("int");
-
-                    b.Property<DateTime>("FechaAnulacion")
-                        .HasColumnType("datetime2");
 
                     b.Property<bool>("IsAnulado")
                         .HasColumnType("bit");
@@ -722,8 +744,6 @@ namespace Store.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AnulatedById");
-
                     b.HasIndex("ProductId");
 
                     b.HasIndex("SalesId");
@@ -741,17 +761,14 @@ namespace Store.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<string>("AnulatedById")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<int?>("ClientId")
                         .HasColumnType("int");
 
+                    b.Property<string>("EditedBy")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("FacturedById")
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("FechaAnulacion")
-                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("FechaVencimiento")
                         .HasColumnType("datetime2");
@@ -784,8 +801,6 @@ namespace Store.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AnulatedById");
 
                     b.HasIndex("ClientId");
 
@@ -1016,6 +1031,21 @@ namespace Store.Migrations
                     b.Navigation("Sale");
                 });
 
+            modelBuilder.Entity("Store.Entities.AnuladaSales", b =>
+                {
+                    b.HasOne("Store.Entities.User", "AnuledBy")
+                        .WithMany()
+                        .HasForeignKey("AnuledById");
+
+                    b.HasOne("Store.Entities.Sales", "Sale")
+                        .WithMany()
+                        .HasForeignKey("SaleId");
+
+                    b.Navigation("AnuledBy");
+
+                    b.Navigation("Sale");
+                });
+
             modelBuilder.Entity("Store.Entities.Client", b =>
                 {
                     b.HasOne("Store.Entities.Community", "Community")
@@ -1168,10 +1198,6 @@ namespace Store.Migrations
 
             modelBuilder.Entity("Store.Entities.SaleDetail", b =>
                 {
-                    b.HasOne("Store.Entities.User", "AnulatedBy")
-                        .WithMany()
-                        .HasForeignKey("AnulatedById");
-
                     b.HasOne("Store.Entities.Producto", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId");
@@ -1184,8 +1210,6 @@ namespace Store.Migrations
                         .WithMany()
                         .HasForeignKey("StoreId");
 
-                    b.Navigation("AnulatedBy");
-
                     b.Navigation("Product");
 
                     b.Navigation("Store");
@@ -1193,10 +1217,6 @@ namespace Store.Migrations
 
             modelBuilder.Entity("Store.Entities.Sales", b =>
                 {
-                    b.HasOne("Store.Entities.User", "AnulatedBy")
-                        .WithMany()
-                        .HasForeignKey("AnulatedById");
-
                     b.HasOne("Store.Entities.Client", "Client")
                         .WithMany()
                         .HasForeignKey("ClientId");
@@ -1204,8 +1224,6 @@ namespace Store.Migrations
                     b.HasOne("Store.Entities.User", "FacturedBy")
                         .WithMany()
                         .HasForeignKey("FacturedById");
-
-                    b.Navigation("AnulatedBy");
 
                     b.Navigation("Client");
 

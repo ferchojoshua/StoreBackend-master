@@ -199,5 +199,50 @@ namespace Store.Controllers.API
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpPost]
+        [Route("AnularVentaParcial")]
+        public async Task<ActionResult<Sales>> AnularVentaParcial([FromBody] EditSaleViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+
+            if (!await _userHelper.IsAutorized(user.Rol, "SALES UPDATE"))
+            {
+                return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+            try
+            {
+                var sale = await _salesService.AnularSaleParcialAsync(model, user);
+                if (sale == null)
+                {
+                    return NoContent();
+                }
+                return Ok(sale);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

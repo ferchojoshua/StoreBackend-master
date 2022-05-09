@@ -12,5 +12,7 @@ namespace Store.Entities
         public decimal PVD { get; set; }
         public decimal CostoTotal { get; set; }
         public bool IsAnulado { get; set; }
+        public User AnulatedBy { get; set; }
+        public DateTime FechaAnulacion { get; set; }
     }
 }

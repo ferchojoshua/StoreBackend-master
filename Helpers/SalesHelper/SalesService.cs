@@ -21,7 +21,7 @@ namespace Store.Helpers.SalesHelper
                 .Include(s => s.FacturedBy)
                 .Include(s => s.SaleDetails)
                 .ThenInclude(sd => sd.Store)
-                .Include(s => s.SaleDetails)
+                .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado == false))
                 .ThenInclude(sd => sd.Product)
                 .Where(s => s.IsAnulado == false)
                 .ToListAsync();
@@ -167,7 +167,8 @@ namespace Store.Helpers.SalesHelper
             foreach (var item in sale.SaleDetails)
             {
                 item.IsAnulado = true;
-
+                item.AnulatedBy = user;
+                item.FechaAnulacion = DateTime.Now;
                 //Modificamos las existencias
                 Existence existence = await _context.Existences.FirstOrDefaultAsync(
                     e => e.Producto == item.Product && e.Almacen == item.Store
@@ -199,42 +200,34 @@ namespace Store.Helpers.SalesHelper
             }
             sale.IsAnulado = true;
             _context.Entry(sale).State = EntityState.Modified;
-
-            AnuladaSales anuladaSales =
-                new()
-                {
-                    Sale = sale,
-                    FechaAnulacion = DateTime.Now,
-                    AnuledBy = user
-                };
-
-            _context.AnuladaSales.Add(anuladaSales);
             await _context.SaveChangesAsync();
             return sale;
         }
 
-        public async Task<Sales> AnularSaleParcialAsync(int id, int productId, Entities.User user)
+        public async Task<Sales> AnularSaleParcialAsync(EditSaleViewModel model, Entities.User user)
         {
             Sales sale = await _context.Sales
                 .Include(s => s.SaleDetails)
                 .ThenInclude(sd => sd.Store)
                 .Include(s => s.SaleDetails)
                 .ThenInclude(sd => sd.Product)
-                .FirstOrDefaultAsync(s => s.Id == id);
+                .FirstOrDefaultAsync(s => s.Id == model.IdSale);
             if (sale == null)
             {
                 return sale;
             }
-
             foreach (var item in sale.SaleDetails)
             {
-                if (item.Product.Id == productId)
+                int diferencia = 0;
+                SaleDetail sd = model.SaleDetails.FirstOrDefault(s => s.Id == item.Id);
+                if (sd == null)
                 {
+                    sale.ProductsCount -= 1;
                     item.IsAnulado = true;
+                    item.AnulatedBy = user;
+                    item.FechaAnulacion = DateTime.Now;
 
-                    sale.MontoVenta -= item.CostoTotal;
-
-                    //Modificamos las existencias
+                    //hay que restarle a las existencias y agregar la salida al kardex
                     Existence existence = await _context.Existences.FirstOrDefaultAsync(
                         e => e.Producto == item.Product && e.Almacen == item.Store
                     );
@@ -242,7 +235,8 @@ namespace Store.Helpers.SalesHelper
                     existence.Existencia += item.Cantidad;
                     _context.Entry(existence).State = EntityState.Modified;
 
-                    //Agregamos el Kardex de entrada al almacen destino
+                    // Agregamos el Kardex de entrada al almacen destino
+                    //Buscamos el ultimo reguistro de ese producto en el kardex
                     var karList = await _context.Kardex
                         .Where(k => k.Product.Id == item.Product.Id && k.Almacen == item.Store)
                         .ToListAsync();
@@ -251,12 +245,58 @@ namespace Store.Helpers.SalesHelper
                         .Where(k => k.Id == karList.Max(k => k.Id))
                         .FirstOrDefault();
 
+                    //creamos el objeto kardex
                     Kardex kardex =
                         new()
                         {
                             Product = item.Product,
                             Fecha = DateTime.Now,
-                            Concepto = "DEVOLUCION TOTAL DE VENTA",
+                            Concepto = "DEVOLUCION PARCIAL DE VENTA",
+                            Almacen = item.Store,
+                            Entradas = item.Cantidad,
+                            Salidas = 0,
+                            Saldo = kar.Saldo + item.Cantidad,
+                            User = user
+                        };
+                    _context.Kardex.Add(kardex);
+                }
+                else
+                {
+                    diferencia = item.Cantidad - sd.Cantidad;
+                    item.Cantidad = sd.Cantidad;
+                    item.CostoTotal = sd.CostoTotal;
+                }
+                // Modificamos las existencias
+                //es es mayor que cero
+                //hay que sumarle a las existencias y agregar la entrada al kardex
+                if (diferencia > 0)
+                {
+                    //es es menor que cero
+                    //hay que restarle a las existencias y agregar la salida al kardex
+                    Existence existence = await _context.Existences.FirstOrDefaultAsync(
+                        e => e.Producto == item.Product && e.Almacen == item.Store
+                    );
+
+                    existence.Existencia += diferencia;
+                    _context.Entry(existence).State = EntityState.Modified;
+
+                    // Agregamos el Kardex de entrada al almacen destino
+                    //Buscamos el ultimo reguistro de ese producto en el kardex
+                    var karList = await _context.Kardex
+                        .Where(k => k.Product.Id == item.Product.Id && k.Almacen == item.Store)
+                        .ToListAsync();
+
+                    Kardex kar = karList
+                        .Where(k => k.Id == karList.Max(k => k.Id))
+                        .FirstOrDefault();
+
+                    //creamos el objeto kardex
+                    Kardex kardex =
+                        new()
+                        {
+                            Product = item.Product,
+                            Fecha = DateTime.Now,
+                            Concepto = "DEVOLUCION PARCIAL DE VENTA",
                             Almacen = item.Store,
                             Entradas = item.Cantidad,
                             Salidas = 0,
@@ -267,6 +307,10 @@ namespace Store.Helpers.SalesHelper
                 }
             }
 
+            sale.MontoVenta = model.Monto;
+            sale.Saldo = model.Saldo;
+            _context.Entry(sale).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
             return sale;
         }
     }

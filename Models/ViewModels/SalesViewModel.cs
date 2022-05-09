@@ -29,4 +29,19 @@ namespace Store.Models.ViewModels
 
         public decimal Monto { get; set; }
     }
+
+    public class EditSaleViewModel
+    {
+        [Required]
+        public int IdSale { get; set; }
+
+        [Required]
+        public decimal Monto { get; set; }
+
+        [Required]
+        public decimal Saldo { get; set; }
+
+        [Required]
+        public ICollection<SaleDetail> SaleDetails { get; set; }
+    }
 }
