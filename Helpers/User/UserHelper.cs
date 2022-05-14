@@ -71,6 +71,7 @@ namespace Store.Helpers.User
             var user = await _context.Users
                 .Where(u => u.IsActive == true)
                 .Include(u => u.Rol)
+                .ThenInclude(r => r.Permissions)
                 .Include(u => u.UserSession)
                 .Include(u => u.StoreAccess)
                 .FirstOrDefaultAsync(u => u.Email == email);

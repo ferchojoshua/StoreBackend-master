@@ -138,7 +138,7 @@ namespace Store.Controllers.API
             {
                 return Ok(user);
             }
-            if (!await _userHelper.IsAutorized(user.Rol, "EXISTANCE CREATE"))
+            if (!await _userHelper.IsAutorized(user.Rol, "PRODUCT TRANSLATE CREATE"))
             {
                 return Unauthorized();
             }

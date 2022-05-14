@@ -75,7 +75,7 @@ namespace Store.Controllers.API
                     };
                 pMList.Add(pM);
             }
-            return Ok(pMList);
+            return Ok(pMList.OrderByDescending(p => p.Fecha));
         }
     }
 }

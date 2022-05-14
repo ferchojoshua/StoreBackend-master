@@ -58,3 +58,6 @@ Agregar a los modulos
 -- insert into Permissions values('SALES CREATE', 0, 6) 
 -- insert into Permissions values('SALES UPDATE', 0, 6) 
 -- insert into Permissions values('SALES DELETE', 0, 6) 
+
+-- para publicar
+dotnet publish -o publish

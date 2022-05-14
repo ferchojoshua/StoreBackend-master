@@ -71,7 +71,7 @@ builder.Services.AddScoped<IClientsHelper, ClientsHelper>();
 builder.Services.AddScoped<ILocationsHelper, LocationsHelper>();
 builder.Services.AddScoped<ISalesService, SalesService>();
 
-var MyAllowSpecificOrigins = "http://localhost:3000/";
+var MyAllowSpecificOrigins = "Origins";
 builder.Services.AddCors(
     options =>
     {
@@ -79,7 +79,10 @@ builder.Services.AddCors(
             name: MyAllowSpecificOrigins,
             builder =>
             {
-                builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+                builder
+                    .WithOrigins("http://localhost:3000", "https://auto-moto.netlify.app/")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
             }
         );
     }

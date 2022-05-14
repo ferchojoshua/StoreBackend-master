@@ -207,7 +207,7 @@ namespace Store.Helpers.SalesHelper
         public async Task<Sales> AnularSaleParcialAsync(EditSaleViewModel model, Entities.User user)
         {
             Sales sale = await _context.Sales
-                .Include(s => s.SaleDetails)
+                .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado == false))
                 .ThenInclude(sd => sd.Store)
                 .Include(s => s.SaleDetails)
                 .ThenInclude(sd => sd.Product)
@@ -308,7 +308,10 @@ namespace Store.Helpers.SalesHelper
             }
 
             sale.MontoVenta = model.Monto;
-            sale.Saldo = model.Saldo;
+            if (!sale.IsCanceled)
+            {
+                sale.Saldo = model.Saldo;
+            }
             _context.Entry(sale).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return sale;
