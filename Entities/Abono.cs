@@ -7,5 +7,7 @@ namespace Store.Entities
         public decimal Monto { get; set; }
         public User RealizedBy { get; set; }
         public DateTime FechaAbono { get; set; }
+        public bool IsAnulado { get; set; }
+        public Almacen Store { get; set; }
     }
 }

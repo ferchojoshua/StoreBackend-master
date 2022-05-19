@@ -58,6 +58,34 @@ namespace Store.Controllers.API
             return Ok(aR.OrderBy(a => a.Almacen.Name));
         }
 
+        [HttpGet("GetStoresByUser")]
+        public async Task<ActionResult<IEnumerable<Almacen>>> GetStoresByUser()
+        {
+            string email =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+            try
+            {
+                var stores = user.StoreAccess;
+                return Ok(stores);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         // GET: api/Almacens/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Almacen>> GetAlmacen(int id)

@@ -13,5 +13,6 @@ namespace Store.Entities
         public User CreadoPor { get; set; }
         public string EditadoPor { get; set; }
         public DateTime FechaEdicion { get; set; }
+        public Almacen Store { get; set; }
     }
 }

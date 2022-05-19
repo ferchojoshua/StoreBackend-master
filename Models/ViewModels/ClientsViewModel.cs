@@ -19,6 +19,9 @@ namespace Store.Models.ViewModels
         public int IdCommunity { get; set; }
 
         [Required]
+        public int IdStore { get; set; }
+
+        [Required]
         public string Direccion { get; set; }
     }
 

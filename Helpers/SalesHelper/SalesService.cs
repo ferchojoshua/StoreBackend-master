@@ -59,6 +59,7 @@ namespace Store.Helpers.SalesHelper
                     Saldo = model.IsContado ? 0 : model.MontoVenta,
                     FechaVencimiento = DateTime.Now.AddDays(15)
                 };
+
             List<SaleDetail> detalles = new();
             foreach (var item in model.SaleDetails)
             {
@@ -114,6 +115,20 @@ namespace Store.Helpers.SalesHelper
                 _context.Kardex.Add(kardex);
             }
 
+            if (sale.IsContado)
+            {
+                Abono abono =
+                    new()
+                    {
+                        Sale = sale,
+                        Monto = sale.MontoVenta,
+                        RealizedBy = user,
+                        FechaAbono = DateTime.Now,
+                        Store = detalles[0].Store
+                    };
+                _context.Abonos.Add(abono);
+            }
+
             //Unificamos objetos y los mandamos a la DB
             sale.SaleDetails = detalles;
             _context.Sales.Add(sale);
@@ -132,7 +147,11 @@ namespace Store.Helpers.SalesHelper
 
         public async Task<Abono> AddAbonoAsync(AddAbonoViewModel model, Entities.User user)
         {
-            Sales sale = await _context.Sales.FirstOrDefaultAsync(s => s.Id == model.IdSale);
+            Sales sale = await _context.Sales
+                .Include(s => s.SaleDetails)
+                .ThenInclude(sd => sd.Store)
+                .FirstOrDefaultAsync(s => s.Id == model.IdSale);
+
             sale.Saldo -= model.Monto;
             if (sale.Saldo == 0)
             {
@@ -144,7 +163,8 @@ namespace Store.Helpers.SalesHelper
                     Sale = sale,
                     Monto = model.Monto,
                     RealizedBy = user,
-                    FechaAbono = DateTime.Now
+                    FechaAbono = DateTime.Now,
+                    Store = sale.SaleDetails.First().Store
                 };
             _context.Entry(sale).State = EntityState.Modified;
             _context.Abonos.Add(abono);
@@ -163,6 +183,12 @@ namespace Store.Helpers.SalesHelper
             if (sale == null)
             {
                 return sale;
+            }
+            var abono = await _context.Abonos.Where(a => a.Sale == sale).ToListAsync();
+            foreach (var item in abono)
+            {
+                item.IsAnulado = true;
+                _context.Entry(item).State = EntityState.Modified;
             }
             foreach (var item in sale.SaleDetails)
             {

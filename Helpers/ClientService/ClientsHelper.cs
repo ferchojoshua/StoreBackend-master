@@ -30,9 +30,6 @@ namespace Store.Helpers.ClientService
 
         public async Task<Client> AddClientAsync(AddClientViewModel model, Entities.User user)
         {
-            Community com = await _context.Communities.FirstOrDefaultAsync(
-                c => c.Id == model.IdCommunity
-            );
             Client cl =
                 new()
                 {
@@ -41,9 +38,12 @@ namespace Store.Helpers.ClientService
                     FechaRegistro = DateTime.Now,
                     Correo = model.Correo,
                     Telefono = model.Telefono,
-                    Community = com,
+                    Community = await _context.Communities.FirstOrDefaultAsync(
+                        c => c.Id == model.IdCommunity
+                    ),
                     Direccion = model.Direccion,
-                    CreadoPor = user
+                    CreadoPor = user,
+                    Store = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == model.IdStore)
                 };
             _context.Clients.Add(cl);
             await _context.SaveChangesAsync();

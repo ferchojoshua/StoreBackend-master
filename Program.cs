@@ -70,6 +70,7 @@ builder.Services.AddScoped<IProductMovementsHelper, ProductMovementsHelper>();
 builder.Services.AddScoped<IClientsHelper, ClientsHelper>();
 builder.Services.AddScoped<ILocationsHelper, LocationsHelper>();
 builder.Services.AddScoped<ISalesService, SalesService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 var MyAllowSpecificOrigins = "Origins";
 builder.Services.AddCors(

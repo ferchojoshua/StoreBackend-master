@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Store.Data;
 
@@ -11,9 +12,10 @@ using Store.Data;
 namespace Store.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220516163928_AddDashboard1")]
+    partial class AddDashboard1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -258,9 +260,6 @@ namespace Store.Migrations
                     b.Property<string>("NombreCliente")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("StoreId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Telefono")
                         .HasColumnType("nvarchar(max)");
 
@@ -269,8 +268,6 @@ namespace Store.Migrations
                     b.HasIndex("CommunityId");
 
                     b.HasIndex("CreadoPorId");
-
-                    b.HasIndex("StoreId");
 
                     b.ToTable("Clients");
                 });
@@ -1045,15 +1042,9 @@ namespace Store.Migrations
                         .WithMany()
                         .HasForeignKey("CreadoPorId");
 
-                    b.HasOne("Store.Entities.Almacen", "Store")
-                        .WithMany()
-                        .HasForeignKey("StoreId");
-
                     b.Navigation("Community");
 
                     b.Navigation("CreadoPor");
-
-                    b.Navigation("Store");
                 });
 
             modelBuilder.Entity("Store.Entities.Community", b =>
