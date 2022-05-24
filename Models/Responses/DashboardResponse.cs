@@ -9,4 +9,10 @@ namespace Store.Models.Responses
         public decimal Credito { get; set; }
         public decimal Recuperacion { get; set; }
     }
+
+    public class GetClientsLocationsResponse
+    {
+        public Municipality Municipality { get; set; }
+        public int Count { get; set; }
+    }
 }

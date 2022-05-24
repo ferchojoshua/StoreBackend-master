@@ -1,0 +1,12 @@
+using Store.Entities;
+
+namespace Store.Models.Responses
+{
+    public class GetRouteResponse
+    {
+        public DateTime Fecha { get; set; }
+        public Client Client { get; set; }
+        public decimal Credito { get; set; }
+        public decimal Recuperacion { get; set; }
+    }
+}

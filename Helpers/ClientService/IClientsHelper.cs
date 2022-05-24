@@ -10,5 +10,7 @@ namespace Store.Helpers.ClientService
         Task<Client> AddClientAsync(AddClientViewModel model, Entities.User user);
         Task<Client> UpdateClientAsync(UpdateClientViewModel model, Entities.User user);
         Task<Client> DeleteClientAsync(int id);
+        Task<ICollection<Client>> GetRoute(GetRouteClientViewModel model);
+
     }
 }

@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using Store.Data;
 using Store.Entities;
 using Store.Models.Responses;
-using Store.Models.ViewModels;
 using System.Globalization;
 
 namespace Store.Helpers.ClientService
@@ -175,7 +174,7 @@ namespace Store.Helpers.ClientService
                 .Where(
                     s =>
                         s.IsAnulado == false
-                        && s.FechaAbono.Month == DateTime.Now.Month
+                        && s.FechaAbono.Month == hoy.Month
                         && s.Store.Id == idStore
                 )
                 .ToListAsync();
@@ -192,6 +191,110 @@ namespace Store.Helpers.ClientService
                 }
             }
             return result;
+        }
+
+        public async Task<ICollection<Client>> GetClientsByLocationAndStoreAsync(int idStore)
+        {
+            // List<GetClientsLocationsResponse> result = new();
+            return await _context.Clients
+                .Include(c => c.Community)
+                .ThenInclude(com => com.Municipality)
+                .Where(c => c.Store.Id == idStore)
+                .ToListAsync();
+
+            // return result;
+        }
+
+        public async Task<ICollection<int>> GetVisitedClientsByStoreAsync(int idStore)
+        {
+            List<int> clientList = new();
+            int recurrente = 0;
+            int nuevo = 0;
+            int prospecto = 0;
+
+            DateTime hoy = DateTime.Now;
+            int estaSemana = CultureInfo.CurrentUICulture.Calendar.GetWeekOfYear(
+                hoy,
+                CalendarWeekRule.FirstDay,
+                hoy.DayOfWeek
+            );
+
+            var sales = await _context.Sales
+                .Include(s => s.Client)
+                .Where(
+                    s =>
+                        s.IsAnulado == false
+                        && s.FechaVenta.Month == hoy.Month
+                        && s.Store.Id == idStore
+                )
+                .ToListAsync();
+
+            foreach (var item in sales)
+            {
+                int saleEstaSemana = CultureInfo.CurrentUICulture.Calendar.GetWeekOfYear(
+                    item.FechaVenta,
+                    CalendarWeekRule.FirstDay,
+                    item.FechaVenta.DayOfWeek
+                );
+                if (estaSemana == saleEstaSemana)
+                {
+                    Client cli = await _context.Clients.FirstOrDefaultAsync(
+                        c => c.Id == item.Client.Id
+                    );
+                    if (cli.ContadorCompras == 1)
+                    {
+                        nuevo += 1;
+                    }
+                    else
+                    {
+                        recurrente += 1;
+                    }
+                }
+            }
+
+            var clients = await _context.Clients
+                .Where(c => c.Store.Id == idStore && c.FechaRegistro.Month == hoy.Month)
+                .ToListAsync();
+            foreach (var item in clients)
+            {
+                int clientEstaSemana = CultureInfo.CurrentUICulture.Calendar.GetWeekOfYear(
+                    item.FechaRegistro,
+                    CalendarWeekRule.FirstDay,
+                    item.FechaRegistro.DayOfWeek
+                );
+                if (estaSemana == clientEstaSemana)
+                {
+                    if (item.ContadorCompras == 0)
+                    {
+                        prospecto += 1;
+                    }
+                }
+            }
+            clientList.Add(recurrente);
+            clientList.Add(nuevo);
+            clientList.Add(prospecto);
+            return clientList;
+        }
+
+        public async Task<ICollection<Sales>> GetSalesByTNAndStoreAsync(int idStore)
+        {
+            var sales = await _context.Sales
+                .Include(s => s.SaleDetails)
+                .ThenInclude(s => s.Product.TipoNegocio)
+                .Where(
+                    s =>
+                        s.Store.Id == idStore
+                        && s.IsAnulado == false
+                        && s.FechaVenta.Month == DateTime.Now.Month
+                )
+                .ToListAsync();
+
+            return sales;
+
+            // foreach (var item in sales)
+            // {
+
+            // }
         }
     }
 }

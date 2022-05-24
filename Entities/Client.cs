@@ -14,5 +14,7 @@ namespace Store.Entities
         public string EditadoPor { get; set; }
         public DateTime FechaEdicion { get; set; }
         public Almacen Store { get; set; }
+        public string TipoCliente { get; set; }
+        public int ContadorCompras { get; set; }
     }
 }

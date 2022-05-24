@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Store.Entities;
 
 namespace Store.Models.ViewModels
 {
@@ -46,5 +47,11 @@ namespace Store.Models.ViewModels
 
         [Required]
         public string Direccion { get; set; }
+    }
+
+    public class GetRouteClientViewModel
+    {
+        [Required]
+        public ICollection<Municipality> MunicipalityList { get; set; }
     }
 }

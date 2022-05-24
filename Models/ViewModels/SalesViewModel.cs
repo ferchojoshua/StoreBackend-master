@@ -20,6 +20,9 @@ namespace Store.Models.ViewModels
 
         [Required]
         public bool IsContado { get; set; }
+
+        [Required]
+        public int Storeid { get; set; }
     }
 
     public class AddAbonoViewModel

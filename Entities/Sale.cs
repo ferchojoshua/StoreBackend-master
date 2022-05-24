@@ -18,5 +18,6 @@ namespace Store.Entities
         public bool IsAnulado { get; set; }
         public User AnulatedBy { get; set; }
         public DateTime FechaAnulacion { get; set; }
+        public Almacen Store { get; set; }
     }
 }

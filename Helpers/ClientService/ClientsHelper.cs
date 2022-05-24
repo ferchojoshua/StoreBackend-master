@@ -85,5 +85,24 @@ namespace Store.Helpers.ClientService
             await _context.SaveChangesAsync();
             return cl;
         }
+
+        public async Task<ICollection<Client>> GetRoute(GetRouteClientViewModel model)
+        {
+            List<Client> clientsList = new();
+            List<Client> clList = await _context.Clients
+                .Include(c => c.Community)
+                .ThenInclude(com => com.Municipality)
+                .ToListAsync();
+            foreach (var item in clList)
+            {
+                foreach (var municipality in model.MunicipalityList)
+                {
+                    if (item.Community.Municipality.Id == municipality.Id) { 
+                        clientsList.Add(item);
+                    }
+                }
+            }
+            return clientsList;
+        }
     }
 }

@@ -15,12 +15,12 @@ namespace Store.Controllers.API
     [ApiController]
     public class DashboardController : ControllerBase
     {
-        private readonly IUserHelper _userHelper;
+        // private readonly IUserHelper _userHelper;
         private readonly IDashboardService _dashboardService;
 
-        public DashboardController(IUserHelper userHelper, IDashboardService dashboardService)
+        public DashboardController(IDashboardService dashboardService)
         {
-            _userHelper = userHelper;
+            // _userHelper = userHelper;
             _dashboardService = dashboardService;
         }
 
@@ -82,6 +82,62 @@ namespace Store.Controllers.API
             try
             {
                 return Ok(await _dashboardService.GetSalesByDateAsync(id));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("GetVisitedClientsByStore/{id}")]
+        public async Task<ActionResult<int>> GetVisitedClientsByStore(int id)
+        {
+            try
+            {
+                return Ok(await _dashboardService.GetVisitedClientsByStoreAsync(id));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("GetClientsByLocationAndStore/{id}")]
+        public async Task<ActionResult<int>> GetClientsByLocationAndStore(int id)
+        {
+            try
+            {
+                var ClientList = await _dashboardService.GetClientsByLocationAndStoreAsync(id);
+                var result = ClientList
+                    .GroupBy(cl => cl.Community.Municipality)
+                    .Select(x => new { Location = x.Key.Name, Contador = x.Count() });
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("GetSalesByTNAndStore/{id}")]
+        public async Task<ActionResult<int>> GetSalesByTNAndStore(int id)
+        {
+            List<Producto> prodList = new();
+            try
+            {
+                var saleList = await _dashboardService.GetSalesByTNAndStoreAsync(id);
+                foreach (var sale in saleList)
+                {
+                    foreach (var detail in sale.SaleDetails)
+                    {
+                        prodList.Add(detail.Product);
+                    }
+                }
+                return Ok(
+                    prodList
+                        .GroupBy(p => p.TipoNegocio)
+                        .Select(x => new { Tn = x.Key.Description, Contador = x.Count() })
+                );
             }
             catch (Exception ex)
             {

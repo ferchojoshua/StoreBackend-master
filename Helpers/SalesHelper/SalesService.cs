@@ -42,14 +42,16 @@ namespace Store.Helpers.SalesHelper
 
         public async Task<Sales> AddSaleAsync(AddSaleViewModel model, Entities.User user)
         {
+            Client cl = await _context.Clients.FirstOrDefaultAsync(c => c.Id == model.IdClient);
+            cl.ContadorCompras += 1;
+            _context.Entry(cl).State = EntityState.Modified;
+
             Sales sale =
                 new()
                 {
                     IsEventual = model.IsEventual,
                     NombreCliente = model.IsEventual ? model.NombreCliente : "",
-                    Client = await _context.Clients.FirstOrDefaultAsync(
-                        c => c.Id == model.IdClient
-                    ),
+                    Client = cl,
                     ProductsCount = model.SaleDetails.Count,
                     MontoVenta = model.MontoVenta,
                     FechaVenta = DateTime.Now,
@@ -57,7 +59,8 @@ namespace Store.Helpers.SalesHelper
                     IsContado = model.IsContado,
                     IsCanceled = model.IsContado, //Si es de contado, esta cancelado
                     Saldo = model.IsContado ? 0 : model.MontoVenta,
-                    FechaVencimiento = DateTime.Now.AddDays(15)
+                    FechaVencimiento = DateTime.Now.AddDays(15),
+                    Store = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == model.Storeid)
                 };
 
             List<SaleDetail> detalles = new();
@@ -175,6 +178,7 @@ namespace Store.Helpers.SalesHelper
         public async Task<Sales> AnularSaleAsync(int id, Entities.User user)
         {
             Sales sale = await _context.Sales
+                .Include(s => s.Client)
                 .Include(s => s.SaleDetails)
                 .ThenInclude(sd => sd.Store)
                 .Include(s => s.SaleDetails)
@@ -225,6 +229,7 @@ namespace Store.Helpers.SalesHelper
                 _context.Kardex.Add(kardex);
             }
             sale.IsAnulado = true;
+            sale.Client.ContadorCompras -= 1;
             _context.Entry(sale).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return sale;
