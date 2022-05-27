@@ -195,14 +195,11 @@ namespace Store.Helpers.ClientService
 
         public async Task<ICollection<Client>> GetClientsByLocationAndStoreAsync(int idStore)
         {
-            // List<GetClientsLocationsResponse> result = new();
             return await _context.Clients
                 .Include(c => c.Community)
                 .ThenInclude(com => com.Municipality)
                 .Where(c => c.Store.Id == idStore)
                 .ToListAsync();
-
-            // return result;
         }
 
         public async Task<ICollection<int>> GetVisitedClientsByStoreAsync(int idStore)
@@ -226,6 +223,7 @@ namespace Store.Helpers.ClientService
                         s.IsAnulado == false
                         && s.FechaVenta.Month == hoy.Month
                         && s.Store.Id == idStore
+                        && s.Client != null
                 )
                 .ToListAsync();
 

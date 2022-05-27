@@ -6,7 +6,7 @@ namespace Store.Helpers.ProductHelper
     public interface IProductHelper
     {
         Task<Producto> AddProductAsync(ProductViewModel model);
-
-         Task<Producto> UpdateProductAsync(UpdateProductViewModel model);
+        Task<Producto> UpdateProductAsync(UpdateProductViewModel model);
+        Task<ICollection<Kardex>> GetKardex(GetKardexViewModel model);
     }
 }

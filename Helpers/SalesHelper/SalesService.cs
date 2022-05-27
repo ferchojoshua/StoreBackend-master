@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Store.Data;
 using Store.Entities;
+using Store.Models.Responses;
 using Store.Models.ViewModels;
 
 namespace Store.Helpers.SalesHelper
@@ -14,7 +15,7 @@ namespace Store.Helpers.SalesHelper
             _context = context;
         }
 
-        public async Task<ICollection<Sales>> GetSalesListAsync()
+        public async Task<ICollection<Sales>> GetContadoSalesByStoreAsync(int idStore)
         {
             return await _context.Sales
                 .Include(s => s.Client)
@@ -23,7 +24,33 @@ namespace Store.Helpers.SalesHelper
                 .ThenInclude(sd => sd.Store)
                 .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado == false))
                 .ThenInclude(sd => sd.Product)
-                .Where(s => s.IsAnulado == false)
+                .Where(s => s.IsAnulado == false && s.Store.Id == idStore && s.IsContado)
+                .ToListAsync();
+        }
+
+        public async Task<ICollection<Sales>> GetCreditoSalesByStoreAsync(int idStore)
+        {
+            return await _context.Sales
+                .Include(s => s.Client)
+                .Include(s => s.FacturedBy)
+                .Include(s => s.SaleDetails)
+                .ThenInclude(sd => sd.Store)
+                .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado == false))
+                .ThenInclude(sd => sd.Product)
+                .Where(s => s.IsAnulado == false && s.Store.Id == idStore && s.IsContado == false)
+                .ToListAsync();
+        }
+
+        public async Task<ICollection<Sales>> GetAnulatedSalesByStoreAsync(int idStore)
+        {
+            return await _context.Sales
+                .Include(s => s.Client)
+                .Include(s => s.FacturedBy)
+                .Include(s => s.SaleDetails)
+                .ThenInclude(sd => sd.Store)
+                .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado))
+                .ThenInclude(sd => sd.Product)
+                .Where(s => s.IsAnulado && s.Store.Id == idStore)
                 .ToListAsync();
         }
 
@@ -43,8 +70,11 @@ namespace Store.Helpers.SalesHelper
         public async Task<Sales> AddSaleAsync(AddSaleViewModel model, Entities.User user)
         {
             Client cl = await _context.Clients.FirstOrDefaultAsync(c => c.Id == model.IdClient);
-            cl.ContadorCompras += 1;
-            _context.Entry(cl).State = EntityState.Modified;
+            if (cl != null)
+            {
+                cl.ContadorCompras += 1;
+                _context.Entry(cl).State = EntityState.Modified;
+            }
 
             Sales sale =
                 new()
@@ -150,27 +180,75 @@ namespace Store.Helpers.SalesHelper
 
         public async Task<Abono> AddAbonoAsync(AddAbonoViewModel model, Entities.User user)
         {
-            Sales sale = await _context.Sales
-                .Include(s => s.SaleDetails)
-                .ThenInclude(sd => sd.Store)
-                .FirstOrDefaultAsync(s => s.Id == model.IdSale);
-
-            sale.Saldo -= model.Monto;
-            if (sale.Saldo == 0)
+            Abono abono = new();
+            decimal sobra = model.Monto;
+            var sales = await _context.Sales
+                .Where(
+                    s =>
+                        s.IsAnulado == false
+                        && s.Client.Id == model.IdClient
+                        && s.IsCanceled == false
+                )
+                .ToListAsync();
+            foreach (var item in sales)
             {
-                sale.IsCanceled = true;
-            }
-            Abono abono =
-                new()
+                if (sobra > 0)
                 {
-                    Sale = sale,
-                    Monto = model.Monto,
-                    RealizedBy = user,
-                    FechaAbono = DateTime.Now,
-                    Store = sale.SaleDetails.First().Store
-                };
-            _context.Entry(sale).State = EntityState.Modified;
-            _context.Abonos.Add(abono);
+                    if (item.Saldo > sobra)
+                    {
+                        abono = new()
+                        {
+                            Sale = item,
+                            Monto = sobra,
+                            RealizedBy = user,
+                            FechaAbono = DateTime.Now,
+                            Store = await _context.Almacen.FirstOrDefaultAsync(
+                                s => s.Id == model.IdStore
+                            )
+                        };
+
+                        item.Saldo -= sobra;
+                        sobra = 0;
+                    }
+                    else if (item.Saldo == sobra)
+                    {
+                        abono = new()
+                        {
+                            Sale = item,
+                            Monto = sobra,
+                            RealizedBy = user,
+                            FechaAbono = DateTime.Now,
+                            Store = await _context.Almacen.FirstOrDefaultAsync(
+                                s => s.Id == model.IdStore
+                            )
+                        };
+                        item.Saldo = 0;
+                        item.IsCanceled = true;
+                        sobra = 0;
+                    }
+                    else
+                    {
+                        abono = new()
+                        {
+                            Sale = item,
+                            Monto = item.Saldo,
+                            RealizedBy = user,
+                            FechaAbono = DateTime.Now,
+                            Store = await _context.Almacen.FirstOrDefaultAsync(
+                                s => s.Id == model.IdStore
+                            )
+                        };
+
+                        sobra -= item.Saldo;
+                        item.Saldo = 0;
+                        item.IsCanceled = true;
+                    }
+                    _context.Entry(item).State = EntityState.Modified;
+
+                    _context.Abonos.Add(abono);
+                }
+            }
+
             await _context.SaveChangesAsync();
             return abono;
         }
@@ -346,6 +424,64 @@ namespace Store.Helpers.SalesHelper
             _context.Entry(sale).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return sale;
+        }
+
+        public async Task<ICollection<GetSalesAndQuotesResponse>> GetSalesUncanceledByClientAsync(
+            int idClient
+        )
+        {
+            List<GetSalesAndQuotesResponse> result = new();
+            var sales = await _context.Sales
+                .Include(s => s.Store)
+                .Where(
+                    s => s.IsAnulado == false && s.Client.Id == idClient && s.IsCanceled == false
+                )
+                .ToListAsync();
+
+            foreach (var item in sales)
+            {
+                GetSalesAndQuotesResponse temp =
+                    new()
+                    {
+                        Sale = item,
+                        Abonos = await _context.Abonos
+                            .Include(a => a.RealizedBy)
+                            .Where(a => a.Sale == item)
+                            .ToListAsync()
+                    };
+                result.Add(temp);
+            }
+
+            return result;
+        }
+
+        public async Task<Abono> AddAbonoEspecificoAsync(
+            AddAbonoEspecificoViewModel model,
+            Entities.User user
+        )
+        {
+            var sale = await _context.Sales
+                .Include(s => s.Store)
+                .FirstOrDefaultAsync(s => s.Id == model.IdSale);
+            sale.Saldo -= model.Monto;
+            if (sale.Saldo == 0)
+            {
+                sale.IsCanceled = true;
+            }
+            Abono abono =
+                new()
+                {
+                    Sale = sale,
+                    Monto = model.Monto,
+                    RealizedBy = user,
+                    FechaAbono = DateTime.Now,
+                    Store = sale.Store
+                };
+
+            _context.Entry(sale).State = EntityState.Modified;
+            _context.Abonos.Add(abono);
+            await _context.SaveChangesAsync();
+            return abono;
         }
     }
 }

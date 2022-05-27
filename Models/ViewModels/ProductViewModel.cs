@@ -25,4 +25,19 @@ namespace Store.Models.ViewModels
         [Required]
         public string UM { get; set; }
     }
+
+    public class GetKardexViewModel
+    {
+        [Required]
+        public DateTime Desde { get; set; }
+
+        [Required]
+        public DateTime Hasta { get; set; }
+
+        [Required]
+        public int StoreId { get; set; }
+
+        [Required]
+        public int ProductId { get; set; }
+    }
 }

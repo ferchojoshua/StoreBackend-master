@@ -28,8 +28,21 @@ namespace Store.Models.ViewModels
     public class AddAbonoViewModel
     {
         [Required]
+        public int IdClient { get; set; }
+
+        [Required]
+        public int IdStore { get; set; }
+
+        [Required]
+        public decimal Monto { get; set; }
+    }
+
+    public class AddAbonoEspecificoViewModel
+    {
+        [Required]
         public int IdSale { get; set; }
 
+        [Required]
         public decimal Monto { get; set; }
     }
 
