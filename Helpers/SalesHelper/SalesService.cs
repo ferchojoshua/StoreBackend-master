@@ -307,7 +307,10 @@ namespace Store.Helpers.SalesHelper
                 _context.Kardex.Add(kardex);
             }
             sale.IsAnulado = true;
-            sale.Client.ContadorCompras -= 1;
+            if (!sale.IsEventual)
+            {
+                sale.Client.ContadorCompras -= 1;
+            }
             _context.Entry(sale).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return sale;

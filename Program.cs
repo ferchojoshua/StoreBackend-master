@@ -22,7 +22,11 @@ builder.Services
     .AddJsonOptions(s => s.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
 builder.Services.AddDbContext<DataContext>(
-    opt => opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnetion"))
+    opt =>
+        opt.UseSqlServer(
+            builder.Configuration.GetConnectionString("DefaultConnetion"),
+            x => x.UseNetTopologySuite()
+        )
 );
 
 builder.Services

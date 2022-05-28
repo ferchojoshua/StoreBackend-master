@@ -8,5 +8,6 @@ namespace Store.Helpers.ProductHelper
         Task<Producto> AddProductAsync(ProductViewModel model);
         Task<Producto> UpdateProductAsync(UpdateProductViewModel model);
         Task<ICollection<Kardex>> GetKardex(GetKardexViewModel model);
+        Task<ICollection<Kardex>> GetAllStoresKardex(GetKardexViewModel model);
     }
 }

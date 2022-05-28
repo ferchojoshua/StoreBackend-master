@@ -1,9 +1,12 @@
+using NetTopologySuite.Geometries;
+
 namespace Store.Entities
 {
     public class Client
     {
         public int Id { get; set; }
         public string NombreCliente { get; set; }
+        public string NombreComercial { get; set; }
         public string Cedula { get; set; }
         public DateTime FechaRegistro { get; set; }
         public string Correo { get; set; }
@@ -16,5 +19,6 @@ namespace Store.Entities
         public Almacen Store { get; set; }
         public string TipoCliente { get; set; }
         public int ContadorCompras { get; set; }
+        public Point ClientCoords { get; set; }
     }
 }

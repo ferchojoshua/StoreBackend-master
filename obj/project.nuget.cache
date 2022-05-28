@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "aTAQFD1dYYu7nRJsX/h9G8Lj4bLRUQ8USo3h+T6wQgCygfqR/XelFKXhTp7tdZHPnKt/zy3/t7BOrJjDGLGafQ==",
+  "dgSpecHash": "O9qKesyfslJaVVcg11TKoOtTsmXFZxo95kxb67Hi4dchi/U+XEB4LxrviGVuwSBlycl2u35/o+fitIYJmm1CRw==",
   "success": true,
   "projectFilePath": "C:\\Proy\\StoreBackend\\Store.csproj",
   "expectedPackageFiles": [
@@ -43,6 +43,7 @@
     "C:\\Users\\LENOVO\\.nuget\\packages\\microsoft.entityframeworkcore.design\\6.0.2\\microsoft.entityframeworkcore.design.6.0.2.nupkg.sha512",
     "C:\\Users\\LENOVO\\.nuget\\packages\\microsoft.entityframeworkcore.relational\\6.0.2\\microsoft.entityframeworkcore.relational.6.0.2.nupkg.sha512",
     "C:\\Users\\LENOVO\\.nuget\\packages\\microsoft.entityframeworkcore.sqlserver\\6.0.2\\microsoft.entityframeworkcore.sqlserver.6.0.2.nupkg.sha512",
+    "C:\\Users\\LENOVO\\.nuget\\packages\\microsoft.entityframeworkcore.sqlserver.nettopologysuite\\6.0.2\\microsoft.entityframeworkcore.sqlserver.nettopologysuite.6.0.2.nupkg.sha512",
     "C:\\Users\\LENOVO\\.nuget\\packages\\microsoft.entityframeworkcore.tools\\6.0.2\\microsoft.entityframeworkcore.tools.6.0.2.nupkg.sha512",
     "C:\\Users\\LENOVO\\.nuget\\packages\\microsoft.extensions.caching.abstractions\\6.0.0\\microsoft.extensions.caching.abstractions.6.0.0.nupkg.sha512",
     "C:\\Users\\LENOVO\\.nuget\\packages\\microsoft.extensions.caching.memory\\6.0.1\\microsoft.extensions.caching.memory.6.0.1.nupkg.sha512",
@@ -76,6 +77,8 @@
     "C:\\Users\\LENOVO\\.nuget\\packages\\microsoft.win32.registry\\4.7.0\\microsoft.win32.registry.4.7.0.nupkg.sha512",
     "C:\\Users\\LENOVO\\.nuget\\packages\\microsoft.win32.systemevents\\4.7.0\\microsoft.win32.systemevents.4.7.0.nupkg.sha512",
     "C:\\Users\\LENOVO\\.nuget\\packages\\netstandard.library\\1.6.1\\netstandard.library.1.6.1.nupkg.sha512",
+    "C:\\Users\\LENOVO\\.nuget\\packages\\nettopologysuite\\2.3.0\\nettopologysuite.2.3.0.nupkg.sha512",
+    "C:\\Users\\LENOVO\\.nuget\\packages\\nettopologysuite.io.sqlserverbytes\\2.0.0\\nettopologysuite.io.sqlserverbytes.2.0.0.nupkg.sha512",
     "C:\\Users\\LENOVO\\.nuget\\packages\\newtonsoft.json\\13.0.1\\newtonsoft.json.13.0.1.nupkg.sha512",
     "C:\\Users\\LENOVO\\.nuget\\packages\\nuget.common\\5.11.0\\nuget.common.5.11.0.nupkg.sha512",
     "C:\\Users\\LENOVO\\.nuget\\packages\\nuget.configuration\\5.11.0\\nuget.configuration.5.11.0.nupkg.sha512",

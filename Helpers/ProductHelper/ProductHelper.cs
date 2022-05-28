@@ -44,6 +44,18 @@ namespace Store.Helpers.ProductHelper
             return producto;
         }
 
+        public async Task<ICollection<Kardex>> GetAllStoresKardex(GetKardexViewModel model)
+        {
+            return await _context.Kardex
+                .Where(
+                    k =>
+                        k.Product.Id == model.ProductId
+                        && k.Fecha.DayOfYear >= model.Desde.DayOfYear
+                        && k.Fecha.DayOfYear <= model.Hasta.DayOfYear
+                )
+                .ToListAsync();
+        }
+
         public async Task<ICollection<Kardex>> GetKardex(GetKardexViewModel model)
         {
             return await _context.Kardex

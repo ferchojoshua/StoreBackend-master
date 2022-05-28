@@ -34,7 +34,6 @@ namespace Store.Models.ViewModels
         [Required]
         public DateTime Hasta { get; set; }
 
-        [Required]
         public int StoreId { get; set; }
 
         [Required]

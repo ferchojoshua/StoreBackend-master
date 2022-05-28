@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using NetTopologySuite.Geometries;
 using Store.Data;
 
 #nullable disable
@@ -234,6 +235,9 @@ namespace Store.Migrations
                     b.Property<string>("Cedula")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Point>("ClientCoords")
+                        .HasColumnType("geography");
+
                     b.Property<int?>("CommunityId")
                         .HasColumnType("int");
 
@@ -259,6 +263,9 @@ namespace Store.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("NombreCliente")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NombreComercial")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("StoreId")
