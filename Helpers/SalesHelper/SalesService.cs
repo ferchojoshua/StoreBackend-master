@@ -69,6 +69,7 @@ namespace Store.Helpers.SalesHelper
 
         public async Task<Sales> AddSaleAsync(AddSaleViewModel model, Entities.User user)
         {
+            DateTime hoy = DateTime.Now;
             Client cl = await _context.Clients.FirstOrDefaultAsync(c => c.Id == model.IdClient);
             if (cl != null)
             {
@@ -84,14 +85,38 @@ namespace Store.Helpers.SalesHelper
                     Client = cl,
                     ProductsCount = model.SaleDetails.Count,
                     MontoVenta = model.MontoVenta,
-                    FechaVenta = DateTime.Now,
+                    FechaVenta = hoy,
                     FacturedBy = user,
                     IsContado = model.IsContado,
                     IsCanceled = model.IsContado, //Si es de contado, esta cancelado
                     Saldo = model.IsContado ? 0 : model.MontoVenta,
-                    FechaVencimiento = DateTime.Now.AddDays(15),
+                    FechaVencimiento = hoy.AddDays(15),
                     Store = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == model.Storeid)
                 };
+
+            if (model.IsContado)
+            {
+                var movList = await _context.CajaMovments
+                    .Where(c => c.Store.Id == model.Storeid && c.CajaTipo.Id == 1)
+                    .ToListAsync();
+
+                var mov = movList.Where(m => m.Id == movList.Max(k => k.Id)).FirstOrDefault();
+                CajaMovment cM =
+                    new()
+                    {
+                        Fecha = hoy,
+                        Description = "VENTA DE PRODUCTOS",
+                        CajaTipo = await _context.CajaTipos.FirstOrDefaultAsync(c => c.Id == 1),
+                        Entradas = sale.MontoVenta,
+                        Salidas = 0,
+                        Saldo = mov == null ? 0 + sale.MontoVenta : mov.Saldo + sale.MontoVenta,
+                        RealizadoPor = user,
+                        Store = await _context.Almacen.FirstOrDefaultAsync(
+                            a => a.Id == model.Storeid
+                        )
+                    };
+                _context.CajaMovments.Add(cM);
+            }
 
             List<SaleDetail> detalles = new();
             foreach (var item in model.SaleDetails)
@@ -137,7 +162,7 @@ namespace Store.Helpers.SalesHelper
                     new()
                     {
                         Product = prod,
-                        Fecha = DateTime.Now,
+                        Fecha = hoy,
                         Concepto = model.IsContado ? "VENTA DE CONTADO" : "VENTA DE CREDITO",
                         Almacen = alm,
                         Entradas = 0,
@@ -156,7 +181,7 @@ namespace Store.Helpers.SalesHelper
                         Sale = sale,
                         Monto = sale.MontoVenta,
                         RealizedBy = user,
-                        FechaAbono = DateTime.Now,
+                        FechaAbono = hoy,
                         Store = detalles[0].Store
                     };
                 _context.Abonos.Add(abono);
@@ -180,7 +205,28 @@ namespace Store.Helpers.SalesHelper
 
         public async Task<Abono> AddAbonoAsync(AddAbonoViewModel model, Entities.User user)
         {
+            DateTime hoy = DateTime.Now;
             Abono abono = new();
+            var movList = await _context.CajaMovments
+                .Where(c => c.Store.Id == model.IdStore && c.CajaTipo.Id == 1)
+                .ToListAsync();
+
+            var mov = movList.Where(m => m.Id == movList.Max(k => k.Id)).FirstOrDefault();
+
+            CajaMovment cM =
+                new()
+                {
+                    Fecha = hoy,
+                    Description = "ABONO SOBRE VENTA DE PRODUCTOS",
+                    CajaTipo = await _context.CajaTipos.FirstOrDefaultAsync(c => c.Id == 1),
+                    Entradas = model.Monto,
+                    Salidas = 0,
+                    Saldo = mov == null ? 0 + model.Monto : mov.Saldo + model.Monto,
+                    RealizadoPor = user,
+                    Store = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == model.IdStore)
+                };
+            _context.CajaMovments.Add(cM);
+
             decimal sobra = model.Monto;
             var sales = await _context.Sales
                 .Where(
@@ -201,7 +247,7 @@ namespace Store.Helpers.SalesHelper
                             Sale = item,
                             Monto = sobra,
                             RealizedBy = user,
-                            FechaAbono = DateTime.Now,
+                            FechaAbono = hoy,
                             Store = await _context.Almacen.FirstOrDefaultAsync(
                                 s => s.Id == model.IdStore
                             )
@@ -217,7 +263,7 @@ namespace Store.Helpers.SalesHelper
                             Sale = item,
                             Monto = sobra,
                             RealizedBy = user,
-                            FechaAbono = DateTime.Now,
+                            FechaAbono = hoy,
                             Store = await _context.Almacen.FirstOrDefaultAsync(
                                 s => s.Id == model.IdStore
                             )
@@ -233,7 +279,7 @@ namespace Store.Helpers.SalesHelper
                             Sale = item,
                             Monto = item.Saldo,
                             RealizedBy = user,
-                            FechaAbono = DateTime.Now,
+                            FechaAbono = hoy,
                             Store = await _context.Almacen.FirstOrDefaultAsync(
                                 s => s.Id == model.IdStore
                             )
@@ -255,6 +301,7 @@ namespace Store.Helpers.SalesHelper
 
         public async Task<Sales> AnularSaleAsync(int id, Entities.User user)
         {
+            DateTime hoy = DateTime.Now;
             Sales sale = await _context.Sales
                 .Include(s => s.Client)
                 .Include(s => s.SaleDetails)
@@ -262,6 +309,27 @@ namespace Store.Helpers.SalesHelper
                 .Include(s => s.SaleDetails)
                 .ThenInclude(sd => sd.Product)
                 .FirstOrDefaultAsync(s => s.Id == id);
+
+            var movList = await _context.CajaMovments
+                .Where(c => c.Store.Id == sale.Store.Id && c.CajaTipo.Id == 1)
+                .ToListAsync();
+
+            var mov = movList.Where(m => m.Id == movList.Max(k => k.Id)).FirstOrDefault();
+
+            CajaMovment cM =
+                new()
+                {
+                    Fecha = hoy,
+                    Description = "DEVOLUCION DE VENTA",
+                    CajaTipo = await _context.CajaTipos.FirstOrDefaultAsync(c => c.Id == 1),
+                    Entradas = 0,
+                    Salidas = sale.MontoVenta,
+                    Saldo = mov == null ? 0 - sale.MontoVenta : mov.Saldo + sale.MontoVenta,
+                    RealizadoPor = user,
+                    Store = sale.Store
+                };
+            _context.CajaMovments.Add(cM);
+
             if (sale == null)
             {
                 return sale;
@@ -276,7 +344,8 @@ namespace Store.Helpers.SalesHelper
             {
                 item.IsAnulado = true;
                 item.AnulatedBy = user;
-                item.FechaAnulacion = DateTime.Now;
+                item.FechaAnulacion = hoy;
+
                 //Modificamos las existencias
                 Existence existence = await _context.Existences.FirstOrDefaultAsync(
                     e => e.Producto == item.Product && e.Almacen == item.Store
@@ -296,7 +365,7 @@ namespace Store.Helpers.SalesHelper
                     new()
                     {
                         Product = item.Product,
-                        Fecha = DateTime.Now,
+                        Fecha = hoy,
                         Concepto = "DEVOLUCION TOTAL DE VENTA",
                         Almacen = item.Store,
                         Entradas = item.Cantidad,
@@ -318,12 +387,17 @@ namespace Store.Helpers.SalesHelper
 
         public async Task<Sales> AnularSaleParcialAsync(EditSaleViewModel model, Entities.User user)
         {
+            DateTime hoy = DateTime.Now;
+
             Sales sale = await _context.Sales
                 .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado == false))
                 .ThenInclude(sd => sd.Store)
                 .Include(s => s.SaleDetails)
                 .ThenInclude(sd => sd.Product)
                 .FirstOrDefaultAsync(s => s.Id == model.IdSale);
+
+            decimal salidaEfectivo = sale.MontoVenta - model.Monto;
+
             if (sale == null)
             {
                 return sale;
@@ -337,7 +411,7 @@ namespace Store.Helpers.SalesHelper
                     sale.ProductsCount -= 1;
                     item.IsAnulado = true;
                     item.AnulatedBy = user;
-                    item.FechaAnulacion = DateTime.Now;
+                    item.FechaAnulacion = hoy;
 
                     //hay que restarle a las existencias y agregar la salida al kardex
                     Existence existence = await _context.Existences.FirstOrDefaultAsync(
@@ -362,7 +436,7 @@ namespace Store.Helpers.SalesHelper
                         new()
                         {
                             Product = item.Product,
-                            Fecha = DateTime.Now,
+                            Fecha = hoy,
                             Concepto = "DEVOLUCION PARCIAL DE VENTA",
                             Almacen = item.Store,
                             Entradas = item.Cantidad,
@@ -407,7 +481,7 @@ namespace Store.Helpers.SalesHelper
                         new()
                         {
                             Product = item.Product,
-                            Fecha = DateTime.Now,
+                            Fecha = hoy,
                             Concepto = "DEVOLUCION PARCIAL DE VENTA",
                             Almacen = item.Store,
                             Entradas = item.Cantidad,
@@ -425,6 +499,27 @@ namespace Store.Helpers.SalesHelper
                 sale.Saldo = model.Saldo;
             }
             _context.Entry(sale).State = EntityState.Modified;
+
+            var movList = await _context.CajaMovments
+                .Where(c => c.Store.Id == sale.Store.Id && c.CajaTipo.Id == 1)
+                .ToListAsync();
+
+            var mov = movList.Where(m => m.Id == movList.Max(k => k.Id)).FirstOrDefault();
+
+            CajaMovment cM =
+                new()
+                {
+                    Fecha = hoy,
+                    Description = "DEVOLUCION PARCIAL DE VENTA",
+                    CajaTipo = await _context.CajaTipos.FirstOrDefaultAsync(c => c.Id == 1),
+                    Entradas = 0,
+                    Salidas = salidaEfectivo,
+                    Saldo = mov == null ? 0 - salidaEfectivo : mov.Saldo - salidaEfectivo,
+                    RealizadoPor = user,
+                    Store = sale.Store
+                };
+            _context.CajaMovments.Add(cM);
+
             await _context.SaveChangesAsync();
             return sale;
         }
@@ -463,6 +558,8 @@ namespace Store.Helpers.SalesHelper
             Entities.User user
         )
         {
+            DateTime hoy = DateTime.Now;
+
             var sale = await _context.Sales
                 .Include(s => s.Store)
                 .FirstOrDefaultAsync(s => s.Id == model.IdSale);
@@ -480,9 +577,28 @@ namespace Store.Helpers.SalesHelper
                     FechaAbono = DateTime.Now,
                     Store = sale.Store
                 };
-
             _context.Entry(sale).State = EntityState.Modified;
             _context.Abonos.Add(abono);
+
+            var movList = await _context.CajaMovments
+                .Where(c => c.Store.Id == sale.Store.Id && c.CajaTipo.Id == 1)
+                .ToListAsync();
+
+            var mov = movList.Where(m => m.Id == movList.Max(k => k.Id)).FirstOrDefault();
+
+            CajaMovment cM =
+                new()
+                {
+                    Fecha = hoy,
+                    Description = "DEVOLUCION PARCIAL DE VENTA",
+                    CajaTipo = await _context.CajaTipos.FirstOrDefaultAsync(c => c.Id == 1),
+                    Entradas = model.Monto,
+                    Salidas = 0,
+                    Saldo = mov == null ? 0 + model.Monto : mov.Saldo + model.Monto,
+                    RealizadoPor = user,
+                    Store = sale.Store
+                };
+            _context.CajaMovments.Add(cM);
             await _context.SaveChangesAsync();
             return abono;
         }

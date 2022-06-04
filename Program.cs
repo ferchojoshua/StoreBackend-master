@@ -75,6 +75,7 @@ builder.Services.AddScoped<IClientsHelper, ClientsHelper>();
 builder.Services.AddScoped<ILocationsHelper, LocationsHelper>();
 builder.Services.AddScoped<ISalesService, SalesService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<ICashMovmentService, CashMovmentService>();
 
 var MyAllowSpecificOrigins = "Origins";
 builder.Services.AddCors(
