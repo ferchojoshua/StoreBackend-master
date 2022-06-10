@@ -47,6 +47,7 @@ namespace Store.Helpers.ProductHelper
         public async Task<ICollection<Kardex>> GetAllStoresKardex(GetKardexViewModel model)
         {
             return await _context.Kardex
+                .Include(k => k.User)
                 .Where(
                     k =>
                         k.Product.Id == model.ProductId
@@ -59,6 +60,7 @@ namespace Store.Helpers.ProductHelper
         public async Task<ICollection<Kardex>> GetKardex(GetKardexViewModel model)
         {
             return await _context.Kardex
+                .Include(k => k.User)
                 .Where(
                     k =>
                         k.Product.Id == model.ProductId

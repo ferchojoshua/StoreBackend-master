@@ -32,11 +32,12 @@ namespace Store.Helpers.EntradaProductos
                     TipoPago = model.TipoPago,
                     NoFactura = model.NoFactura,
                     FechaIngreso = DateTime.Now,
-                    FechaVencimiento = model.TipoPago == "Pago de Credito" ? fechaV : null,
+                    FechaVencimiento = fechaV,
                     Provider = prov,
                     Almacen = alm,
-                    CreatedBy = user.Email,
-                    MontoFactura = model.MontoFactura
+                    CreatedBy = user.Id,
+                    MontoFactura = model.MontoFactura,
+                    IsCanceled = model.TipoPago != "Pago de Credito",
                 };
             List<ProductInDetails> detalles = new();
             foreach (var item in model.ProductInDetails)
@@ -70,7 +71,6 @@ namespace Store.Helpers.EntradaProductos
                 else
                 {
                     existence.Almacen = alm;
-                    existence.Producto = prod;
                     existence.Existencia += pd.Cantidad;
                     existence.PrecioVentaMayor = item.PrecioVentaMayor;
                     existence.PrecioVentaDetalle = item.PrecioVentaDetalle;

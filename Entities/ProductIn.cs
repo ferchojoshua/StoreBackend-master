@@ -25,6 +25,7 @@
         public DateTime EditDate { get; set; }
 
         public decimal MontoFactura { get; set; }
+        public bool IsCanceled { get; set; }
 
         public List<ProductInDetails> ProductInDetails { get; set; }
     }

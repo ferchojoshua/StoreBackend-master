@@ -8,6 +8,8 @@ namespace Store.Models.ViewModels
         [Required]
         public string NombreCliente { get; set; }
 
+        public string NombreComercial { get; set; }
+
         [Required]
         public string Cedula { get; set; }
 

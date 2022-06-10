@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Store.Data;
 using Store.Entities;
@@ -28,7 +27,7 @@ namespace Store.Helpers.User
         public async Task<ICollection<Entities.User>> GetActiveUsersAsync()
         {
             return await _context.Users
-                .Where(u => u.IsActive == true)
+                .Where(u => u.IsActive == true )
                 .Include(u => u.Rol)
                 .Include(u => u.StoreAccess)
                 .ToListAsync();

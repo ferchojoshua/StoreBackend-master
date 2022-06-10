@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Store.Data;
 using Store.Entities;
-using Store.Helpers.ProductHelper;
 using Store.Models.ViewModels;
 
 namespace Store.Helpers.ProdMovements

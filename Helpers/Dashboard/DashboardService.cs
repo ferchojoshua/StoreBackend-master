@@ -18,7 +18,12 @@ namespace Store.Helpers.ClientService
         public async Task<int> GetNewClientsByStoreAsync(int idStore)
         {
             var result = await _context.Clients
-                .Where(c => c.FechaRegistro.Month == DateTime.Now.Month && c.Store.Id == idStore)
+                .Where(
+                    c =>
+                        c.FechaRegistro.Year == DateTime.Now.Year
+                        && c.FechaRegistro.Month == DateTime.Now.Month
+                        && c.Store.Id == idStore
+                )
                 .ToListAsync();
             return result.Count;
         }
@@ -34,9 +39,12 @@ namespace Store.Helpers.ClientService
                 if (dia != 0)
                 {
                     var sales = await _context.Sales
-                        .Include(s => s.SaleDetails.Where(sd => sd.Store.Id == idStore))
-                        .ThenInclude(sd => sd.Store)
-                        .Where(s => s.IsAnulado == false && s.FechaVenta.Day == hoy.AddDays(-i).Day)
+                        .Where(
+                            s =>
+                                s.IsAnulado == false
+                                && s.FechaVenta.Date == hoy.AddDays(-i).Date
+                                && s.Store.Id == idStore
+                        )
                         .ToListAsync();
 
                     decimal contadoSales = 0;
@@ -45,36 +53,32 @@ namespace Store.Helpers.ClientService
 
                     foreach (var item in sales)
                     {
-                        foreach (var detail in item.SaleDetails)
+                        if (item.IsContado)
                         {
-                            if (detail.Store.Id == idStore)
-                            {
-                                if (item.IsContado)
-                                {
-                                    contadoSales += item.MontoVenta;
-                                }
-                                else
-                                {
-                                    creditoSales += item.Saldo;
-                                }
-                            }
+                            contadoSales += item.MontoVenta;
+                        }
+                        else
+                        {
+                            creditoSales += item.MontoVenta;
                         }
                     }
 
-                    var salesOldest = await _context.Sales
-                        .Where(s => s.IsAnulado == false && s.IsCanceled == false)
+                    var abonos = await _context.Abonos
+                        .Where(
+                            a =>
+                                a.IsAnulado == false
+                                && a.FechaAbono.Date == hoy.AddDays(-i).Date
+                                && a.Store.Id == idStore
+                        )
+                        .Include(a => a.Sale)
                         .ToListAsync();
-                    foreach (var item in salesOldest)
+
+                    foreach (var item in abonos)
                     {
-                        recuperacion += _context.Abonos
-                            .Where(
-                                a =>
-                                    a.IsAnulado == false
-                                    && a.FechaAbono.Day == hoy.AddDays(-i).Day
-                                    && a.Sale == item
-                                    && a.Store.Id == idStore
-                            )
-                            .Sum(s => s.Monto);
+                        if (!item.Sale.IsContado)
+                        {
+                            recuperacion += item.Monto;
+                        }
                     }
 
                     GetSalesByDateResponse data =
@@ -111,50 +115,47 @@ namespace Store.Helpers.ClientService
             decimal creditoSales = 0;
             decimal recuperacion = 0;
 
+            DateTime hoy = DateTime.Now;
+
             var sales = await _context.Sales
-                .Include(s => s.SaleDetails)
-                .ThenInclude(sd => sd.Store)
-                .Where(s => s.IsAnulado == false && s.FechaVenta.Month == DateTime.Now.Month)
+                .Where(
+                    s =>
+                        s.IsAnulado == false
+                        && s.Store.Id == idStore
+                        && s.FechaVenta.Year == hoy.Year
+                        && s.FechaVenta.Month == hoy.Month
+                )
                 .ToListAsync();
 
             foreach (var item in sales)
             {
-                foreach (var detail in item.SaleDetails)
+                if (item.IsContado)
                 {
-                    if (detail.Store.Id == idStore)
-                    {
-                        if (item.IsContado)
-                        {
-                            contadoSales += item.MontoVenta;
-                        }
-                        else
-                        {
-                            creditoSales += item.Saldo;
-                        }
-                    }
+                    contadoSales += item.MontoVenta;
+                }
+                else
+                {
+                    creditoSales += item.MontoVenta;
                 }
             }
 
-            var salesOldest = await _context.Sales
+            var abonos = await _context.Abonos
                 .Where(
-                    s =>
-                        s.IsAnulado == false
-                        && s.FechaVenta.Month <= DateTime.Now.Month
-                        && s.IsCanceled == false
+                    a =>
+                        a.IsAnulado == false
+                        && a.Store.Id == idStore
+                        && a.FechaAbono.Year == hoy.Year
+                        && a.FechaAbono.Month == hoy.Month
                 )
+                .Include(a => a.Sale)
                 .ToListAsync();
 
-            foreach (var item in salesOldest)
+            foreach (var item in abonos)
             {
-                recuperacion += _context.Abonos
-                    .Where(
-                        a =>
-                            a.IsAnulado == false
-                            && a.FechaAbono.Month == DateTime.Now.Month
-                            && a.Sale == item
-                            && a.Store.Id == idStore
-                    )
-                    .Sum(s => s.Monto);
+                if (!item.Sale.IsContado)
+                {
+                    recuperacion += item.Monto;
+                }
             }
 
             List<decimal> result = new() { contadoSales, creditoSales, recuperacion };
@@ -221,6 +222,7 @@ namespace Store.Helpers.ClientService
                 .Where(
                     s =>
                         s.IsAnulado == false
+                        && s.FechaVenta.Year == hoy.Year
                         && s.FechaVenta.Month == hoy.Month
                         && s.Store.Id == idStore
                         && s.Client != null
@@ -251,7 +253,12 @@ namespace Store.Helpers.ClientService
             }
 
             var clients = await _context.Clients
-                .Where(c => c.Store.Id == idStore && c.FechaRegistro.Month == hoy.Month)
+                .Where(
+                    c =>
+                        c.Store.Id == idStore
+                        && c.FechaRegistro.Year == hoy.Year
+                        && c.FechaRegistro.Month == hoy.Month
+                )
                 .ToListAsync();
             foreach (var item in clients)
             {
