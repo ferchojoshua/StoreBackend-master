@@ -46,7 +46,7 @@ namespace Store.Controllers.API
             }
 
             var sales = await _cashService.GetCashMovmentByStoreAsync(id);
-            return Ok(sales.OrderByDescending(s => s.Fecha));
+            return Ok(sales.OrderByDescending(s => s.Id));
         }
     }
 }

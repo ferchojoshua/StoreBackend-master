@@ -81,7 +81,8 @@ namespace Store.Controllers.API
         {
             try
             {
-                return Ok(await _dashboardService.GetSalesByDateAsync(id));
+                var data = await _dashboardService.GetSalesByDateAsync(id);
+                return Ok(data.OrderBy(d => d.Fecha));
             }
             catch (Exception ex)
             {
