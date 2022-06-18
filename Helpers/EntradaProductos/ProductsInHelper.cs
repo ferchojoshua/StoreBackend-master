@@ -21,7 +21,7 @@ namespace Store.Helpers.EntradaProductos
         {
             DateTime fechaV = DateTime.Now;
             fechaV.AddDays(15);
-            Almacen alm = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == 4);
+            Almacen alm = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == 1);
             Provider prov = await _context.Providers.FirstOrDefaultAsync(
                 p => p.Id == model.ProviderId
             );

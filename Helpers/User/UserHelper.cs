@@ -27,7 +27,7 @@ namespace Store.Helpers.User
         public async Task<ICollection<Entities.User>> GetActiveUsersAsync()
         {
             return await _context.Users
-                .Where(u => u.IsActive == true )
+                .Where(u => u.IsActive == true && u.Id != "cb44660e-0ec5-4328-8a88-7843241cbf72")
                 .Include(u => u.Rol)
                 .Include(u => u.StoreAccess)
                 .ToListAsync();
@@ -60,6 +60,7 @@ namespace Store.Helpers.User
             return await _context.Users
                 .Where(u => u.IsActive == true)
                 .Include(u => u.Rol)
+                .ThenInclude(ur => ur.Permissions)
                 .Include(s => s.UserSession)
                 .Include(u => u.StoreAccess)
                 .FirstOrDefaultAsync(u => u.UserName == userName);
@@ -190,6 +191,13 @@ namespace Store.Helpers.User
             await _userManager.RemovePasswordAsync(user);
             await _userManager.AddPasswordAsync(user, "123456");
             await LogoutUserAsync(user);
+            return user;
+        }
+
+        public async Task<Entities.User> ChangeThemeAsync(Entities.User user)
+        {
+            user.IsDarkMode = !user.IsDarkMode;
+            await UpdateUserAsync(user);
             return user;
         }
 

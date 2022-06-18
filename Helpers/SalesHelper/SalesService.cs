@@ -101,21 +101,6 @@ namespace Store.Helpers.SalesHelper
                     .ToListAsync();
 
                 var mov = movList.Where(m => m.Id == movList.Max(k => k.Id)).FirstOrDefault();
-                CajaMovment cM =
-                    new()
-                    {
-                        Fecha = hoy,
-                        Description = "VENTA DE PRODUCTOS",
-                        CajaTipo = await _context.CajaTipos.FirstOrDefaultAsync(c => c.Id == 1),
-                        Entradas = sale.MontoVenta,
-                        Salidas = 0,
-                        Saldo = mov == null ? 0 + sale.MontoVenta : mov.Saldo + sale.MontoVenta,
-                        RealizadoPor = user,
-                        Store = await _context.Almacen.FirstOrDefaultAsync(
-                            a => a.Id == model.Storeid
-                        )
-                    };
-                _context.CajaMovments.Add(cM);
             }
 
             List<SaleDetail> detalles = new();

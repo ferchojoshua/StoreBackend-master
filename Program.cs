@@ -11,6 +11,7 @@ using Store.Helpers.ClientService;
 using Store.Helpers.Locations;
 using System.Text.Json.Serialization;
 using Store.Helpers.SalesHelper;
+using Store.Helpers.ProductExistenceService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,42 +31,36 @@ builder.Services.AddDbContext<DataContext>(
 );
 
 builder.Services
-    .AddIdentity<Store.Entities.User, IdentityRole>(
-        cfg =>
-        {
-            cfg.User.RequireUniqueEmail = true;
-            cfg.Password.RequireDigit = false;
-            cfg.Password.RequiredUniqueChars = 0;
-            cfg.Password.RequireLowercase = false;
-            cfg.Password.RequireNonAlphanumeric = false;
-            cfg.Password.RequireUppercase = false;
-        }
-    )
+    .AddIdentity<Store.Entities.User, IdentityRole>(cfg =>
+    {
+        cfg.User.RequireUniqueEmail = true;
+        cfg.Password.RequireDigit = false;
+        cfg.Password.RequiredUniqueChars = 0;
+        cfg.Password.RequireLowercase = false;
+        cfg.Password.RequireNonAlphanumeric = false;
+        cfg.Password.RequireUppercase = false;
+    })
     .AddEntityFrameworkStores<DataContext>();
 
 builder.Services
     .AddAuthentication()
     .AddCookie()
-    .AddJwtBearer(
-        cfg =>
-        {
-            cfg.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidIssuer = builder.Configuration["Tokens:Issuer"],
-                ValidAudience = builder.Configuration["Tokens:Audience"],
-                IssuerSigningKey = new SymmetricSecurityKey(
-                    Encoding.UTF8.GetBytes(builder.Configuration["Tokens:Key"])
-                )
-            };
-        }
-    );
-
-builder.Services.Configure<SecurityStampValidatorOptions>(
-    options =>
+    .AddJwtBearer(cfg =>
     {
-        options.ValidationInterval = TimeSpan.Zero;
-    }
-);
+        cfg.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidIssuer = builder.Configuration["Tokens:Issuer"],
+            ValidAudience = builder.Configuration["Tokens:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Tokens:Key"])
+            )
+        };
+    });
+
+builder.Services.Configure<SecurityStampValidatorOptions>(options =>
+{
+    options.ValidationInterval = TimeSpan.Zero;
+});
 
 builder.Services.AddScoped<IUserHelper, UserHelper>();
 builder.Services.AddScoped<IProductsInHelper, ProductsInHelper>();
@@ -76,23 +71,23 @@ builder.Services.AddScoped<ILocationsHelper, LocationsHelper>();
 builder.Services.AddScoped<ISalesService, SalesService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<ICashMovmentService, CashMovmentService>();
+builder.Services.AddScoped<IProdExistService, ProdExistService>();
 
 var MyAllowSpecificOrigins = "Origins";
-builder.Services.AddCors(
-    options =>
-    {
-        options.AddPolicy(
-            name: MyAllowSpecificOrigins,
-            builder =>
-            {
-                builder
-                    .WithOrigins("http://localhost:3000", "https://auto-moto.netlify.app/")
-                    .AllowAnyHeader()
-                    .AllowAnyMethod();
-            }
-        );
-    }
-);
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(
+        name: MyAllowSpecificOrigins,
+        builder =>
+        {
+            builder
+                // .WithOrigins("http://localhost:3000", "http://lenovito/AutoMoto/")
+                .AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        }
+    );
+});
 
 var app = builder.Build();
 

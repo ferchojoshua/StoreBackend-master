@@ -50,5 +50,6 @@ namespace Store.Helpers.User
         Task<Rol> UpdateRoleAsync(Rol model);
         Task DeleteRolAsync(Rol rol);
         Task AddUserToRoleAsync(Entities.User user, int rolId);
+        Task<Entities.User> ChangeThemeAsync(Entities.User user);
     }
 }

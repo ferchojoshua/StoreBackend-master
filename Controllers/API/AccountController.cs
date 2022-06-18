@@ -30,42 +30,50 @@ namespace Store.Controllers.API
         {
             if (ModelState.IsValid)
             {
-                User user = await _userHelper.GetUserAsync(model.Username);
-                if (user != null)
+                try
                 {
-                    var result = await _userHelper.ValidatePasswordAsync(user, model.Password);
-                    if (result.Succeeded)
+                    User user = await _userHelper.GetUserAsync(model.Username);
+                    if (user != null)
                     {
-                        Claim[] claims = new[]
+                        var result = await _userHelper.ValidatePasswordAsync(user, model.Password);
+                        if (result.Succeeded)
                         {
-                            new Claim(JwtRegisteredClaimNames.Sub, user.Email),
-                            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-                        };
-                        SymmetricSecurityKey key =
-                            new(Encoding.UTF8.GetBytes(_configuration["tokens:key"]));
-                        SigningCredentials credentials = new(key, SecurityAlgorithms.HmacSha256);
-                        JwtSecurityToken token =
-                            new(
-                                _configuration["tokens:Issuer"],
-                                _configuration["tokens:Audience"],
-                                claims,
-                                expires: DateTime.UtcNow.AddMonths(3),
-                                signingCredentials: credentials
-                            );
-                        var results = new
-                        {
-                            token = new JwtSecurityTokenHandler().WriteToken(token),
-                            expiration = token.ValidTo,
-                            user
-                        };
+                            Claim[] claims = new[]
+                            {
+                                new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+                                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                            };
+                            SymmetricSecurityKey key =
+                                new(Encoding.UTF8.GetBytes(_configuration["tokens:key"]));
+                            SigningCredentials credentials =
+                                new(key, SecurityAlgorithms.HmacSha256);
+                            JwtSecurityToken token =
+                                new(
+                                    _configuration["tokens:Issuer"],
+                                    _configuration["tokens:Audience"],
+                                    claims,
+                                    expires: DateTime.UtcNow.AddMonths(3),
+                                    signingCredentials: credentials
+                                );
+                            var results = new
+                            {
+                                token = new JwtSecurityTokenHandler().WriteToken(token),
+                                expiration = token.ValidTo,
+                                user
+                            };
 
-                        user.UserSession.UserToken = results.token;
-                        user.UserSession.ExpirationDateToken = results.expiration;
-                        user.UserSession.UserBrowser = model.UserBrowser;
-                        user.UserSession.UserSO = model.UserSO;
-                        await _userHelper.UpdateUserAsync(user);
-                        return Created(String.Empty, results);
+                            user.UserSession.UserToken = results.token;
+                            user.UserSession.ExpirationDateToken = results.expiration;
+                            user.UserSession.UserBrowser = model.UserBrowser;
+                            user.UserSession.UserSO = model.UserSO;
+                            await _userHelper.UpdateUserAsync(user);
+                            return Ok(results);
+                        }
                     }
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ex.Message);
                 }
             }
 
@@ -99,8 +107,9 @@ namespace Store.Controllers.API
             }
             string token = HttpContext.Request.Headers["Authorization"];
             token = token["Bearer ".Length..].Trim();
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             try
             {
                 User user = await _userHelper.GetUserByEmailAsync(email);
@@ -114,6 +123,39 @@ namespace Store.Controllers.API
                     return Ok("eX01");
                 }
                 return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet("ChangeTheme")]
+        public async Task<IActionResult> ChangeTheme()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
+            try
+            {
+                User user = await _userHelper.GetUserByEmailAsync(email);
+                if (user == null)
+                {
+                    return NotFound("01");
+                }
+                if (user.UserSession.UserToken != token)
+                {
+                    await _userHelper.LogoutAsync();
+                    return Ok("eX01");
+                }
+                return Ok(await _userHelper.ChangeThemeAsync(user));
             }
             catch (Exception ex)
             {
@@ -146,8 +188,9 @@ namespace Store.Controllers.API
             {
                 return BadRequest();
             }
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user == null)
             {
@@ -182,8 +225,9 @@ namespace Store.Controllers.API
             {
                 return BadRequest();
             }
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserAsync(email);
             if (user == null)
             {

@@ -15,6 +15,7 @@ namespace Store.Entities
         public string Direccion { get; set; }
         public User CreadoPor { get; set; }
         public string EditadoPor { get; set; }
+        public decimal LimiteCredito { get; set; }
         public DateTime FechaEdicion { get; set; }
         public Almacen Store { get; set; }
         public string TipoCliente { get; set; }

@@ -43,7 +43,8 @@ namespace Store.Helpers.ClientService
                     ),
                     Direccion = model.Direccion,
                     CreadoPor = user,
-                    Store = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == model.IdStore)
+                    Store = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == model.IdStore),
+                    LimiteCredito = model.CreditLimit
                 };
             _context.Clients.Add(cl);
             await _context.SaveChangesAsync();
@@ -68,6 +69,7 @@ namespace Store.Helpers.ClientService
             cl.Direccion = model.Direccion;
             cl.EditadoPor = user.UserName;
             cl.FechaEdicion = DateTime.Now;
+            cl.LimiteCredito = model.CreditLimit;
 
             _context.Entry(cl).State = EntityState.Modified;
             await _context.SaveChangesAsync();
@@ -97,7 +99,8 @@ namespace Store.Helpers.ClientService
             {
                 foreach (var municipality in model.MunicipalityList)
                 {
-                    if (item.Community.Municipality.Id == municipality.Id) { 
+                    if (item.Community.Municipality.Id == municipality.Id)
+                    {
                         clientsList.Add(item);
                     }
                 }

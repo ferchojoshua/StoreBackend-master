@@ -321,6 +321,9 @@ namespace Store.Migrations
                     b.Property<DateTime>("FechaRegistro")
                         .HasColumnType("datetime2");
 
+                    b.Property<decimal>("LimiteCredito")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("NombreCliente")
                         .HasColumnType("nvarchar(max)");
 

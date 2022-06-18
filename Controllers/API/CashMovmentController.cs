@@ -26,8 +26,9 @@ namespace Store.Controllers.API
         [HttpGet("GetCashMovmentByStore/{id}")]
         public async Task<ActionResult<IEnumerable<CajaMovment>>> GetCashMovmentByStore(int id)
         {
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -47,6 +48,35 @@ namespace Store.Controllers.API
 
             var sales = await _cashService.GetCashMovmentByStoreAsync(id);
             return Ok(sales.OrderByDescending(s => s.Id));
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<CajaMovment>> AddCashMovmentByStore(
+            [FromBody] AddCashMovmentViewModel model
+        )
+        {
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "CAJA CREATE"))
+            {
+                return Unauthorized();
+            }
+
+            var cM = await _cashService.AddCashMovmentAsync(model, user);
+            return Ok(cM);
         }
     }
 }
