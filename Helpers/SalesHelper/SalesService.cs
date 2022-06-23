@@ -516,6 +516,7 @@ namespace Store.Helpers.SalesHelper
             List<GetSalesAndQuotesResponse> result = new();
             var sales = await _context.Sales
                 .Include(s => s.Store)
+                .Include(s => s.FacturedBy)
                 .Where(
                     s => s.IsAnulado == false && s.Client.Id == idClient && s.IsCanceled == false
                 )

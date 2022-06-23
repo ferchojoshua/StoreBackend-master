@@ -154,14 +154,25 @@ namespace Store.Controllers.API
                 return Ok("eX01");
             }
 
-            var result = await _context.Existences
-                .Include(e => e.Almacen)
-                .Include(e => e.Producto)
-                .ThenInclude(p => p.TipoNegocio)
-                .Where(e => e.Almacen.Id == model.IdAlmacen)
-                .ToListAsync();
+            try
+            {
+                var result = await _context.Existences
+                    .Include(e => e.Almacen)
+                    .Include(e => e.Producto)
+                    .ThenInclude(p => p.TipoNegocio)
+                    .Where(e => e.Almacen.Id == model.IdAlmacen)
+                    .ToListAsync();
+                if (result == null)
+                {
+                    return NoContent();
+                }
 
-            return Ok(result.OrderBy(e => e.Producto.Description));
+                return Ok(result.OrderBy(e => e.Producto.Description));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPost]

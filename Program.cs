@@ -22,13 +22,26 @@ builder.Services
     .AddControllers()
     .AddJsonOptions(s => s.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
-builder.Services.AddDbContext<DataContext>(
-    opt =>
-        opt.UseSqlServer(
-            builder.Configuration.GetConnectionString("DefaultConnetion"),
-            x => x.UseNetTopologySuite()
-        )
-);
+if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+{
+    builder.Services.AddDbContext<DataContext>(
+        opt =>
+            opt.UseSqlServer(
+                builder.Configuration.GetConnectionString("DefaultConnetion"),
+                x => x.UseNetTopologySuite()
+            )
+    );
+}
+else
+{
+    builder.Services.AddDbContext<DataContext>(
+        opt =>
+            opt.UseSqlServer(
+                builder.Configuration.GetConnectionString("TestConnetion"),
+                x => x.UseNetTopologySuite()
+            )
+    );
+}
 
 builder.Services
     .AddIdentity<Store.Entities.User, IdentityRole>(cfg =>

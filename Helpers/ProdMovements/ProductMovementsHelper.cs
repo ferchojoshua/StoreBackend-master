@@ -19,131 +19,151 @@ namespace Store.Helpers.ProdMovements
             Entities.User user
         )
         {
-            string almacenText = "";
-            Producto prod = await _context.Productos.FirstOrDefaultAsync(
-                p => p.Id == model.IdProducto
-            );
-
-            //Aca registramos el movimiento del producto
-            ProductMovments pM =
-                new()
-                {
-                    Producto = prod,
-                    AlmacenProcedenciaId = model.AlmacenProcedenciaId,
-                    AlmacenDestinoId = model.AlmacenDestinoId,
-                    Cantidad = model.Cantidad,
-                    Concepto = model.Concepto,
-                    User = user,
-                    Fecha = DateTime.Now
-                };
-
-            _context.ProductMovments.Add(pM);
-
-            //Aca Buscamos la existencia en el almacen prodecencia
-            Existence existProcedencia = await _context.Existences
-                .Include(e => e.Almacen)
-                .Include(e => e.Producto)
-                .Where(
-                    e => e.Producto.Id == pM.Producto.Id && e.Almacen.Id == pM.AlmacenProcedenciaId
-                )
-                .FirstOrDefaultAsync();
-
-            //if is null or procedence is major than 0 return null
-            if (existProcedencia == null || existProcedencia.Existencia <= 0)
+            List<ProductMovmentDetails> pMList = new();
+            foreach (var item in model.MovmentDetails)
             {
-                return pM = null;
-            }
-            else
-            {
-                if (existProcedencia.Existencia < pM.Cantidad)
-                {
-                    return pM = null;
-                }
-
-                //Aca Buscamos la existencia en el almacen prodecencia
-                Existence existDestino = await _context.Existences
-                    .Include(e => e.Almacen)
-                    .Include(e => e.Producto)
-                    .FirstOrDefaultAsync(
-                        e => e.Producto == pM.Producto && e.Almacen.Id == pM.AlmacenDestinoId
-                    );
-
-                //si es nulo se crea nuevo y se agrega a la DB
-                if (existDestino == null)
-                {
-                    existDestino = new()
-                    {
-                        Almacen = await _context.Almacen.FirstOrDefaultAsync(
-                            a => a.Id == pM.AlmacenDestinoId
-                        ),
-                        Producto = pM.Producto,
-                        Existencia = pM.Cantidad,
-                        PrecioVentaDetalle = existProcedencia.PrecioVentaDetalle,
-                        PrecioVentaMayor = existProcedencia.PrecioVentaMayor
-                    };
-                    almacenText = existDestino.Almacen.Name;
-                    _context.Existences.Add(existDestino);
-                }
-                //si no es nulo, se edita el existente
-                else
-                {
-                    existDestino.Existencia += pM.Cantidad;
-                    existDestino.PrecioVentaDetalle = existProcedencia.PrecioVentaDetalle;
-                    existDestino.PrecioVentaMayor = existProcedencia.PrecioVentaMayor;
-                    almacenText = existDestino.Almacen.Name;
-                    _context.Entry(existDestino).State = EntityState.Modified;
-                }
-
-                //Agregamos el Kardex de entrada al almacen destino
-                var karListDest = await _context.Kardex
-                    .Where(k => k.Product.Id == pM.Producto.Id && k.Almacen == existDestino.Almacen)
-                    .ToListAsync();
-
-                Kardex karDest = karListDest
-                    .Where(k => k.Id == karListDest.Max(k => k.Id))
-                    .FirstOrDefault();
-
-                Kardex kardex =
+                string almacenText = "";
+                Producto prod = await _context.Productos.FirstOrDefaultAsync(
+                    p => p.Id == item.IdProducto
+                );
+                ProductMovmentDetails pMDetails =
                     new()
                     {
-                        Product = prod,
-                        Fecha = DateTime.Now,
-                        Concepto = $"TRASLADO DE INVENTARIO A - {almacenText}",
-                        Almacen = existDestino.Almacen,
-                        Entradas = existDestino.Existencia,
-                        Salidas = 0,
-                        Saldo = karDest == null ? 0 : karDest.Saldo + existDestino.Existencia,
-                        User = user
+                        Producto = prod,
+                        AlmacenProcedenciaId = item.AlmacenProcedenciaId,
+                        AlmacenDestinoId = item.AlmacenDestinoId,
+                        Cantidad = item.Cantidad,
                     };
-                _context.Kardex.Add(kardex);
+
+                pMList.Add(pMDetails);
+
+                //Aca Buscamos la existencia en el almacen prodecencia
+                Existence existProcedencia = await _context.Existences
+                    .Where(e => e.Producto == prod && e.Almacen.Id == item.AlmacenProcedenciaId)
+                    .FirstOrDefaultAsync();
+
+                //if is null or procedence is major than 0 return null
+                if (existProcedencia == null || existProcedencia.Existencia <= 0)
+                {
+                    return null;
+                }
+                else
+                {
+                    if (existProcedencia.Existencia < item.Cantidad)
+                    {
+                        return null;
+                    }
+
+                    //Aca Buscamos la existencia en el almacen prodecencia
+                    Existence existDestino = await _context.Existences.FirstOrDefaultAsync(
+                        e => e.Producto == prod && e.Almacen.Id == item.AlmacenDestinoId
+                    );
+
+                    //si es nulo se crea nuevo y se agrega a la DB
+                    if (existDestino == null)
+                    {
+                        existDestino = new()
+                        {
+                            Almacen = await _context.Almacen.FirstOrDefaultAsync(
+                                a => a.Id == item.AlmacenDestinoId
+                            ),
+                            Producto = prod,
+                            Existencia = item.Cantidad,
+                            PrecioVentaDetalle = existProcedencia.PrecioVentaDetalle,
+                            PrecioVentaMayor = existProcedencia.PrecioVentaMayor
+                        };
+                        almacenText = existDestino.Almacen.Name;
+                        _context.Existences.Add(existDestino);
+                    }
+                    //si no es nulo, se edita el existente
+                    else
+                    {
+                        existDestino.Existencia += item.Cantidad;
+                        existDestino.PrecioVentaDetalle = existProcedencia.PrecioVentaDetalle;
+                        existDestino.PrecioVentaMayor = existProcedencia.PrecioVentaMayor;
+                        almacenText = existDestino.Almacen.Name;
+                        _context.Entry(existDestino).State = EntityState.Modified;
+                    }
+
+                    //Agregamos el Kardex de entrada al almacen destino
+                    var karListDest = await _context.Kardex
+                        .Where(k => k.Product == prod && k.Almacen == existDestino.Almacen)
+                        .ToListAsync();
+
+                    Kardex karDest = karListDest
+                        .Where(k => k.Id == karListDest.Max(k => k.Id))
+                        .FirstOrDefault();
+
+                    Kardex kardex =
+                        new()
+                        {
+                            Product = prod,
+                            Fecha = DateTime.Now,
+                            Concepto = $"TRASLADO DE INVENTARIO A - {almacenText}",
+                            Almacen = await _context.Almacen.FirstOrDefaultAsync(
+                                a => a.Id == item.AlmacenDestinoId
+                            ),
+                            Entradas = existDestino.Existencia,
+                            Salidas = 0,
+                            Saldo = karDest == null ? 0 : karDest.Saldo + existDestino.Existencia,
+                            User = user
+                        };
+                    _context.Kardex.Add(kardex);
+
+                    //Agregamos el Kardex de entrada al almacen procedencia
+                    var karList = await _context.Kardex
+                        .Where(k => k.Product == prod && k.Almacen == existProcedencia.Almacen)
+                        .ToListAsync();
+
+                    Kardex kar = karList
+                        .Where(k => k.Id == karList.Max(k => k.Id))
+                        .FirstOrDefault();
+
+                    Kardex kardexProcedencia =
+                        new()
+                        {
+                            Product = prod,
+                            Fecha = DateTime.Now,
+                            Concepto = $"TRASLADO DE INVENTARIO A - {almacenText}",
+                            Almacen = await _context.Almacen.FirstOrDefaultAsync(
+                                a => a.Id == item.AlmacenProcedenciaId
+                            ),
+                            Entradas = 0,
+                            Salidas = item.Cantidad,
+                            Saldo = kar == null ? 0 : kar.Saldo - item.Cantidad,
+                            User = user
+                        };
+                    _context.Kardex.Add(kardexProcedencia);
+                }
+
+                existProcedencia.Existencia -= item.Cantidad;
+                _context.Entry(existProcedencia).State = EntityState.Modified;
+
+                await _context.SaveChangesAsync();
             }
 
-            existProcedencia.Existencia -= pM.Cantidad;
-            _context.Entry(existProcedencia).State = EntityState.Modified;
-
-            //Agregamos el Kardex de entrada al almacen procedencia
-            var karList = await _context.Kardex
-                .Where(k => k.Product.Id == pM.Producto.Id && k.Almacen == existProcedencia.Almacen)
-                .ToListAsync();
-
-            Kardex kar = karList.Where(k => k.Id == karList.Max(k => k.Id)).FirstOrDefault();
-
-            Kardex kardexProcedencia =
+            //Aca registramos el movimiento del producto
+            ProductMovments productMovments =
                 new()
                 {
-                    Product = prod,
+                    User = user,
+                    Concepto = model.Concepto,
                     Fecha = DateTime.Now,
-                    Concepto = $"TRASLADO DE INVENTARIO A - {almacenText}",
-                    Almacen = existProcedencia.Almacen,
-                    Entradas = 0,
-                    Salidas = model.Cantidad,
-                    Saldo = kar == null ? 0 : kar.Saldo - model.Cantidad,
-                    User = user
+                    MovmentDetails = pMList
                 };
-            _context.Kardex.Add(kardexProcedencia);
 
+            _context.ProductMovments.Add(productMovments);
             await _context.SaveChangesAsync();
-            return pM;
+            return productMovments;
+        }
+
+        public async Task<ICollection<ProductMovments>> GetProductMovmentsAsync()
+        {
+            return await _context.ProductMovments
+                .Include(p => p.MovmentDetails)
+                .ThenInclude(md => md.Producto)
+                .Include(p => p.User)
+                .ToListAsync();
         }
 
         public async Task<Existence> UpdateProductExistencesAsync(

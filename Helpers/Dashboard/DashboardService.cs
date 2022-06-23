@@ -75,9 +75,12 @@ namespace Store.Helpers.ClientService
 
                     foreach (var item in abonos)
                     {
-                        if (!item.Sale.IsContado)
+                        if (item.Sale != null)
                         {
-                            recuperacion += item.Monto;
+                            if (!item.Sale.IsContado)
+                            {
+                                recuperacion += item.Monto;
+                            }
                         }
                     }
 
@@ -152,9 +155,12 @@ namespace Store.Helpers.ClientService
 
             foreach (var item in abonos)
             {
-                if (!item.Sale.IsContado)
+                if (item.Sale != null)
                 {
-                    recuperacion += item.Monto;
+                    if (!item.Sale.IsContado)
+                    {
+                        recuperacion += item.Monto;
+                    }
                 }
             }
 

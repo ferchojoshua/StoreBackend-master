@@ -2,11 +2,9 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Store.Data;
 using Store.Entities;
+using Store.Helpers.ProdMovements;
 using Store.Helpers.User;
-using Store.Models.Responses;
 
 namespace Store.Controllers.API
 {
@@ -16,20 +14,24 @@ namespace Store.Controllers.API
     public class ProductMovementsController : ControllerBase
     {
         private readonly IUserHelper _userHelper;
-        private readonly DataContext _context;
+        private readonly IProductMovementsHelper _productMovementsHelper;
 
-        public ProductMovementsController(DataContext context, IUserHelper userHelper)
+        public ProductMovementsController(
+            IUserHelper userHelper,
+            IProductMovementsHelper productMovementsHelper
+        )
         {
             _userHelper = userHelper;
-            _context = context;
+            _productMovementsHelper = productMovementsHelper;
         }
 
         // GET: api/
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ProductMovments>>> GetProductMovments()
         {
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -48,34 +50,43 @@ namespace Store.Controllers.API
                 await _userHelper.LogoutAsync();
                 return Ok("eX01");
             }
-
-            var result = await _context.ProductMovments
-                .Include(p => p.Producto)
-                .Include(p => p.User)
-                .ToListAsync();
-
-            List<ProductMovementsResponse> pMList = new();
-            foreach (var item in result)
+            try
             {
-                ProductMovementsResponse pM =
-                    new()
-                    {
-                        Id = item.Id,
-                        Producto = item.Producto,
-                        AlmacenProcedencia = await _context.Almacen.FirstOrDefaultAsync(
-                            a => a.Id == item.AlmacenProcedenciaId
-                        ),
-                        AlmacenDestino = await _context.Almacen.FirstOrDefaultAsync(
-                            a => a.Id == item.AlmacenDestinoId
-                        ),
-                        Cantidad = item.Cantidad,
-                        Concepto = item.Concepto,
-                        User = item.User,
-                        Fecha = item.Fecha
-                    };
-                pMList.Add(pM);
+                var result = await _productMovementsHelper.GetProductMovmentsAsync();
+                return Ok(result.OrderByDescending(r => r.Fecha));
             }
-            return Ok(pMList.OrderByDescending(p => p.Fecha));
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+            // var result = await _context.ProductMovments
+            //     // .Include(p => p.MovmentDetails)
+            //     .Include(p => p.User)
+            //     .ToListAsync();
+
+            // List<ProductMovementsResponse> pMList = new();
+            // foreach (var item in result)
+            // {
+            //     ProductMovementsResponse pM =
+            //         new()
+            //         {
+            //             Id = item.Id,
+            //             // Producto = item.Producto,
+            //             AlmacenProcedencia = await _context.Almacen.FirstOrDefaultAsync(
+            //                 a => a.Id == item.AlmacenProcedenciaId
+            //             ),
+            //             AlmacenDestino = await _context.Almacen.FirstOrDefaultAsync(
+            //                 a => a.Id == item.AlmacenDestinoId
+            //             ),
+            //             // Cantidad = item.Cantidad,
+            //             // Concepto = item.Concepto,
+            //             User = item.User,
+            //             Fecha = item.Fecha
+            //         };
+            //     pMList.Add(pM);
+            // }
+            // return Ok(pMList.OrderByDescending(p => p.Fecha));
         }
     }
 }
