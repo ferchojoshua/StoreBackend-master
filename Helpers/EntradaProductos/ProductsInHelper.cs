@@ -96,7 +96,7 @@ namespace Store.Helpers.EntradaProductos
                             model.TipoPago == "Pago de Credito"
                                 ? "COMPRA DE CREDITO"
                                 : "COMPRA DE CONTADO",
-                        Almacen = alm,
+                        Almacen = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == 1),
                         Entradas = item.Cantidad,
                         Salidas = 0,
                         Saldo = saldo + item.Cantidad,
@@ -107,7 +107,6 @@ namespace Store.Helpers.EntradaProductos
             productIn.ProductInDetails = detalles;
             _context.ProductIns.Add(productIn);
             await _context.SaveChangesAsync();
-
             return productIn;
         }
 
@@ -200,7 +199,7 @@ namespace Store.Helpers.EntradaProductos
                             Product = prod,
                             Fecha = DateTime.Now,
                             Concepto = "MODIFICACION DE ORDEN",
-                            Almacen = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == 4),
+                            Almacen = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == 1),
                             Entradas = 0,
                             Salidas = restar,
                             Saldo = totalEntradas - (totaSalidas + restar),
