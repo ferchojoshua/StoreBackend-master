@@ -544,3 +544,8 @@ C:\Proyects\StoreBackend\obj\Debug\net6.0\refint\Store.dll
 C:\Proyects\StoreBackend\obj\Debug\net6.0\Store.pdb
 C:\Proyects\StoreBackend\obj\Debug\net6.0\Store.genruntimeconfig.cache
 C:\Proyects\StoreBackend\obj\Debug\net6.0\ref\Store.dll
+C:\Proyects\StoreBackend\bin\Debug\net6.0\publish\web.config
+C:\Proyects\StoreBackend\bin\Debug\net6.0\publish\appsettings.Development.json
+C:\Proyects\StoreBackend\bin\Debug\net6.0\publish\appsettings.json
+C:\Proyects\StoreBackend\bin\Debug\net6.0\publish\Store.deps.json
+C:\Proyects\StoreBackend\bin\Debug\net6.0\publish\Store.runtimeconfig.json
