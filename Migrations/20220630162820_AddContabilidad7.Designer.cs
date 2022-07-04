@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Store.Data;
@@ -12,9 +13,10 @@ using Store.Data;
 namespace Store.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220630162820_AddContabilidad7")]
+    partial class AddContabilidad7
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -379,11 +381,11 @@ namespace Store.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<int?>("CountGroupId")
+                    b.Property<int>("Code")
                         .HasColumnType("int");
 
-                    b.Property<string>("CountNumber")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("CountGroupId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Descripcion")
                         .HasColumnType("nvarchar(max)");

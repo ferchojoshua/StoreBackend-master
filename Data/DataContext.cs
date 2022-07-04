@@ -14,6 +14,9 @@ namespace Store.Data
         public DbSet<CajaTipo> CajaTipos { get; set; }
         public DbSet<Client> Clients { get; set; }
         public DbSet<Community> Communities { get; set; }
+        public DbSet<Count> Counts { get; set; }
+        public DbSet<CountGroup> CountGroups { get; set; }
+        public DbSet<CountMovment> CountMovments { get; set; }
         public DbSet<Department> Departments { get; set; }
         public DbSet<Existence> Existences { get; set; }
         public DbSet<Familia> Familias { get; set; }

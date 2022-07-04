@@ -5,7 +5,9 @@ namespace Store.Entities
         public int Id { get; set; }
         public bool IsEventual { get; set; }
         public string NombreCliente { get; set; }
+#nullable enable
         public Client? Client { get; set; }
+#nullable disable
         public int ProductsCount { get; set; }
         public decimal MontoVenta { get; set; }
         public DateTime FechaVenta { get; set; }

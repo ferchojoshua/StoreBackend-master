@@ -2,42 +2,28 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Store.Data;
 using Store.Entities;
-using Store.Helpers.ProdMovements;
-using Store.Helpers.ProductExistenceService;
 using Store.Helpers.User;
-using Store.Models.Responses;
-using Store.Models.ViewModels;
+using StoreBackend.Helpers.ContabilidadService;
+using StoreBackend.Models.ViewModels;
 
-namespace Store.Controllers.API
+namespace StoreBackend.Controllers.API
 {
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
-    [ApiController]
-    public class ExistenceController : ControllerBase
+    public class ContController : Controller
     {
         private readonly IUserHelper _userHelper;
-        private readonly IProductMovementsHelper _pMHelper;
-        private readonly IProdExistService _prodExistService;
-        private readonly DataContext _context;
+        private readonly IContService _contService;
 
-        public ExistenceController(
-            DataContext context,
-            IUserHelper userHelper,
-            IProductMovementsHelper pMHelper,
-            IProdExistService prodExistService
-        )
+        public ContController(IUserHelper userHelper, IContService contService)
         {
             _userHelper = userHelper;
-            _pMHelper = pMHelper;
-            _prodExistService = prodExistService;
-            _context = context;
+            _contService = contService;
         }
 
-        [HttpGet("GetExistencies")]
-        public async Task<ActionResult<IEnumerable<ExistenciaResponse>>> GetExistencies()
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Count>>> GetCounts()
         {
             string email = User.Claims
                 .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
@@ -47,12 +33,6 @@ namespace Store.Controllers.API
             {
                 return Ok(user);
             }
-
-            if (!await _userHelper.IsAutorized(user.Rol, "EXISTANCE VER"))
-            {
-                return Unauthorized();
-            }
-
             string token = HttpContext.Request.Headers["Authorization"];
             token = token["Bearer ".Length..].Trim();
             if (user.UserSession.UserToken != token)
@@ -60,11 +40,49 @@ namespace Store.Controllers.API
                 await _userHelper.LogoutAsync();
                 return Ok("eX01");
             }
+            if (!await _userHelper.IsAutorized(user.Rol, "CONT VER"))
+            {
+                return Unauthorized();
+            }
 
             try
             {
-                var result = await _prodExistService.GetProductExistencesAsync();
-                return Ok(result.OrderBy(p => p.Description));
+                var result = await _contService.GetCountListAsync();
+                return Ok(result.OrderBy(x => x.CountNumber));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("GetCountGroup")]
+        public async Task<ActionResult<IEnumerable<Count>>> GetCountGroup()
+        {
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "CONT VER"))
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                var result = await _contService.GetCountGroupsAsync();
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -73,113 +91,7 @@ namespace Store.Controllers.API
         }
 
         [HttpPost]
-        [Route("GetExistencesByProduct")]
-        public async Task<ActionResult<Existence>> GetExistenciesByProduct(
-            [FromBody] GetExistencesViewModel model
-        )
-        {
-            string email = User.Claims
-                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
-                .Value;
-            User user = await _userHelper.GetUserByEmailAsync(email);
-            if (user.IsDefaultPass)
-            {
-                return Ok(user);
-            }
-
-            if (!await _userHelper.IsAutorized(user.Rol, "EXISTANCE VER"))
-            {
-                return Unauthorized();
-            }
-
-            string token = HttpContext.Request.Headers["Authorization"];
-            token = token["Bearer ".Length..].Trim();
-            if (user.UserSession.UserToken != token)
-            {
-                await _userHelper.LogoutAsync();
-                return Ok("eX01");
-            }
-
-            Existence existence = await _context.Existences
-                .Include(e => e.Almacen)
-                .Include(e => e.Producto)
-                .FirstOrDefaultAsync(
-                    e => e.Producto.Id == model.IdProduct && e.Almacen.Id == model.IdAlmacen
-                );
-            if (existence == null)
-            {
-                existence = new()
-                {
-                    Almacen = await _context.Almacen.FirstOrDefaultAsync(
-                        a => a.Id == model.IdAlmacen
-                    ),
-                    Producto = await _context.Productos.FirstOrDefaultAsync(
-                        p => p.Id == model.IdProduct
-                    ),
-                    Existencia = 0,
-                    PrecioVentaMayor = 0,
-                    PrecioVentaDetalle = 0
-                };
-                _context.Existences.Add(existence);
-                await _context.SaveChangesAsync();
-            }
-            return Ok(existence);
-        }
-
-        [HttpPost]
-        [Route("GetExistencesByStore")]
-        public async Task<ActionResult<ICollection<Existence>>> GetExistencesByStore(
-            [FromBody] GetExistencesByStoreViewModel model
-        )
-        {
-            string email = User.Claims
-                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
-                .Value;
-            User user = await _userHelper.GetUserByEmailAsync(email);
-            if (user.IsDefaultPass)
-            {
-                return Ok(user);
-            }
-
-            if (!await _userHelper.IsAutorized(user.Rol, "EXISTANCE VER"))
-            {
-                return Unauthorized();
-            }
-
-            string token = HttpContext.Request.Headers["Authorization"];
-            token = token["Bearer ".Length..].Trim();
-            if (user.UserSession.UserToken != token)
-            {
-                await _userHelper.LogoutAsync();
-                return Ok("eX01");
-            }
-
-            try
-            {
-                var result = await _context.Existences
-                    .Include(e => e.Almacen)
-                    .Include(e => e.Producto)
-                    .ThenInclude(p => p.TipoNegocio)
-                    .Where(e => e.Almacen.Id == model.IdAlmacen && e.Producto != null)
-                    .ToListAsync();
-                if (result == null)
-                {
-                    return NoContent();
-                }
-
-                return Ok(result.OrderBy(e => e.Producto.Description));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpPost]
-        [Route("AddProductMover")]
-        public async Task<ActionResult> AddProductMover(
-            [FromBody] AddProductMovementViewModel model
-        )
+        public async Task<ActionResult<Count>> PostAlmacen([FromBody] AddCountViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -193,7 +105,7 @@ namespace Store.Controllers.API
             {
                 return Ok(user);
             }
-            if (!await _userHelper.IsAutorized(user.Rol, "PRODUCT TRANSLATE CREATE"))
+            if (!await _userHelper.IsAutorized(user.Rol, "CONT CREATE"))
             {
                 return Unauthorized();
             }
@@ -208,12 +120,7 @@ namespace Store.Controllers.API
 
             try
             {
-                var result = await _pMHelper.AddMoverProductAsync(model, user);
-                if (result == null)
-                {
-                    return NoContent();
-                }
-                return Ok(result);
+                return Ok(await _contService.AddCountAsync(model));
             }
             catch (Exception ex)
             {
@@ -221,11 +128,42 @@ namespace Store.Controllers.API
             }
         }
 
-        [HttpPost]
-        [Route("UpdateProductExistence")]
-        public async Task<ActionResult> UpdateProductExistence(
-            [FromBody] UpdateExistencesByStoreViewModel model
-        )
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteCuenta(int id)
+        {
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "CONT DELETE"))
+            {
+                return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+
+            try
+            {
+                return Ok(await _contService.DeleteCountAsync(id));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateCount([FromBody] UpdateCountViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -239,7 +177,7 @@ namespace Store.Controllers.API
             {
                 return Ok(user);
             }
-            if (!await _userHelper.IsAutorized(user.Rol, "EXISTANCE UPDATE"))
+            if (!await _userHelper.IsAutorized(user.Rol, "CONT UPDATE"))
             {
                 return Unauthorized();
             }
@@ -254,12 +192,7 @@ namespace Store.Controllers.API
 
             try
             {
-                var result = await _pMHelper.UpdateProductExistencesAsync(model, user);
-                if (result == null)
-                {
-                    return NoContent();
-                }
-                return Ok(result);
+                return Ok(await _contService.UpdateCountAsync(model));
             }
             catch (Exception ex)
             {

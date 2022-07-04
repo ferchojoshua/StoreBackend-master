@@ -29,8 +29,9 @@ namespace Store.Controllers.API
         [HttpGet]
         public async Task<ActionResult<IEnumerable<AlmacenResponse>>> GetAlmacen()
         {
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -61,8 +62,9 @@ namespace Store.Controllers.API
         [HttpGet("GetStoresByUser")]
         public async Task<ActionResult<IEnumerable<Almacen>>> GetStoresByUser()
         {
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -90,8 +92,9 @@ namespace Store.Controllers.API
         [HttpGet("{id}")]
         public async Task<ActionResult<Almacen>> GetAlmacen(int id)
         {
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -129,8 +132,9 @@ namespace Store.Controllers.API
             {
                 return BadRequest();
             }
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -175,8 +179,9 @@ namespace Store.Controllers.API
             {
                 return BadRequest();
             }
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -203,8 +208,9 @@ namespace Store.Controllers.API
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAlmacen(int id)
         {
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -222,15 +228,20 @@ namespace Store.Controllers.API
                 await _userHelper.LogoutAsync();
                 return Ok("eX01");
             }
-            var almacen = await _context.Almacen.FindAsync(id);
-            if (almacen == null)
+            try
             {
-                return NotFound();
+                var almacen = await _context.Almacen.FindAsync(id);
+                if (almacen == null)
+                {
+                    return BadRequest("Almacen no Existe");
+                }
+                _context.Almacen.Remove(almacen);
+                await _context.SaveChangesAsync();
             }
-
-            _context.Almacen.Remove(almacen);
-            await _context.SaveChangesAsync();
-
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
             return NoContent();
         }
 
@@ -242,8 +253,9 @@ namespace Store.Controllers.API
         [HttpGet("GetRacksByStore/{id}")]
         public async Task<ActionResult<IEnumerable<Rack>>> GetRacksByStore(int id)
         {
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -271,8 +283,9 @@ namespace Store.Controllers.API
             {
                 return BadRequest();
             }
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -307,8 +320,9 @@ namespace Store.Controllers.API
         [HttpGet("GetRackById/{id}")]
         public async Task<ActionResult<Rack>> GetRackById(int id)
         {
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -342,8 +356,9 @@ namespace Store.Controllers.API
             {
                 return BadRequest();
             }
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -386,8 +401,9 @@ namespace Store.Controllers.API
         [HttpDelete("DeleteRack/{id}")]
         public async Task<IActionResult> DeleteRack(int id)
         {
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Store.Data;
@@ -12,9 +13,10 @@ using Store.Data;
 namespace Store.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220627161216_AddContabilidad")]
+    partial class AddContabilidad
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -369,89 +371,6 @@ namespace Store.Migrations
                     b.HasIndex("MunicipalityId");
 
                     b.ToTable("Communities");
-                });
-
-            modelBuilder.Entity("Store.Entities.Count", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<int?>("CountGroupId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("CountNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Descripcion")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CountGroupId");
-
-                    b.ToTable("Counts");
-                });
-
-            modelBuilder.Entity("Store.Entities.CountGroup", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CountGroups");
-                });
-
-            modelBuilder.Entity("Store.Entities.CountMovment", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<string>("Concepto")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("CountId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("Entrada")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("Fecha")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("Saldo")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("Salida")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int?>("StoreId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CountId");
-
-                    b.HasIndex("StoreId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("CountMovments");
                 });
 
             modelBuilder.Entity("Store.Entities.Department", b =>
@@ -1274,36 +1193,6 @@ namespace Store.Migrations
                         .HasForeignKey("MunicipalityId");
 
                     b.Navigation("Municipality");
-                });
-
-            modelBuilder.Entity("Store.Entities.Count", b =>
-                {
-                    b.HasOne("Store.Entities.CountGroup", "CountGroup")
-                        .WithMany()
-                        .HasForeignKey("CountGroupId");
-
-                    b.Navigation("CountGroup");
-                });
-
-            modelBuilder.Entity("Store.Entities.CountMovment", b =>
-                {
-                    b.HasOne("Store.Entities.Count", "Count")
-                        .WithMany()
-                        .HasForeignKey("CountId");
-
-                    b.HasOne("Store.Entities.Almacen", "Store")
-                        .WithMany()
-                        .HasForeignKey("StoreId");
-
-                    b.HasOne("Store.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("Count");
-
-                    b.Navigation("Store");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Store.Entities.Existence", b =>
