@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Store.Entities;
+using Store.Helpers.AsientoContHelper;
 using Store.Helpers.User;
 using StoreBackend.Helpers.ContabilidadService;
 using StoreBackend.Models.ViewModels;
@@ -15,11 +16,17 @@ namespace StoreBackend.Controllers.API
     {
         private readonly IUserHelper _userHelper;
         private readonly IContService _contService;
+        private readonly IAsientoContHelper _asientoContHelper;
 
-        public ContController(IUserHelper userHelper, IContService contService)
+        public ContController(
+            IUserHelper userHelper,
+            IContService contService,
+            IAsientoContHelper asientoContHelper
+        )
         {
             _userHelper = userHelper;
             _contService = contService;
+            _asientoContHelper = asientoContHelper;
         }
 
         [HttpGet]
@@ -82,6 +89,40 @@ namespace StoreBackend.Controllers.API
             try
             {
                 var result = await _contService.GetCountGroupsAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("GetAsientosContables")]
+        public async Task<ActionResult<IEnumerable<Count>>> GetAsientosContables()
+        {
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "CONT VER"))
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                var result = await _asientoContHelper.GetAsientoContableListAsync();
                 return Ok(result);
             }
             catch (Exception ex)

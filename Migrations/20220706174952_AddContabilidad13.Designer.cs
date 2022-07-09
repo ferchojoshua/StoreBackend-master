@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Store.Data;
@@ -12,9 +13,10 @@ using Store.Data;
 namespace Store.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220706174952_AddContabilidad13")]
+    partial class AddContabilidad13
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -442,9 +444,6 @@ namespace Store.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<int?>("CountAsientoContableId")
-                        .HasColumnType("int");
-
                     b.Property<decimal>("Credito")
                         .HasColumnType("decimal(18,2)");
 
@@ -458,8 +457,6 @@ namespace Store.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CountAsientoContableId");
 
                     b.HasIndex("CuentaId");
 
@@ -1380,10 +1377,6 @@ namespace Store.Migrations
 
             modelBuilder.Entity("Store.Entities.CountAsientoContableDetails", b =>
                 {
-                    b.HasOne("Store.Entities.CountAsientoContable", null)
-                        .WithMany("CountAsientoContableDetails")
-                        .HasForeignKey("CountAsientoContableId");
-
                     b.HasOne("Store.Entities.Count", "Cuenta")
                         .WithMany()
                         .HasForeignKey("CuentaId");
@@ -1589,11 +1582,6 @@ namespace Store.Migrations
                     b.Navigation("Rol");
 
                     b.Navigation("UserSession");
-                });
-
-            modelBuilder.Entity("Store.Entities.CountAsientoContable", b =>
-                {
-                    b.Navigation("CountAsientoContableDetails");
                 });
 
             modelBuilder.Entity("Store.Entities.ProductIn", b =>

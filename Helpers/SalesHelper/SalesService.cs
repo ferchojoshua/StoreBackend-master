@@ -198,19 +198,19 @@ namespace Store.Helpers.SalesHelper
 
             var mov = movList.Where(m => m.Id == movList.Max(k => k.Id)).FirstOrDefault();
 
-            CajaMovment cM =
-                new()
-                {
-                    Fecha = hoy,
-                    Description = "ABONO SOBRE VENTA DE PRODUCTOS",
-                    CajaTipo = await _context.CajaTipos.FirstOrDefaultAsync(c => c.Id == 1),
-                    Entradas = model.Monto,
-                    Salidas = 0,
-                    Saldo = mov == null ? 0 + model.Monto : mov.Saldo + model.Monto,
-                    RealizadoPor = user,
-                    Store = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == model.IdStore)
-                };
-            _context.CajaMovments.Add(cM);
+            // CajaMovment cM =
+            //     new()
+            //     {
+            //         Fecha = hoy,
+            //         Description = "ABONO SOBRE VENTA DE PRODUCTOS",
+            //         CajaTipo = await _context.CajaTipos.FirstOrDefaultAsync(c => c.Id == 1),
+            //         Entradas = model.Monto,
+            //         Salidas = 0,
+            //         Saldo = mov == null ? 0 + model.Monto : mov.Saldo + model.Monto,
+            //         RealizadoPor = user,
+            //         Store = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == model.IdStore)
+            //     };
+            // _context.CajaMovments.Add(cM);
 
             decimal sobra = model.Monto;
             var sales = await _context.Sales
@@ -301,19 +301,19 @@ namespace Store.Helpers.SalesHelper
 
             var mov = movList.Where(m => m.Id == movList.Max(k => k.Id)).FirstOrDefault();
 
-            CajaMovment cM =
-                new()
-                {
-                    Fecha = hoy,
-                    Description = "DEVOLUCION DE VENTA",
-                    CajaTipo = await _context.CajaTipos.FirstOrDefaultAsync(c => c.Id == 1),
-                    Entradas = 0,
-                    Salidas = sale.MontoVenta,
-                    Saldo = mov == null ? 0 - sale.MontoVenta : mov.Saldo + sale.MontoVenta,
-                    RealizadoPor = user,
-                    Store = sale.Store
-                };
-            _context.CajaMovments.Add(cM);
+            // CajaMovment cM =
+            //     new()
+            //     {
+            //         Fecha = hoy,
+            //         Description = "DEVOLUCION DE VENTA",
+            //         CajaTipo = await _context.CajaTipos.FirstOrDefaultAsync(c => c.Id == 1),
+            //         Entradas = 0,
+            //         Salidas = sale.MontoVenta,
+            //         Saldo = mov == null ? 0 - sale.MontoVenta : mov.Saldo + sale.MontoVenta,
+            //         RealizadoPor = user,
+            //         Store = sale.Store
+            //     };
+            // _context.CajaMovments.Add(cM);
 
             if (sale == null)
             {
@@ -491,19 +491,19 @@ namespace Store.Helpers.SalesHelper
 
             var mov = movList.Where(m => m.Id == movList.Max(k => k.Id)).FirstOrDefault();
 
-            CajaMovment cM =
-                new()
-                {
-                    Fecha = hoy,
-                    Description = "DEVOLUCION PARCIAL DE VENTA",
-                    CajaTipo = await _context.CajaTipos.FirstOrDefaultAsync(c => c.Id == 1),
-                    Entradas = 0,
-                    Salidas = salidaEfectivo,
-                    Saldo = mov == null ? 0 - salidaEfectivo : mov.Saldo - salidaEfectivo,
-                    RealizadoPor = user,
-                    Store = sale.Store
-                };
-            _context.CajaMovments.Add(cM);
+            // CajaMovment cM =
+            //     new()
+            //     {
+            //         Fecha = hoy,
+            //         Description = "DEVOLUCION PARCIAL DE VENTA",
+            //         CajaTipo = await _context.CajaTipos.FirstOrDefaultAsync(c => c.Id == 1),
+            //         Entradas = 0,
+            //         Salidas = salidaEfectivo,
+            //         Saldo = mov == null ? 0 - salidaEfectivo : mov.Saldo - salidaEfectivo,
+            //         RealizadoPor = user,
+            //         Store = sale.Store
+            //     };
+            // _context.CajaMovments.Add(cM);
 
             await _context.SaveChangesAsync();
             return sale;
@@ -572,19 +572,19 @@ namespace Store.Helpers.SalesHelper
 
             var mov = movList.Where(m => m.Id == movList.Max(k => k.Id)).FirstOrDefault();
 
-            CajaMovment cM =
-                new()
-                {
-                    Fecha = hoy,
-                    Description = "DEVOLUCION PARCIAL DE VENTA",
-                    CajaTipo = await _context.CajaTipos.FirstOrDefaultAsync(c => c.Id == 1),
-                    Entradas = model.Monto,
-                    Salidas = 0,
-                    Saldo = mov == null ? 0 + model.Monto : mov.Saldo + model.Monto,
-                    RealizadoPor = user,
-                    Store = sale.Store
-                };
-            _context.CajaMovments.Add(cM);
+            // CajaMovment cM =
+            //     new()
+            //     {
+            //         Fecha = hoy,
+            //         Description = "DEVOLUCION PARCIAL DE VENTA",
+            //         CajaTipo = await _context.CajaTipos.FirstOrDefaultAsync(c => c.Id == 1),
+            //         Entradas = model.Monto,
+            //         Salidas = 0,
+            //         Saldo = mov == null ? 0 + model.Monto : mov.Saldo + model.Monto,
+            //         RealizadoPor = user,
+            //         Store = sale.Store
+            //     };
+            // _context.CajaMovments.Add(cM);
             await _context.SaveChangesAsync();
             return abono;
         }

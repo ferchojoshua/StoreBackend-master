@@ -35,8 +35,9 @@ namespace Store.Controllers.API
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ProductIn>>> GetProductIns()
         {
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -66,8 +67,9 @@ namespace Store.Controllers.API
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductIn>> GetProductIn(int id)
         {
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -107,8 +109,9 @@ namespace Store.Controllers.API
             [FromBody] UpdateEntradaProductoViewModel model
         )
         {
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -152,8 +155,9 @@ namespace Store.Controllers.API
             {
                 return BadRequest();
             }
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -172,16 +176,24 @@ namespace Store.Controllers.API
                 await _userHelper.LogoutAsync();
                 return Ok("eX01");
             }
-            var productIn = await _productsInHelper.AddProductInAsync(model, user);
-            return Ok(productIn);
+            try
+            {
+                var productIn = await _productsInHelper.AddProductInAsync(model, user);
+                return Ok(productIn);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         // DELETE: api/ProductIns/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProductIn(int id)
         {
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {

@@ -13,6 +13,7 @@ using System.Text.Json.Serialization;
 using Store.Helpers.SalesHelper;
 using Store.Helpers.ProductExistenceService;
 using StoreBackend.Helpers.ContabilidadService;
+using Store.Helpers.AsientoContHelper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -87,6 +88,7 @@ builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<ICashMovmentService, CashMovmentService>();
 builder.Services.AddScoped<IProdExistService, ProdExistService>();
 builder.Services.AddScoped<IContService, ContService>();
+builder.Services.AddScoped<IAsientoContHelper, AsientoContHelper>();
 
 var MyAllowSpecificOrigins = "Origins";
 builder.Services.AddCors(options =>

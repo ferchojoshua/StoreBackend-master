@@ -1,16 +1,20 @@
 using Microsoft.EntityFrameworkCore;
 using Store.Data;
 using Store.Entities;
+using Store.Helpers.AsientoContHelper;
 using Store.Models.ViewModels;
+using StoreBackend.Models.ViewModels;
 
 namespace Store.Helpers.EntradaProductos
 {
     public class ProductsInHelper : IProductsInHelper
     {
+        private readonly IAsientoContHelper _asientoContHelper;
         private readonly DataContext _context;
 
-        public ProductsInHelper(DataContext context)
+        public ProductsInHelper(IAsientoContHelper asientoContHelper, DataContext context)
         {
+            _asientoContHelper = asientoContHelper;
             _context = context;
         }
 
@@ -106,7 +110,55 @@ namespace Store.Helpers.EntradaProductos
             }
             productIn.ProductInDetails = detalles;
             _context.ProductIns.Add(productIn);
+
+            List<AsientoContableDetailsViewModel> asientoContableDetails = new();
+            AsientoContableDetailsViewModel aCDetailDeudora =
+                new()
+                {
+                    Count = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 3),
+                    Debito = productIn.MontoFactura,
+                    Credito = 0,
+                    Saldo = 0
+                };
+            asientoContableDetails.Add(aCDetailDeudora);
+
+            if (productIn.IsCanceled)
+            {
+                AsientoContableDetailsViewModel aCDetailAcredora =
+                    new()
+                    {
+                        Count = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 2),
+                        Debito = 0,
+                        Credito = productIn.MontoFactura,
+                        Saldo = 0
+                    };
+                asientoContableDetails.Add(aCDetailAcredora);
+            }
+            else
+            {
+                AsientoContableDetailsViewModel aCDetail =
+                    new()
+                    {
+                        Count = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 26),
+                        Debito = 0,
+                        Credito = productIn.MontoFactura,
+                        Saldo = 0
+                    };
+                asientoContableDetails.Add(aCDetail);
+            }
+
+            AddAsientoContableViewModel asientoCont =
+                new()
+                {
+                    Referencia = $"COMPRA DE PRODUCTOS SEGUN FACTURA: {productIn.NoFactura}",
+                    IdLibroContable = 4,
+                    IdFuenteContable = 4,
+                    AsientoContableDetails = asientoContableDetails,
+                    Store = alm,
+                };
+
             await _context.SaveChangesAsync();
+            await _asientoContHelper.AddAsientoContable(asientoCont, user);
             return productIn;
         }
 
@@ -120,6 +172,8 @@ namespace Store.Helpers.EntradaProductos
                 .Include(p => p.ProductInDetails)
                 .ThenInclude(pi => pi.Product)
                 .FirstOrDefaultAsync(pI => pI.Id == model.Id);
+
+            decimal diferenciaMonto = productIn.MontoFactura - model.MontoFactura;
 
             if (productIn == null)
             {
@@ -243,8 +297,44 @@ namespace Store.Helpers.EntradaProductos
                 _context.Entry(prod).State = EntityState.Modified;
             }
             _context.Entry(productIn).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
 
+            if (diferenciaMonto > 0)
+            {
+                List<AsientoContableDetailsViewModel> asientoContableDetails = new();
+                AsientoContableDetailsViewModel aCDetailDeudora =
+                    new()
+                    {
+                        Count = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 25),
+                        Debito = diferenciaMonto,
+                        Credito = 0,
+                        Saldo = 0
+                    };
+                asientoContableDetails.Add(aCDetailDeudora);
+
+                AsientoContableDetailsViewModel aCDetailAcredora =
+                    new()
+                    {
+                        Count = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 3),
+                        Debito = 0,
+                        Credito = diferenciaMonto,
+                        Saldo = 0
+                    };
+                asientoContableDetails.Add(aCDetailAcredora);
+
+                AddAsientoContableViewModel asientoCont =
+                    new()
+                    {
+                        Referencia =
+                            $"DEVOLUCION DE PRODUCTOS SEGUN FACTURA: {productIn.NoFactura}",
+                        IdLibroContable = 4,
+                        IdFuenteContable = 4,
+                        AsientoContableDetails = asientoContableDetails,
+                        Store = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == 4),
+                    };
+
+                await _asientoContHelper.AddAsientoContable(asientoCont, user);
+            }
+            await _context.SaveChangesAsync();
             return productIn;
         }
     }

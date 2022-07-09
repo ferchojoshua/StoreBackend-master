@@ -15,8 +15,11 @@ namespace Store.Data
         public DbSet<Client> Clients { get; set; }
         public DbSet<Community> Communities { get; set; }
         public DbSet<Count> Counts { get; set; }
+        public DbSet<CountAsientoContable> CountAsientosContables { get; set; }
+        public DbSet<CountAsientoContableDetails> CountAsientoContableDetails { get; set; }
+        public DbSet<CountFuentesContables> CountFuentesContables { get; set; }
         public DbSet<CountGroup> CountGroups { get; set; }
-        public DbSet<CountMovment> CountMovments { get; set; }
+        public DbSet<CountLibros> CountLibros { get; set; }
         public DbSet<Department> Departments { get; set; }
         public DbSet<Existence> Existences { get; set; }
         public DbSet<Familia> Familias { get; set; }
@@ -46,7 +49,6 @@ namespace Store.Data
             modelBuilder.Entity<TipoNegocio>().HasIndex(t => t.Description).IsUnique();
 
             // modelBuilder.Entity<Producto>().HasIndex(t => t.Description).IsUnique();
-
         }
     }
 }

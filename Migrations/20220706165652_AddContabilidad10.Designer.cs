@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Store.Data;
@@ -12,9 +13,10 @@ using Store.Data;
 namespace Store.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220706165652_AddContabilidad10")]
+    partial class AddContabilidad10
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -395,96 +397,6 @@ namespace Store.Migrations
                     b.ToTable("Counts");
                 });
 
-            modelBuilder.Entity("Store.Entities.CountAsientoContable", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<DateTime>("Fecha")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("FuenteContableId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("LibroContableId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Referencia")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("StoreId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FuenteContableId");
-
-                    b.HasIndex("LibroContableId");
-
-                    b.HasIndex("StoreId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("CountAsientosContables");
-                });
-
-            modelBuilder.Entity("Store.Entities.CountAsientoContableDetails", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<int?>("CountAsientoContableId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("Credito")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int?>("CuentaId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("Debito")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("Saldo")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CountAsientoContableId");
-
-                    b.HasIndex("CuentaId");
-
-                    b.ToTable("CountAsientoContableDetails");
-                });
-
-            modelBuilder.Entity("Store.Entities.CountFuentesContables", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<string>("Codigo")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CountFuentesContables");
-                });
-
             modelBuilder.Entity("Store.Entities.CountGroup", b =>
                 {
                     b.Property<int>("Id")
@@ -501,7 +413,7 @@ namespace Store.Migrations
                     b.ToTable("CountGroups");
                 });
 
-            modelBuilder.Entity("Store.Entities.CountLibros", b =>
+            modelBuilder.Entity("Store.Entities.CountMovment", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -509,15 +421,39 @@ namespace Store.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<string>("Codigo")
+                    b.Property<string>("Concepto")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("CountId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Entrada")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Saldo")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Salida")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("StoreId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("CountLibros");
+                    b.HasIndex("CountId");
+
+                    b.HasIndex("StoreId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("CountMovments");
                 });
 
             modelBuilder.Entity("Store.Entities.Department", b =>
@@ -1204,6 +1140,44 @@ namespace Store.Migrations
                     b.ToTable("UserSession");
                 });
 
+            modelBuilder.Entity("StoreBackend.Entities.CountFuentesContables", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("Condigo")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FuentesContables");
+                });
+
+            modelBuilder.Entity("StoreBackend.Entities.CountLibros", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("Condigo")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CountLibros");
+                });
+
             modelBuilder.Entity("AlmacenUser", b =>
                 {
                     b.HasOne("Store.Entities.Almacen", null)
@@ -1351,15 +1325,11 @@ namespace Store.Migrations
                     b.Navigation("CountGroup");
                 });
 
-            modelBuilder.Entity("Store.Entities.CountAsientoContable", b =>
+            modelBuilder.Entity("Store.Entities.CountMovment", b =>
                 {
-                    b.HasOne("Store.Entities.CountFuentesContables", "FuenteContable")
+                    b.HasOne("Store.Entities.Count", "Count")
                         .WithMany()
-                        .HasForeignKey("FuenteContableId");
-
-                    b.HasOne("Store.Entities.CountLibros", "LibroContable")
-                        .WithMany()
-                        .HasForeignKey("LibroContableId");
+                        .HasForeignKey("CountId");
 
                     b.HasOne("Store.Entities.Almacen", "Store")
                         .WithMany()
@@ -1369,26 +1339,11 @@ namespace Store.Migrations
                         .WithMany()
                         .HasForeignKey("UserId");
 
-                    b.Navigation("FuenteContable");
-
-                    b.Navigation("LibroContable");
+                    b.Navigation("Count");
 
                     b.Navigation("Store");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Store.Entities.CountAsientoContableDetails", b =>
-                {
-                    b.HasOne("Store.Entities.CountAsientoContable", null)
-                        .WithMany("CountAsientoContableDetails")
-                        .HasForeignKey("CountAsientoContableId");
-
-                    b.HasOne("Store.Entities.Count", "Cuenta")
-                        .WithMany()
-                        .HasForeignKey("CuentaId");
-
-                    b.Navigation("Cuenta");
                 });
 
             modelBuilder.Entity("Store.Entities.Existence", b =>
@@ -1589,11 +1544,6 @@ namespace Store.Migrations
                     b.Navigation("Rol");
 
                     b.Navigation("UserSession");
-                });
-
-            modelBuilder.Entity("Store.Entities.CountAsientoContable", b =>
-                {
-                    b.Navigation("CountAsientoContableDetails");
                 });
 
             modelBuilder.Entity("Store.Entities.ProductIn", b =>
