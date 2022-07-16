@@ -17,11 +17,14 @@ namespace Store.Data
         public DbSet<Count> Counts { get; set; }
         public DbSet<CountAsientoContable> CountAsientosContables { get; set; }
         public DbSet<CountAsientoContableDetails> CountAsientoContableDetails { get; set; }
+        public DbSet<CountCodeStructure> CountCodeStructures { get; set; }
         public DbSet<CountFuentesContables> CountFuentesContables { get; set; }
         public DbSet<CountGroup> CountGroups { get; set; }
         public DbSet<CountLibros> CountLibros { get; set; }
+        public DbSet<CuentasXCobrarDailyCheck> CuentasXCobrarDailyChecks { get; set; }
         public DbSet<Department> Departments { get; set; }
         public DbSet<Existence> Existences { get; set; }
+        public DbSet<ExistencesDailyCheck> ExistencesDailyChecks { get; set; }
         public DbSet<Familia> Familias { get; set; }
         public DbSet<Kardex> Kardex { get; set; }
         public DbSet<Municipality> Municipalities { get; set; }

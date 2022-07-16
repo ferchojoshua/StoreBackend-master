@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Store.Data;
@@ -12,9 +13,10 @@ using Store.Data;
 namespace Store.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220714231942_UpdateCont2")]
+    partial class UpdateCont2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -469,25 +471,6 @@ namespace Store.Migrations
                     b.ToTable("CountAsientoContableDetails");
                 });
 
-            modelBuilder.Entity("Store.Entities.CountCodeStructure", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<string>("Descripcion")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Level")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CountCodeStructures");
-                });
-
             modelBuilder.Entity("Store.Entities.CountFuentesContables", b =>
                 {
                     b.Property<int>("Id")
@@ -542,41 +525,6 @@ namespace Store.Migrations
                     b.ToTable("CountLibros");
                 });
 
-            modelBuilder.Entity("Store.Entities.CuentasXCobrarDailyCheck", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<int?>("AlmacenId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("ClienteId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("Fecha")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("FechaVencimiento")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("MontoVenta")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("Saldo")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AlmacenId");
-
-                    b.HasIndex("ClienteId");
-
-                    b.ToTable("CuentasXCobrarDailyChecks");
-                });
-
             modelBuilder.Entity("Store.Entities.Department", b =>
                 {
                     b.Property<int>("Id")
@@ -606,15 +554,6 @@ namespace Store.Migrations
 
                     b.Property<int>("Existencia")
                         .HasColumnType("int");
-
-                    b.Property<int>("Maximo")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Minimo")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("PrecioCompra")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("PrecioVentaDetalle")
                         .HasColumnType("decimal(18,2)");
@@ -1484,21 +1423,6 @@ namespace Store.Migrations
                         .HasForeignKey("CuentaId");
 
                     b.Navigation("Cuenta");
-                });
-
-            modelBuilder.Entity("Store.Entities.CuentasXCobrarDailyCheck", b =>
-                {
-                    b.HasOne("Store.Entities.Almacen", "Almacen")
-                        .WithMany()
-                        .HasForeignKey("AlmacenId");
-
-                    b.HasOne("Store.Entities.Client", "Cliente")
-                        .WithMany()
-                        .HasForeignKey("ClienteId");
-
-                    b.Navigation("Almacen");
-
-                    b.Navigation("Cliente");
                 });
 
             modelBuilder.Entity("Store.Entities.Existence", b =>

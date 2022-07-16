@@ -70,6 +70,7 @@ namespace Store.Helpers.EntradaProductos
                     existence.Existencia = pd.Cantidad;
                     existence.PrecioVentaMayor = item.PrecioVentaMayor;
                     existence.PrecioVentaDetalle = item.PrecioVentaDetalle;
+                    existence.PrecioCompra = item.CostoUnitario;
                     _context.Add(existence);
                 }
                 else
@@ -78,6 +79,7 @@ namespace Store.Helpers.EntradaProductos
                     existence.Existencia += pd.Cantidad;
                     existence.PrecioVentaMayor = item.PrecioVentaMayor;
                     existence.PrecioVentaDetalle = item.PrecioVentaDetalle;
+                    existence.PrecioCompra = item.CostoUnitario;
                     _context.Entry(existence).State = EntityState.Modified;
                 }
 
@@ -111,32 +113,33 @@ namespace Store.Helpers.EntradaProductos
             productIn.ProductInDetails = detalles;
             _context.ProductIns.Add(productIn);
 
+            //Agregamos el registro contable
             List<AsientoContableDetailsViewModel> asientoContableDetails = new();
-            AsientoContableDetailsViewModel aCDetailDeudora =
+            AsientoContableDetailsViewModel detalleDebito =
                 new()
                 {
-                    Count = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 3),
+                    Count = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 74),
                     Debito = productIn.MontoFactura,
                     Credito = 0,
                     Saldo = 0
                 };
-            asientoContableDetails.Add(aCDetailDeudora);
+            asientoContableDetails.Add(detalleDebito);
 
             if (productIn.IsCanceled)
             {
-                AsientoContableDetailsViewModel aCDetailAcredora =
+                AsientoContableDetailsViewModel detalleCredito =
                     new()
                     {
-                        Count = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 2),
+                        Count = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 70),
                         Debito = 0,
                         Credito = productIn.MontoFactura,
                         Saldo = 0
                     };
-                asientoContableDetails.Add(aCDetailAcredora);
+                asientoContableDetails.Add(detalleCredito);
             }
             else
             {
-                AsientoContableDetailsViewModel aCDetail =
+                AsientoContableDetailsViewModel detalleCredito =
                     new()
                     {
                         Count = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 26),
@@ -144,7 +147,7 @@ namespace Store.Helpers.EntradaProductos
                         Credito = productIn.MontoFactura,
                         Saldo = 0
                     };
-                asientoContableDetails.Add(aCDetail);
+                asientoContableDetails.Add(detalleCredito);
             }
 
             AddAsientoContableViewModel asientoCont =
@@ -223,6 +226,7 @@ namespace Store.Helpers.EntradaProductos
                 {
                     pd.Cantidad = item.Cantidad;
                     _context.Entry(pd).State = EntityState.Modified;
+                    existence.PrecioCompra = item.CostoUnitario;
                     existence.PrecioVentaDetalle = item.PrecioVentaDetalle;
                     existence.PrecioVentaMayor = item.PrecioVentaMayor;
                     _context.Entry(existence).State = EntityState.Modified;
@@ -235,6 +239,7 @@ namespace Store.Helpers.EntradaProductos
                     _context.Entry(pd).State = EntityState.Modified;
 
                     existence.Existencia -= restar;
+                    existence.PrecioCompra = item.CostoUnitario;
                     existence.PrecioVentaDetalle = item.PrecioVentaDetalle;
                     existence.PrecioVentaMayor = item.PrecioVentaMayor;
                     _context.Entry(prod).State = EntityState.Modified;
@@ -268,6 +273,7 @@ namespace Store.Helpers.EntradaProductos
                     _context.Entry(pd).State = EntityState.Modified;
 
                     existence.Existencia += diferencia;
+                    existence.PrecioCompra = item.CostoUnitario;
                     existence.PrecioVentaDetalle = item.PrecioVentaDetalle;
                     existence.PrecioVentaMayor = item.PrecioVentaMayor;
                     _context.Entry(prod).State = EntityState.Modified;

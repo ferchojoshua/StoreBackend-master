@@ -29,7 +29,7 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development
     builder.Services.AddDbContext<DataContext>(
         opt =>
             opt.UseSqlServer(
-                builder.Configuration.GetConnectionString("DefaultConnetion"),
+                builder.Configuration.GetConnectionString("DevConnetion"),
                 x => x.UseNetTopologySuite()
             )
     );
@@ -97,11 +97,7 @@ builder.Services.AddCors(options =>
         name: MyAllowSpecificOrigins,
         builder =>
         {
-            builder
-                // .WithOrigins("http://localhost:3000", "http://lenovito/AutoMoto/")
-                .AllowAnyOrigin()
-                .AllowAnyHeader()
-                .AllowAnyMethod();
+            builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
         }
     );
 });

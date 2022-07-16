@@ -23,7 +23,8 @@ namespace StoreBackend.Helpers.ContabilidadService
                     CountGroup = await _context.CountGroups.FirstOrDefaultAsync(
                         c => c.Id == model.IdCountGroup
                     ),
-                    CountNumber = model.CountNumber
+                    CountNumber = model.CountNumber,
+                    IsActive = true
                 };
             _context.Counts.Add(count);
             await _context.SaveChangesAsync();
@@ -37,9 +38,15 @@ namespace StoreBackend.Helpers.ContabilidadService
             {
                 return count;
             }
-            _context.Counts.Remove(count);
+            count.IsActive = false;
+            _context.Entry(count).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return count;
+        }
+
+        public async Task<ICollection<CountFuentesContables>> GetCountFuentesContablesAsync()
+        {
+            return await _context.CountFuentesContables.ToListAsync();
         }
 
         public async Task<ICollection<CountGroup>> GetCountGroupsAsync()
@@ -47,9 +54,17 @@ namespace StoreBackend.Helpers.ContabilidadService
             return await _context.CountGroups.ToListAsync();
         }
 
+        public async Task<ICollection<CountLibros>> GetCountLibrosAsync()
+        {
+            return await _context.CountLibros.ToListAsync();
+        }
+
         public async Task<ICollection<Count>> GetCountListAsync()
         {
-            return await _context.Counts.Include(c => c.CountGroup).ToListAsync();
+            return await _context.Counts
+                .Where(c => c.IsActive == true)
+                .Include(c => c.CountGroup)
+                .ToListAsync();
         }
 
         public async Task<Count> UpdateCountAsync(UpdateCountViewModel model)

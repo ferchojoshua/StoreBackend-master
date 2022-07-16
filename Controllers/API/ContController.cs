@@ -97,6 +97,76 @@ namespace StoreBackend.Controllers.API
             }
         }
 
+        [HttpGet("GetCountLibros")]
+        public async Task<ActionResult<IEnumerable<CountLibros>>> GetCountLibros()
+        {
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "CONT VER"))
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                var result = await _contService.GetCountLibrosAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("GetCountFuentesContables")]
+        public async Task<
+            ActionResult<IEnumerable<CountFuentesContables>>
+        > GetCountFuentesContables()
+        {
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "CONT VER"))
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                var result = await _contService.GetCountFuentesContablesAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpGet("GetAsientosContables")]
         public async Task<ActionResult<IEnumerable<Count>>> GetAsientosContables()
         {
@@ -123,7 +193,7 @@ namespace StoreBackend.Controllers.API
             try
             {
                 var result = await _asientoContHelper.GetAsientoContableListAsync();
-                return Ok(result);
+                return Ok(result.OrderByDescending(c => c.Id));
             }
             catch (Exception ex)
             {
@@ -132,7 +202,7 @@ namespace StoreBackend.Controllers.API
         }
 
         [HttpPost]
-        public async Task<ActionResult<Count>> PostAlmacen([FromBody] AddCountViewModel model)
+        public async Task<ActionResult<Count>> AddCuenta([FromBody] AddCountViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -169,7 +239,48 @@ namespace StoreBackend.Controllers.API
             }
         }
 
-        [HttpDelete("{id}")]
+        [HttpPost]
+        [Route("AddAsientoContable")]
+        public async Task<ActionResult<Count>> AddAsientoContable(
+            [FromBody] AddAsientoContableViewModel model
+        )
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "CONT CREATE"))
+            {
+                return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+
+            try
+            {
+                return Ok(await _asientoContHelper.AddAsientoContable(model, user));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("DeleteCuenta/{id}")]
         public async Task<IActionResult> DeleteCuenta(int id)
         {
             string email = User.Claims
