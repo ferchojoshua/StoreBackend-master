@@ -7,5 +7,6 @@ namespace Store.Entities
         public CountGroup CountGroup { get; set; }
         public string CountNumber { get; set; }
         public bool IsActive { get; set; }
+        public CountCodeStructure Clasificacion { get; set; }
     }
 }
