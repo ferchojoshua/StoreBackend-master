@@ -35,4 +35,37 @@ namespace StoreBackend.Models.ViewModels
         [Required]
         public decimal Saldo { get; set; }
     }
+
+    public class AddAtoContViewModel
+    {
+        [Required]
+        public string Referencia { get; set; }
+
+        [Required]
+        public DateTime Fecha { get; set; }
+
+        [Required]
+        public int IdLibroContable { get; set; }
+
+        [Required]
+        public ICollection<AtoContDetailsViewModel> AsientoContableDetails { get; set; }
+
+        [Required]
+        public int IdFuenteContable { get; set; }
+
+        [Required]
+        public int StoreId { get; set; }
+    }
+
+    public class AtoContDetailsViewModel
+    {
+        [Required]
+        public int CountId { get; set; }
+
+        [Required]
+        public decimal Debito { get; set; }
+
+        [Required]
+        public decimal Credito { get; set; }
+    }
 }

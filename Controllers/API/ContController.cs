@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Store.Entities;
 using Store.Helpers.AsientoContHelper;
 using Store.Helpers.User;
+using Store.Models.ViewModels;
 using StoreBackend.Helpers.ContabilidadService;
 using StoreBackend.Models.ViewModels;
 
@@ -242,7 +243,7 @@ namespace StoreBackend.Controllers.API
         [HttpPost]
         [Route("AddAsientoContable")]
         public async Task<ActionResult<Count>> AddAsientoContable(
-            [FromBody] AddAsientoContableViewModel model
+            [FromBody] AddAtoContViewModel model
         )
         {
             if (!ModelState.IsValid)
@@ -272,7 +273,7 @@ namespace StoreBackend.Controllers.API
 
             try
             {
-                return Ok(await _asientoContHelper.AddAsientoContable(model, user));
+                return Ok(await _asientoContHelper.AddAtoContFromCtroller(model, user));
             }
             catch (Exception ex)
             {
@@ -314,7 +315,7 @@ namespace StoreBackend.Controllers.API
             }
         }
 
-        [HttpPut]
+        [HttpPost]
         public async Task<IActionResult> UpdateCount([FromBody] UpdateCountViewModel model)
         {
             if (!ModelState.IsValid)
@@ -345,6 +346,48 @@ namespace StoreBackend.Controllers.API
             try
             {
                 return Ok(await _contService.UpdateCountAsync(model));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("PrintProdHistory")]
+        public async Task<ActionResult<Count>> PrintProdHistory(
+            [FromBody] ProdHistoryViewModel model
+        )
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "CONT VER"))
+            {
+                return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+
+            try
+            {
+                var result = await _contService.GetExistencesReportAsync(model);
+                return Ok(result.OrderBy(r => r.Producto.Description));
             }
             catch (Exception ex)
             {

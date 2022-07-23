@@ -1,4 +1,5 @@
 using Store.Entities;
+using Store.Models.ViewModels;
 using StoreBackend.Models.ViewModels;
 
 namespace StoreBackend.Helpers.ContabilidadService
@@ -12,5 +13,10 @@ namespace StoreBackend.Helpers.ContabilidadService
         Task<Count> AddCountAsync(AddCountViewModel model);
         Task<Count> DeleteCountAsync(int idCuenta);
         Task<Count> UpdateCountAsync(UpdateCountViewModel model);
+
+        //Rerports
+        Task<ICollection<ExistencesDailyCheck>> GetExistencesReportAsync(
+            ProdHistoryViewModel model
+        );
     }
 }

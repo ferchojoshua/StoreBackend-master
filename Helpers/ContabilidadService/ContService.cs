@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Store.Data;
 using Store.Entities;
+using Store.Models.ViewModels;
 using StoreBackend.Models.ViewModels;
 
 namespace StoreBackend.Helpers.ContabilidadService
@@ -82,6 +83,18 @@ namespace StoreBackend.Helpers.ContabilidadService
             _context.Entry(count).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return count;
+        }
+
+        //Reports
+        public async Task<ICollection<ExistencesDailyCheck>> GetExistencesReportAsync(
+            ProdHistoryViewModel model
+        )
+        {
+            var report = await _context.ExistencesDailyChecks
+                .Include(e => e.Producto)
+                .Where(e => e.Fecha.Date == model.Fecha.Date && e.Almacen.Id == model.StoreId)
+                .ToListAsync();
+            return report;
         }
     }
 }

@@ -82,9 +82,9 @@ namespace Store.Controllers.API
         }
 
         // PUT: api/Providers/5
-        [HttpPut]
+        [HttpPost]
         [Route("UpdateProvider")]
-        public async Task<IActionResult> PutProvider([FromBody] Provider provider)
+        public async Task<IActionResult> UpdateProvider([FromBody] Provider provider)
         {
             if (!ModelState.IsValid)
             {

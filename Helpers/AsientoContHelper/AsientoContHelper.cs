@@ -65,5 +65,46 @@ namespace Store.Helpers.AsientoContHelper
                 .ThenInclude(cD => cD.Cuenta)
                 .ToListAsync();
         }
+
+        public async Task<CountAsientoContable> AddAtoContFromCtroller(
+            AddAtoContViewModel model,
+            Entities.User user
+        )
+        {
+            List<CountAsientoContableDetails> AsientoContDetails = new();
+            foreach (var item in model.AsientoContableDetails)
+            {
+                CountAsientoContableDetails asientoContableDetail =
+                    new()
+                    {
+                        Cuenta = await _context.Counts.FirstOrDefaultAsync(
+                            c => c.Id == item.CountId
+                        ),
+                        Debito = item.Debito,
+                        Credito = item.Credito,
+                        Saldo = 0
+                    };
+                AsientoContDetails.Add(asientoContableDetail);
+            }
+
+            CountAsientoContable asientoContable =
+                new()
+                {
+                    Fecha = model.Fecha,
+                    Referencia = model.Referencia,
+                    LibroContable = await _context.CountLibros.FirstOrDefaultAsync(
+                        c => c.Id == model.IdLibroContable
+                    ),
+                    CountAsientoContableDetails = AsientoContDetails,
+                    FuenteContable = await _context.CountFuentesContables.FirstOrDefaultAsync(
+                        f => f.Id == model.IdFuenteContable
+                    ),
+                    Store = await _context.Almacen.FirstOrDefaultAsync(s => s.Id == model.StoreId),
+                    User = user
+                };
+            _context.CountAsientosContables.Add(asientoContable);
+            await _context.SaveChangesAsync();
+            return asientoContable;
+        }
     }
 }

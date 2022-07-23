@@ -11,5 +11,10 @@ namespace Store.Helpers.AsientoContHelper
         );
 
         Task<ICollection<CountAsientoContable>> GetAsientoContableListAsync();
+
+        Task<CountAsientoContable> AddAtoContFromCtroller(
+            AddAtoContViewModel model,
+            Entities.User user
+        );
     }
 }

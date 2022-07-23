@@ -35,8 +35,9 @@ namespace Store.Controllers.API
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Producto>>> GetProductos()
         {
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -65,8 +66,9 @@ namespace Store.Controllers.API
         [HttpGet("{id}")]
         public async Task<ActionResult<Producto>> GetProducto(int id)
         {
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -97,17 +99,17 @@ namespace Store.Controllers.API
             return producto;
         }
 
-        // PUT: api/Productos/5
-        [HttpPut]
+        [HttpPost]
         [Route("UpdateProduct")]
-        public async Task<IActionResult> PutProducto([FromBody] UpdateProductViewModel model)
+        public async Task<IActionResult> UpdateProduct([FromBody] UpdateProductViewModel model)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -145,8 +147,9 @@ namespace Store.Controllers.API
             {
                 return BadRequest();
             }
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -180,8 +183,9 @@ namespace Store.Controllers.API
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProducto(int id)
         {
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -220,8 +224,9 @@ namespace Store.Controllers.API
             {
                 return BadRequest();
             }
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -251,17 +256,19 @@ namespace Store.Controllers.API
             }
         }
 
-
         [HttpPost]
         [Route("GetAllStoresKardex")]
-        public async Task<ActionResult<Kardex>> GetAllStoresKardex([FromBody] GetKardexViewModel model)
+        public async Task<ActionResult<Kardex>> GetAllStoresKardex(
+            [FromBody] GetKardexViewModel model
+        )
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {

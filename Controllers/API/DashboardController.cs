@@ -134,11 +134,10 @@ namespace Store.Controllers.API
                         prodList.Add(detail.Product);
                     }
                 }
-                return Ok(
-                    prodList
-                        .GroupBy(p => p.TipoNegocio)
-                        .Select(x => new { Tn = x.Key.Description, Contador = x.Count() })
-                );
+                var result = prodList
+                    .GroupBy(p => p.TipoNegocio)
+                    .Select(x => new { Tn = x.Key.Description, Contador = x.Count() });
+                return Ok(result.OrderBy(r => r.Tn));
             }
             catch (Exception ex)
             {

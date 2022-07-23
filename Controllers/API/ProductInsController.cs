@@ -103,7 +103,7 @@ namespace Store.Controllers.API
         }
 
         // PUT: api/ProductIns/5
-        [HttpPut]
+        [HttpPost]
         [Route("PutProductIn")]
         public async Task<IActionResult> PutProductIn(
             [FromBody] UpdateEntradaProductoViewModel model

@@ -14,12 +14,12 @@ using Store.Helpers.SalesHelper;
 using Store.Helpers.ProductExistenceService;
 using StoreBackend.Helpers.ContabilidadService;
 using Store.Helpers.AsientoContHelper;
+using Store.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-
 builder.Services
     .AddControllers()
     .AddJsonOptions(s => s.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
@@ -44,6 +44,8 @@ else
             )
     );
 }
+
+builder.Services.AddSignalR();
 
 builder.Services
     .AddIdentity<Store.Entities.User, IdentityRole>(cfg =>
@@ -90,17 +92,23 @@ builder.Services.AddScoped<IProdExistService, ProdExistService>();
 builder.Services.AddScoped<IContService, ContService>();
 builder.Services.AddScoped<IAsientoContHelper, AsientoContHelper>();
 
-var MyAllowSpecificOrigins = "Origins";
+var MyAllowSpecificOrigins = "Clients";
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(
         name: MyAllowSpecificOrigins,
         builder =>
         {
-            builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+            builder
+                .WithOrigins("http://automoto.eastus.cloudapp.azure.com", "http://localhost:3000")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
         }
     );
 });
+
+builder.Services.AddCors();
 
 var app = builder.Build();
 
@@ -116,6 +124,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.MapHub<NotificationHub>("notificationHub");
 
 app.UseCors(MyAllowSpecificOrigins);
 

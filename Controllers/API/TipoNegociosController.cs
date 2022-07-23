@@ -29,8 +29,9 @@ namespace Store.Controllers.API
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TipoNegocio>>> GetTipoNegocios()
         {
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -59,8 +60,9 @@ namespace Store.Controllers.API
         [HttpGet("{id}")]
         public async Task<ActionResult<TipoNegocio>> GetTipoNegocio(int id)
         {
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -89,16 +91,17 @@ namespace Store.Controllers.API
         }
 
         // PUT: api/TipoNegocios/
-        [HttpPut]
+        [HttpPost]
         [Route("UpdateTipoNegocio")]
         public async Task<IActionResult> PutTipoNegocio([FromBody] TipoNegocio tipoNegocio)
         {
-             if (!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -138,14 +141,17 @@ namespace Store.Controllers.API
 
         // POST: api/TipoNegocios
         [HttpPost]
-        public async Task<ActionResult<TipoNegocio>> PostTipoNegocio([FromBody]TipoNegocio tipoNegocio)
+        public async Task<ActionResult<TipoNegocio>> PostTipoNegocio(
+            [FromBody] TipoNegocio tipoNegocio
+        )
         {
-             if (!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -173,8 +179,9 @@ namespace Store.Controllers.API
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTipoNegocio(int id)
         {
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -212,8 +219,9 @@ namespace Store.Controllers.API
         [HttpGet("GetFamiliasByTN/{id}")]
         public async Task<ActionResult<IEnumerable<Familia>>> GetFamiliasByTN(int id)
         {
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -242,12 +250,13 @@ namespace Store.Controllers.API
             [FromBody] AddFamiliaViewModel model
         )
         {
-             if (!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -281,8 +290,9 @@ namespace Store.Controllers.API
         [HttpGet("GetFamiliaById/{id}")]
         public async Task<ActionResult<Familia>> GetFamiliaById(int id)
         {
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -310,15 +320,16 @@ namespace Store.Controllers.API
             return familia;
         }
 
-        [HttpPut("UpdateFamilia")]
-        public async Task<IActionResult> UpdateRack([FromBody] Familia model)
+        [HttpPost("UpdateFamilia")]
+        public async Task<IActionResult> UpdateFamilia([FromBody] Familia model)
         {
-             if (!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -357,8 +368,9 @@ namespace Store.Controllers.API
         [HttpDelete("DeleteFamilia/{id}")]
         public async Task<IActionResult> DeleteFamilia(int id)
         {
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -389,4 +401,3 @@ namespace Store.Controllers.API
         }
     }
 }
-

@@ -124,7 +124,7 @@ namespace Store.Controllers.API
         }
 
         // PUT: api/Almacens/
-        [HttpPut]
+        [HttpPost]
         [Route("UpdateAlmacen")]
         public async Task<IActionResult> UpdateAlmacen([FromBody] Almacen almacen)
         {
@@ -349,7 +349,7 @@ namespace Store.Controllers.API
             return rack;
         }
 
-        [HttpPut("UpdateRack")]
+        [HttpPost("UpdateRack")]
         public async Task<IActionResult> UpdateRack([FromBody] UpdateRackViewModel model)
         {
             if (!ModelState.IsValid)
