@@ -28,6 +28,23 @@ namespace Store.Models.ViewModels
         public ICollection<Almacen> Stores { get; set; }
     }
 
+    public class UpdateMyAccountViewModel
+    {
+        public string FirstName { get; set; }
+
+        public string SecondName { get; set; }
+
+        [Required]
+        public string LastName { get; set; }
+
+        public string SecondLastName { get; set; }
+
+        public string PhoneNumber { get; set; }
+
+        [Required]
+        public string Address { get; set; }
+    }
+
     public class UpdateUserViewModel
     {
         [Required]

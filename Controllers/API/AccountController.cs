@@ -219,7 +219,7 @@ namespace Store.Controllers.API
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost]
         [Route("UpdateUser")]
-        public async Task<IActionResult> UpdateUser([FromBody] UpdateUserViewModel model)
+        public async Task<IActionResult> UpdateUser([FromBody] UpdateMyAccountViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -251,7 +251,7 @@ namespace Store.Controllers.API
                 await _userHelper.UpdateUserAsync(user);
                 return Ok();
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }

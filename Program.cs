@@ -15,6 +15,7 @@ using Store.Helpers.ProductExistenceService;
 using StoreBackend.Helpers.ContabilidadService;
 using Store.Helpers.AsientoContHelper;
 using Store.Hubs;
+using Store.Helpers.ReportHelper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,7 +40,7 @@ else
     builder.Services.AddDbContext<DataContext>(
         opt =>
             opt.UseSqlServer(
-                builder.Configuration.GetConnectionString("TestConnetion"),
+                builder.Configuration.GetConnectionString("ProdConnetion"),
                 x => x.UseNetTopologySuite()
             )
     );
@@ -91,6 +92,7 @@ builder.Services.AddScoped<ICashMovmentService, CashMovmentService>();
 builder.Services.AddScoped<IProdExistService, ProdExistService>();
 builder.Services.AddScoped<IContService, ContService>();
 builder.Services.AddScoped<IAsientoContHelper, AsientoContHelper>();
+builder.Services.AddScoped<IReportsHelper, ReportsHelper>();
 
 var MyAllowSpecificOrigins = "Clients";
 builder.Services.AddCors(options =>

@@ -112,6 +112,16 @@ namespace Store.Helpers.SalesHelper
                 Almacen alm = await _context.Almacen.FirstOrDefaultAsync(
                     a => a.Id == item.Store.Id
                 );
+
+                //Modificamos las existencias
+                Existence existence = await _context.Existences.FirstOrDefaultAsync(
+                    e => e.Producto == prod && e.Almacen == alm
+                );
+                existence.Existencia -= item.Cantidad;
+                existence.PrecioVentaDetalle = item.PVD;
+                existence.PrecioVentaMayor = item.PVM;
+                _context.Entry(existence).State = EntityState.Modified;
+
                 //Se crea el objeto detalle venta
                 SaleDetail saleDetail =
                     new()
@@ -123,18 +133,10 @@ namespace Store.Helpers.SalesHelper
                         CostoUnitario = item.CostoUnitario,
                         PVM = item.PVM,
                         PVD = item.PVD,
-                        CostoTotal = item.CostoTotal
+                        CostoTotal = item.CostoTotal,
+                        Ganancia = item.CostoTotal - (item.Cantidad * existence.PrecioCompra)
                     };
                 detalles.Add(saleDetail); //Se agrega a la lista
-
-                //Modificamos las existencias
-                Existence existence = await _context.Existences.FirstOrDefaultAsync(
-                    e => e.Producto == prod && e.Almacen == alm
-                );
-                existence.Existencia -= saleDetail.Cantidad;
-                existence.PrecioVentaDetalle = item.PVD;
-                existence.PrecioVentaMayor = item.PVM;
-                _context.Entry(existence).State = EntityState.Modified;
 
                 //Agregamos el Kardex de entrada al almacen destino
                 var karList = await _context.Kardex
@@ -237,10 +239,14 @@ namespace Store.Helpers.SalesHelper
                 .ToListAsync();
         }
 
-        public async Task<Abono> AddAbonoAsync(AddAbonoViewModel model, Entities.User user)
+        public async Task<ICollection<Abono>> AddAbonoAsync(
+            AddAbonoViewModel model,
+            Entities.User user
+        )
         {
             DateTime hoy = DateTime.Now;
             Abono abono = new();
+            List<Abono> abonoList = new();
             var movList = await _context.CajaMovments
                 .Where(c => c.Store.Id == model.IdStore && c.CajaTipo.Id == 1)
                 .ToListAsync();
@@ -275,6 +281,7 @@ namespace Store.Helpers.SalesHelper
 
                         item.Saldo -= sobra;
                         sobra = 0;
+                        abonoList.Add(abono);
                     }
                     else if (item.Saldo == sobra)
                     {
@@ -291,6 +298,7 @@ namespace Store.Helpers.SalesHelper
                         item.Saldo = 0;
                         item.IsCanceled = true;
                         sobra = 0;
+                        abonoList.Add(abono);
                     }
                     else
                     {
@@ -304,6 +312,8 @@ namespace Store.Helpers.SalesHelper
                                 s => s.Id == model.IdStore
                             )
                         };
+
+                        abonoList.Add(abono);
 
                         sobra -= item.Saldo;
                         item.Saldo = 0;
@@ -355,7 +365,7 @@ namespace Store.Helpers.SalesHelper
             }
 
             await _context.SaveChangesAsync();
-            return abono;
+            return abonoList;
         }
 
         public async Task<Sales> AnularSaleAsync(int id, Entities.User user)
@@ -427,6 +437,56 @@ namespace Store.Helpers.SalesHelper
             }
             _context.Entry(sale).State = EntityState.Modified;
 
+            await _context.SaveChangesAsync();
+
+            List<CountAsientoContableDetails> countAsientoContableDetailsList = new();
+
+            CountAsientoContableDetails detalleDebito =
+                new()
+                {
+                    Cuenta = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 74),
+                    Debito = sale.MontoVenta,
+                    Credito = 0
+                };
+            countAsientoContableDetailsList.Add(detalleDebito);
+
+            if (sale.IsContado == true)
+            {
+                CountAsientoContableDetails detalleCredito =
+                    new()
+                    {
+                        Cuenta = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 66),
+                        Debito = 0,
+                        Credito = sale.MontoVenta
+                    };
+                countAsientoContableDetailsList.Add(detalleCredito);
+            }
+            else
+            {
+                CountAsientoContableDetails detalleCredito =
+                    new()
+                    {
+                        Cuenta = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 72),
+                        Debito = 0,
+                        Credito = sale.MontoVenta
+                    };
+                countAsientoContableDetailsList.Add(detalleCredito);
+            }
+
+            CountAsientoContable asientosContable =
+                new()
+                {
+                    Fecha = sale.FechaVenta,
+                    Referencia = $"DEVOLUCION SOBRE VENTA SEGUN FACTURA: {sale.Id}",
+                    LibroContable = await _context.CountLibros.FirstOrDefaultAsync(c => c.Id == 4),
+                    FuenteContable = await _context.CountFuentesContables.FirstOrDefaultAsync(
+                        f => f.Id == 3
+                    ),
+                    Store = sale.Store,
+                    User = user,
+                    CountAsientoContableDetails = countAsientoContableDetailsList
+                };
+            _context.CountAsientosContables.Add(asientosContable);
             await _context.SaveChangesAsync();
             return sale;
         }
@@ -539,6 +599,8 @@ namespace Store.Helpers.SalesHelper
                 }
             }
 
+            decimal diff = sale.MontoVenta - model.Monto;
+
             sale.MontoVenta = model.Monto;
             if (!sale.IsCanceled)
             {
@@ -551,21 +613,56 @@ namespace Store.Helpers.SalesHelper
                 .ToListAsync();
 
             var mov = movList.Where(m => m.Id == movList.Max(k => k.Id)).FirstOrDefault();
+            await _context.SaveChangesAsync();
 
-            // CajaMovment cM =
-            //     new()
-            //     {
-            //         Fecha = hoy,
-            //         Description = "DEVOLUCION PARCIAL DE VENTA",
-            //         CajaTipo = await _context.CajaTipos.FirstOrDefaultAsync(c => c.Id == 1),
-            //         Entradas = 0,
-            //         Salidas = salidaEfectivo,
-            //         Saldo = mov == null ? 0 - salidaEfectivo : mov.Saldo - salidaEfectivo,
-            //         RealizadoPor = user,
-            //         Store = sale.Store
-            //     };
-            // _context.CajaMovments.Add(cM);
+            List<CountAsientoContableDetails> countAsientoContableDetailsList = new();
 
+            CountAsientoContableDetails detalleDebito =
+                new()
+                {
+                    Cuenta = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 74),
+                    Debito = diff,
+                    Credito = 0
+                };
+            countAsientoContableDetailsList.Add(detalleDebito);
+
+            if (sale.IsContado == true)
+            {
+                CountAsientoContableDetails detalleCredito =
+                    new()
+                    {
+                        Cuenta = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 66),
+                        Debito = 0,
+                        Credito = diff
+                    };
+                countAsientoContableDetailsList.Add(detalleCredito);
+            }
+            else
+            {
+                CountAsientoContableDetails detalleCredito =
+                    new()
+                    {
+                        Cuenta = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 72),
+                        Debito = 0,
+                        Credito = diff
+                    };
+                countAsientoContableDetailsList.Add(detalleCredito);
+            }
+
+            CountAsientoContable asientosContable =
+                new()
+                {
+                    Fecha = sale.FechaVenta,
+                    Referencia = $"DEVOLUCION PARCIAL SOBRE VENTA SEGUN FACTURA: {sale.Id}",
+                    LibroContable = await _context.CountLibros.FirstOrDefaultAsync(c => c.Id == 4),
+                    FuenteContable = await _context.CountFuentesContables.FirstOrDefaultAsync(
+                        f => f.Id == 3
+                    ),
+                    Store = sale.Store,
+                    User = user,
+                    CountAsientoContableDetails = countAsientoContableDetailsList
+                };
+            _context.CountAsientosContables.Add(asientosContable);
             await _context.SaveChangesAsync();
             return sale;
         }

@@ -16,7 +16,7 @@ namespace Store.Helpers.SalesHelper
         Task<Sales> AnularSaleAsync(int id, Entities.User user);
         Task<Sales> AnularSaleParcialAsync(EditSaleViewModel model, Entities.User user);
         Task<Sales> AddSaleAsync(AddSaleViewModel model, Entities.User user);
-        Task<Abono> AddAbonoAsync(AddAbonoViewModel model, Entities.User user);
+        Task<ICollection<Abono>> AddAbonoAsync(AddAbonoViewModel model, Entities.User user);
         Task<Abono> AddAbonoEspecificoAsync(AddAbonoEspecificoViewModel model, Entities.User user);
     }
 }

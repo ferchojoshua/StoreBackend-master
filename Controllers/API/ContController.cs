@@ -9,7 +9,7 @@ using Store.Models.ViewModels;
 using StoreBackend.Helpers.ContabilidadService;
 using StoreBackend.Models.ViewModels;
 
-namespace StoreBackend.Controllers.API
+namespace Store.Controllers.API
 {
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
