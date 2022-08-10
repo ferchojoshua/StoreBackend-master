@@ -1,8 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Store.Data;
-using Store.Entities;
 using Store.Models.Responses;
-using Store.Models.ViewModels;
 
 namespace Store.Helpers.ProductExistenceService
 {
@@ -21,14 +19,14 @@ namespace Store.Helpers.ProductExistenceService
             var productList = await _context.Productos
                 .Include(p => p.Familia)
                 .Include(p => p.TipoNegocio)
+                .Include(p => p.Existences)
+                .ThenInclude(e => e.Almacen)
                 .ToListAsync();
             foreach (var item in productList)
             {
                 ExistenciaResponse e = new();
-                var exist = await _context.Existences.Where(e => e.Producto == item).ToListAsync();
-
                 List<ExistenceDetail> eDList = new();
-                foreach (var itemDetail in exist)
+                foreach (var itemDetail in item.Existences)
                 {
                     ExistenceDetail eD =
                         new()

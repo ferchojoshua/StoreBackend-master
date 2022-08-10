@@ -28,8 +28,8 @@ namespace Store.Helpers.ReportHelper
                         .Where(
                             s =>
                                 s.IsAnulado == false
-                                && s.FechaVenta >= model.Desde
-                                && s.FechaVenta <= model.Hasta
+                                && s.FechaVenta.Date >= model.Desde.Date
+                                && s.FechaVenta.Date <= model.Hasta.Date
                         )
                         .ToListAsync();
                     return result;
@@ -42,8 +42,8 @@ namespace Store.Helpers.ReportHelper
                         .Where(
                             s =>
                                 s.IsAnulado == false
-                                && s.FechaVenta >= model.Desde
-                                && s.FechaVenta <= model.Hasta
+                                && s.FechaVenta.Date >= model.Desde.Date
+                                && s.FechaVenta.Date <= model.Hasta.Date
                                 && s.IsContado
                         )
                         .ToListAsync();
@@ -57,8 +57,8 @@ namespace Store.Helpers.ReportHelper
                         .Where(
                             s =>
                                 s.IsAnulado == false
-                                && s.FechaVenta >= model.Desde
-                                && s.FechaVenta <= model.Hasta
+                                && s.FechaVenta.Date >= model.Desde.Date
+                                && s.FechaVenta.Date <= model.Hasta.Date
                                 && s.IsContado == false
                         )
                         .ToListAsync();
@@ -75,8 +75,8 @@ namespace Store.Helpers.ReportHelper
                         .Where(
                             s =>
                                 s.IsAnulado == false
-                                && s.FechaVenta >= model.Desde
-                                && s.FechaVenta <= model.Hasta
+                                && s.FechaVenta.Date >= model.Desde.Date
+                                && s.FechaVenta.Date <= model.Hasta.Date
                                 && s.Store.Id == model.StoreId
                         )
                         .ToListAsync();
@@ -90,8 +90,8 @@ namespace Store.Helpers.ReportHelper
                         .Where(
                             s =>
                                 s.IsAnulado == false
-                                && s.FechaVenta >= model.Desde
-                                && s.FechaVenta <= model.Hasta
+                                && s.FechaVenta.Date >= model.Desde.Date
+                                && s.FechaVenta.Date <= model.Hasta.Date
                                 && s.Store.Id == model.StoreId
                                 && s.IsContado
                         )
@@ -106,8 +106,8 @@ namespace Store.Helpers.ReportHelper
                         .Where(
                             s =>
                                 s.IsAnulado == false
-                                && s.FechaVenta >= model.Desde
-                                && s.FechaVenta <= model.Hasta
+                                && s.FechaVenta.Date >= model.Desde.Date
+                                && s.FechaVenta.Date <= model.Hasta.Date
                                 && s.Store.Id == model.StoreId
                                 && s.IsContado == false
                         )
@@ -130,8 +130,8 @@ namespace Store.Helpers.ReportHelper
                         .Where(
                             s =>
                                 s.IsAnulado == false
-                                && s.FechaVenta >= model.Desde
-                                && s.FechaVenta <= model.Hasta
+                                && s.FechaVenta.Date.Date >= model.Desde.Date.Date
+                                && s.FechaVenta.Date.Date <= model.Hasta.Date.Date
                                 && s.IsContado == false
                         )
                         .ToListAsync();
@@ -145,8 +145,8 @@ namespace Store.Helpers.ReportHelper
                         .Where(
                             s =>
                                 s.IsAnulado == false
-                                && s.FechaVenta >= model.Desde
-                                && s.FechaVenta <= model.Hasta
+                                && s.FechaVenta.Date >= model.Desde.Date
+                                && s.FechaVenta.Date <= model.Hasta.Date
                                 && s.IsContado == false
                                 && s.Client.Id == model.ClientId
                         )
@@ -164,8 +164,8 @@ namespace Store.Helpers.ReportHelper
                         .Where(
                             s =>
                                 s.IsAnulado == false
-                                && s.FechaVenta >= model.Desde
-                                && s.FechaVenta <= model.Hasta
+                                && s.FechaVenta.Date >= model.Desde.Date
+                                && s.FechaVenta.Date <= model.Hasta.Date
                                 && s.Store.Id == model.StoreId
                                 && s.IsContado == false
                         )
@@ -180,8 +180,8 @@ namespace Store.Helpers.ReportHelper
                         .Where(
                             s =>
                                 s.IsAnulado == false
-                                && s.FechaVenta >= model.Desde
-                                && s.FechaVenta <= model.Hasta
+                                && s.FechaVenta.Date >= model.Desde.Date
+                                && s.FechaVenta.Date <= model.Hasta.Date
                                 && s.Store.Id == model.StoreId
                                 && s.IsContado == false
                                 && s.Client.Id == model.ClientId
@@ -216,8 +216,8 @@ namespace Store.Helpers.ReportHelper
                         .Where(
                             s =>
                                 s.IsAnulado == false
-                                && s.FechaVenta >= model.Desde
-                                && s.FechaVenta <= model.Hasta
+                                && s.FechaVenta.Date >= model.Desde.Date
+                                && s.FechaVenta.Date <= model.Hasta.Date
                                 && s.Store.Id == model.StoreId
                                 && s.Client.Id == model.ClientId
                         )
@@ -237,8 +237,8 @@ namespace Store.Helpers.ReportHelper
                         .Where(
                             s =>
                                 s.IsAnulado == false
-                                && s.FechaVenta >= model.Desde
-                                && s.FechaVenta <= model.Hasta
+                                && s.FechaVenta.Date >= model.Desde.Date
+                                && s.FechaVenta.Date <= model.Hasta.Date
                                 && s.Store.Id == model.StoreId
                         )
                         .ToListAsync();
@@ -260,8 +260,8 @@ namespace Store.Helpers.ReportHelper
                         .Where(
                             s =>
                                 s.IsAnulado == false
-                                && s.FechaVenta >= model.Desde
-                                && s.FechaVenta <= model.Hasta
+                                && s.FechaVenta.Date >= model.Desde.Date
+                                && s.FechaVenta.Date <= model.Hasta.Date
                                 && s.Client.Id == model.ClientId
                         )
                         .ToListAsync();
@@ -280,8 +280,8 @@ namespace Store.Helpers.ReportHelper
                         .Where(
                             s =>
                                 s.IsAnulado == false
-                                && s.FechaVenta >= model.Desde
-                                && s.FechaVenta <= model.Hasta
+                                && s.FechaVenta.Date >= model.Desde.Date
+                                && s.FechaVenta.Date <= model.Hasta.Date
                         )
                         .ToListAsync();
                 }

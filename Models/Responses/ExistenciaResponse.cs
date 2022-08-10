@@ -13,13 +13,13 @@ namespace Store.Models.Responses
 
         public List<ExistenceDetail> Existence { get; set; }
     }
-}
 
-public class ExistenceDetail
-{
-    public int IdExistence { get; set; }
-    public string Almacen { get; set; }
-    public int Exisistencia { get; set; }
-    public decimal PVD { get; set; }
-    public decimal PVM { get; set; }
+    public class ExistenceDetail
+    {
+        public int IdExistence { get; set; }
+        public string Almacen { get; set; }
+        public int Exisistencia { get; set; }
+        public decimal PVD { get; set; }
+        public decimal PVM { get; set; }
+    }
 }
