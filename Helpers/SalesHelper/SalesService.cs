@@ -81,17 +81,22 @@ namespace Store.Helpers.SalesHelper
                 new()
                 {
                     IsEventual = model.IsEventual,
-                    NombreCliente = model.IsEventual ? model.NombreCliente : "",
+                    NombreCliente = model.IsEventual ? model.NombreCliente : "CLIENTE EVENTUAL",
                     Client = cl,
                     ProductsCount = model.SaleDetails.Count,
                     MontoVenta = model.MontoVenta,
+                    IsDescuento = model.IsDescuento,
+                    DescuentoXPercent = model.DescuentoXPercent,
+                    DescuentoXMonto = model.DescuentoXMonto,
                     FechaVenta = hoy,
                     FacturedBy = user,
                     IsContado = model.IsContado,
                     IsCanceled = model.IsContado, //Si es de contado, esta cancelado
                     Saldo = model.IsContado ? 0 : model.MontoVenta,
                     FechaVencimiento = hoy.AddDays(15),
-                    Store = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == model.Storeid)
+                    Store = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == model.Storeid),
+                    CodigoDescuento = model.CodigoDescuento,
+                    MontoVentaAntesDescuento = model.MontoVentaAntesDescuento
                 };
 
             if (model.IsContado)
@@ -129,12 +134,18 @@ namespace Store.Helpers.SalesHelper
                         Store = alm,
                         Product = prod,
                         Cantidad = item.Cantidad,
+                        IsDescuento = item.IsDescuento,
+                        DescuentoXPercent = item.DescuentoXPercent,
                         Descuento = item.Descuento,
+                        CodigoDescuento = item.CodigoDescuento,
+                        Ganancia = item.CostoTotal - (item.Cantidad * existence.PrecioCompra),
                         CostoUnitario = item.CostoUnitario,
                         PVM = item.PVM,
                         PVD = item.PVD,
+                        CostoTotalAntesDescuento = item.CostoTotalAntesDescuento,
+                        CostoTotalDespuesDescuento = item.CostoTotalDespuesDescuento,
                         CostoTotal = item.CostoTotal,
-                        Ganancia = item.CostoTotal - (item.Cantidad * existence.PrecioCompra)
+                        CostoCompra = existence.PrecioCompra,
                     };
                 detalles.Add(saleDetail); //Se agrega a la lista
 

@@ -436,5 +436,38 @@ namespace Store.Helpers.ReportHelper
 
             return result;
         }
+
+        public async Task<ICollection<Sales>> ReportCierreDiario(CierreDiarioViewModel model)
+        {
+            List<Sales> result = new();
+            DateOnly fechaDesde = DateOnly.Parse(model.FechaDesde);
+            DateOnly fechaHasta = DateOnly.Parse(model.FechaHasta);
+
+            TimeOnly horaDesde = TimeOnly.Parse(model.HoraDesde);
+            TimeOnly horaHasta = TimeOnly.Parse(model.HoraHasta);
+
+            DateTime fechaHoraDesde = fechaDesde.ToDateTime(horaDesde);
+            DateTime fechaHoraHasta = fechaHasta.ToDateTime(horaHasta);
+            if (model.StoreId != 0)
+            {
+                result = await _context.Sales
+                    .Include(s => s.Client)
+                    .Include(s => s.SaleDetails)
+                    .Where(
+                        s =>
+                            s.Store.Id == model.StoreId
+                            && s.FechaVenta >= fechaHoraDesde
+                            && s.FechaVenta <= fechaHoraHasta
+                    )
+                    .ToListAsync();
+                return result;
+            }
+            result = await _context.Sales
+                .Include(s => s.Client)
+                .Include(s => s.SaleDetails)
+                .Where(s => s.FechaVenta >= fechaHoraDesde && s.FechaVenta <= fechaHoraHasta)
+                .ToListAsync();
+            return result;
+        }
     }
 }

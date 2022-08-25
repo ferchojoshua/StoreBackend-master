@@ -1,3 +1,5 @@
+using Store.Entities;
+
 namespace Store.Models.Responses
 {
     public class ReportResponse

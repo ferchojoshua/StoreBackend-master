@@ -1,6 +1,6 @@
 namespace Store.Entities
 {
-    public class Sales
+    public class Facturacion
     {
         public int Id { get; set; }
         public bool IsEventual { get; set; }
@@ -10,7 +10,7 @@ namespace Store.Entities
 #nullable disable
         public int ProductsCount { get; set; }
 
-        //Representa el total de efectivo recibido
+        //Representa el total de efectivo arecibir
         public decimal MontoVenta { get; set; }
         public bool IsDescuento { get; set; }
         public decimal DescuentoXPercent { get; set; }
@@ -18,11 +18,10 @@ namespace Store.Entities
         public decimal MontoVentaAntesDescuento { get; set; }
         public DateTime FechaVenta { get; set; }
         public User FacturedBy { get; set; }
-        public ICollection<SaleDetail> SaleDetails { get; set; }
+        public User PaidBy { get; set; }
+        public ICollection<FacturaDetails> FacturaDetails { get; set; }
         public bool IsContado { get; set; }
         public bool IsCanceled { get; set; }
-        public decimal Saldo { get; set; }
-        public DateTime FechaVencimiento { get; set; }
         public bool IsAnulado { get; set; }
         public User AnulatedBy { get; set; }
         public DateTime FechaAnulacion { get; set; }

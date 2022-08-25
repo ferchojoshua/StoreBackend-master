@@ -25,6 +25,8 @@ namespace Store.Data
         public DbSet<Department> Departments { get; set; }
         public DbSet<Existence> Existences { get; set; }
         public DbSet<ExistencesDailyCheck> ExistencesDailyChecks { get; set; }
+        public DbSet<Facturacion> Facturacions { get; set; }
+        public DbSet<FacturaDetails> FacturaDetails { get; set; }
         public DbSet<Familia> Familias { get; set; }
         public DbSet<Kardex> Kardex { get; set; }
         public DbSet<Municipality> Municipalities { get; set; }

@@ -16,6 +16,8 @@ using StoreBackend.Helpers.ContabilidadService;
 using Store.Helpers.AsientoContHelper;
 using Store.Hubs;
 using Store.Helpers.ReportHelper;
+using StoreBackend.Hubs;
+using Store.Helpers.FacturacionHelper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -93,6 +95,7 @@ builder.Services.AddScoped<IProdExistService, ProdExistService>();
 builder.Services.AddScoped<IContService, ContService>();
 builder.Services.AddScoped<IAsientoContHelper, AsientoContHelper>();
 builder.Services.AddScoped<IReportsHelper, ReportsHelper>();
+builder.Services.AddScoped<IFacturationHelper, FacturationHelper>();
 
 var MyAllowSpecificOrigins = "Clients";
 builder.Services.AddCors(options =>
@@ -127,6 +130,8 @@ app.UseStaticFiles();
 
 app.UseRouting();
 app.MapHub<NotificationHub>("notificationHub");
+app.MapHub<NewSalehub>("newSaleHub");
+app.MapHub<NewFacturaHub>("newFactHub");
 
 app.UseCors(MyAllowSpecificOrigins);
 

@@ -55,4 +55,22 @@ namespace Store.Models.ViewModels
         [Required]
         public int ClientId { get; set; }
     }
+
+    public class CierreDiarioViewModel
+    {
+        [Required]
+        public string FechaDesde { get; set; }
+
+        [Required]
+        public string FechaHasta { get; set; }
+
+        [Required]
+        public string HoraDesde { get; set; }
+
+        [Required]
+        public string HoraHasta { get; set; }
+
+        [Required]
+        public int StoreId { get; set; }
+    }
 }

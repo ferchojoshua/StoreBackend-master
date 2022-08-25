@@ -23,6 +23,15 @@ namespace Store.Models.ViewModels
 
         [Required]
         public int Storeid { get; set; }
+
+        public bool IsDescuento { get; set; }
+        public decimal DescuentoXPercent { get; set; }
+        public decimal DescuentoXMonto { get; set; }
+
+        public string CodigoDescuento { get; set; }
+
+        [Required]
+        public decimal MontoVentaAntesDescuento { get; set; }
     }
 
     public class AddAbonoViewModel

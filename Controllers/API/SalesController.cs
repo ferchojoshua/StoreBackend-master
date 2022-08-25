@@ -2,10 +2,12 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Store.Entities;
 using Store.Helpers.SalesHelper;
 using Store.Helpers.User;
 using Store.Models.ViewModels;
+using StoreBackend.Hubs;
 
 namespace Store.Controllers.API
 {
@@ -16,18 +18,25 @@ namespace Store.Controllers.API
     {
         private readonly IUserHelper _userHelper;
         private readonly ISalesService _salesService;
+        private readonly IHubContext<NewSalehub> _hubContext;
 
-        public SalesController(IUserHelper userHelper, ISalesService salesService)
+        public SalesController(
+            IUserHelper userHelper,
+            ISalesService salesService,
+            IHubContext<NewSalehub> hubContext
+        )
         {
             _userHelper = userHelper;
             _salesService = salesService;
+            _hubContext = hubContext;
         }
 
         [HttpGet("GetContadoSalesByStore/{id}")]
         public async Task<ActionResult<IEnumerable<Sales>>> GetContadoSalesByStore(int id)
         {
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -52,8 +61,9 @@ namespace Store.Controllers.API
         [HttpGet("GetCreditoSalesByStore/{id}")]
         public async Task<ActionResult<IEnumerable<Sales>>> GetCreditoSalesByStore(int id)
         {
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -78,8 +88,9 @@ namespace Store.Controllers.API
         [HttpGet("GetAnulatedSalesByStore/{id}")]
         public async Task<ActionResult<IEnumerable<Sales>>> GetAnulatedSalesByStore(int id)
         {
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -104,8 +115,9 @@ namespace Store.Controllers.API
         [HttpGet("GetPaysBySaleId/{id}")]
         public async Task<ActionResult<IEnumerable<Sales>>> GetPaysBySaleId(int id)
         {
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -130,8 +142,9 @@ namespace Store.Controllers.API
         [HttpGet("GetSalesUncanceledByClient/{id}")]
         public async Task<ActionResult<IEnumerable<Sales>>> GetSalesUncanceledByClient(int id)
         {
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
@@ -161,8 +174,9 @@ namespace Store.Controllers.API
                 return BadRequest();
             }
 
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
 
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
@@ -185,6 +199,7 @@ namespace Store.Controllers.API
             try
             {
                 var sale = await _salesService.AddSaleAsync(model, user);
+                await _hubContext.Clients.All.SendAsync("saleUpdate");
                 return Ok(sale);
             }
             catch (Exception ex)
@@ -202,8 +217,9 @@ namespace Store.Controllers.API
                 return BadRequest();
             }
 
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
 
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
@@ -245,8 +261,9 @@ namespace Store.Controllers.API
                 return BadRequest();
             }
 
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
 
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
@@ -285,8 +302,9 @@ namespace Store.Controllers.API
                 return BadRequest();
             }
 
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
 
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
@@ -332,8 +350,9 @@ namespace Store.Controllers.API
                 return BadRequest();
             }
 
-            string email =
-                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
 
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)

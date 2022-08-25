@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Store.Data;
@@ -12,9 +13,10 @@ using Store.Data;
 namespace Store.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220822152630_Facturacion1")]
+    partial class Facturacion1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -724,9 +726,6 @@ namespace Store.Migrations
                     b.Property<string>("NombreCliente")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PaidById")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<int>("ProductsCount")
                         .HasColumnType("int");
 
@@ -740,8 +739,6 @@ namespace Store.Migrations
                     b.HasIndex("ClientId");
 
                     b.HasIndex("FacturedById");
-
-                    b.HasIndex("PaidById");
 
                     b.HasIndex("StoreId");
 
@@ -764,9 +761,6 @@ namespace Store.Migrations
 
                     b.Property<string>("CodigoDescuento")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("CostoCompra")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("CostoTotal")
                         .HasColumnType("decimal(18,2)");
@@ -1205,9 +1199,6 @@ namespace Store.Migrations
 
                     b.Property<string>("CodigoDescuento")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("CostoCompra")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("CostoTotal")
                         .HasColumnType("decimal(18,2)");
@@ -1747,10 +1738,6 @@ namespace Store.Migrations
                         .WithMany()
                         .HasForeignKey("FacturedById");
 
-                    b.HasOne("Store.Entities.User", "PaidBy")
-                        .WithMany()
-                        .HasForeignKey("PaidById");
-
                     b.HasOne("Store.Entities.Almacen", "Store")
                         .WithMany()
                         .HasForeignKey("StoreId");
@@ -1760,8 +1747,6 @@ namespace Store.Migrations
                     b.Navigation("Client");
 
                     b.Navigation("FacturedBy");
-
-                    b.Navigation("PaidBy");
 
                     b.Navigation("Store");
                 });

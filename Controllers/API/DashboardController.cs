@@ -1,12 +1,8 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Store.Entities;
 using Store.Helpers.ClientService;
-using Store.Helpers.SalesHelper;
-using Store.Helpers.User;
-using Store.Models.ViewModels;
 
 namespace Store.Controllers.API
 {

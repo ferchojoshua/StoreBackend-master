@@ -1,31 +1,38 @@
+using System.Net;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Store.Entities;
-using Store.Helpers.ReportHelper;
+using Store.Helpers.FacturacionHelper;
 using Store.Helpers.User;
+using Store.Hubs;
 using Store.Models.ViewModels;
 
 namespace Store.Controllers.API
 {
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
-    public class ReportsController : Controller
+    public class FacturationController : Controller
     {
         private readonly IUserHelper _userHelper;
-        private readonly IReportsHelper _reportHelper;
+        private readonly IFacturationHelper _facturation;
+        private readonly IHubContext<NewFacturaHub> _hubContext;
 
-        public ReportsController(IUserHelper userHelper, IReportsHelper reportHelper)
+        public FacturationController(
+            IUserHelper userHelper,
+            IFacturationHelper facturation,
+            IHubContext<NewFacturaHub> hubContext
+        )
         {
             _userHelper = userHelper;
-            _reportHelper = reportHelper;
+            _facturation = facturation;
+            _hubContext = hubContext;
         }
 
-        [HttpPost("GetMasterVentas")]
-        public async Task<ActionResult<IEnumerable<Sales>>> GetMasterVentas(
-            [FromBody] MasterVentasViewModel model
-        )
+        [HttpGet("GetFacturationsUncancelled/{id}")]
+        public async Task<ActionResult<IEnumerable<Facturacion>>> GetFacturationsUncancelled(int id)
         {
             string email = User.Claims
                 .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
@@ -42,15 +49,14 @@ namespace Store.Controllers.API
                 await _userHelper.LogoutAsync();
                 return Ok("eX01");
             }
-            if (!await _userHelper.IsAutorized(user.Rol, "MASTER VENTAS VER"))
+            if (!await _userHelper.IsAutorized(user.Rol, "SALES CAJA"))
             {
                 return Unauthorized();
             }
-
             try
             {
-                var result = await _reportHelper.ReportMasterVentas(model);
-                return Ok(result.OrderByDescending(r => r.FechaVenta));
+                var facturacions = await _facturation.GetFacturacionAsync(id);
+                return Ok(facturacions.OrderByDescending(s => s.FechaVenta));
             }
             catch (Exception ex)
             {
@@ -58,10 +64,8 @@ namespace Store.Controllers.API
             }
         }
 
-        [HttpPost("GetCuentasXCobrar")]
-        public async Task<ActionResult<IEnumerable<Sales>>> GetCuentasXCobrar(
-            [FromBody] CuentasXCobrarViewModel model
-        )
+        [HttpGet("GetFactCancelled/{id}")]
+        public async Task<ActionResult<IEnumerable<Facturacion>>> GetFactCancelled(int id)
         {
             string email = User.Claims
                 .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
@@ -78,15 +82,50 @@ namespace Store.Controllers.API
                 await _userHelper.LogoutAsync();
                 return Ok("eX01");
             }
-            if (!await _userHelper.IsAutorized(user.Rol, "CUENTASXCOBRAR VER"))
+            if (!await _userHelper.IsAutorized(user.Rol, "SALES CAJA"))
             {
                 return Unauthorized();
             }
 
+            var facturacions = await _facturation.GetCancelledFacturacionAsync(id);
+            return Ok(facturacions.OrderByDescending(s => s.FechaVenta));
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<Sales>> Addfactura([FromBody] AddFacturacionViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
+
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+
+            if (!await _userHelper.IsAutorized(user.Rol, "SALES FACTURACION"))
+            {
+                return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
             try
             {
-                var result = await _reportHelper.ReportCuentasXCobrar(model);
-                return Ok(result.OrderByDescending(r => r.FechaVenta));
+                var sale = await _facturation.AddFacturacionAsync(model, user);
+                await _hubContext.Clients.All.SendAsync("factListUpdate");
+                return Ok(sale);
             }
             catch (Exception ex)
             {
@@ -94,19 +133,30 @@ namespace Store.Controllers.API
             }
         }
 
-        [HttpPost("GetProdVendidos")]
-        public async Task<ActionResult<IEnumerable<Sales>>> GetArtVendidos(
-            [FromBody] ArtVendidosViewModel model
-        )
+        [HttpPost]
+        [Route("Paidfactura")]
+        public async Task<ActionResult<Sales>> Paidfactura([FromBody] PayFactViewModel model)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
             string email = User.Claims
                 .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
                 .Value;
+
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
                 return Ok(user);
             }
+
+            if (!await _userHelper.IsAutorized(user.Rol, "SALES CAJA"))
+            {
+                return Unauthorized();
+            }
+
             string token = HttpContext.Request.Headers["Authorization"];
             token = token["Bearer ".Length..].Trim();
             if (user.UserSession.UserToken != token)
@@ -114,15 +164,10 @@ namespace Store.Controllers.API
                 await _userHelper.LogoutAsync();
                 return Ok("eX01");
             }
-            if (!await _userHelper.IsAutorized(user.Rol, "PRODVENDIDOS VER"))
-            {
-                return Unauthorized();
-            }
-
             try
             {
-                var result = await _reportHelper.ReportArticulosVendidos(model);
-                return Ok(result);
+                var sale = await _facturation.PayFacturaAsync(model, user);
+                return Ok(sale);
             }
             catch (Exception ex)
             {
@@ -130,19 +175,30 @@ namespace Store.Controllers.API
             }
         }
 
-        [HttpPost("GetCierreDiario")]
-        public async Task<ActionResult<IEnumerable<Sales>>> GetCierreDiario(
-            [FromBody] CierreDiarioViewModel model
-        )
+        [HttpPost]
+        [Route("DeleteFactura/{id}")]
+        public async Task<ActionResult<Sales>> DeleteFactura(int id)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
             string email = User.Claims
                 .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
                 .Value;
+
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user.IsDefaultPass)
             {
                 return Ok(user);
             }
+
+            if (!await _userHelper.IsAutorized(user.Rol, "SALES DELETE"))
+            {
+                return Unauthorized();
+            }
+
             string token = HttpContext.Request.Headers["Authorization"];
             token = token["Bearer ".Length..].Trim();
             if (user.UserSession.UserToken != token)
@@ -150,15 +206,10 @@ namespace Store.Controllers.API
                 await _userHelper.LogoutAsync();
                 return Ok("eX01");
             }
-            if (!await _userHelper.IsAutorized(user.Rol, "CIERREDIARIO VER"))
-            {
-                return Unauthorized();
-            }
-
             try
             {
-                var result = await _reportHelper.ReportCierreDiario(model);
-                return Ok(result);
+                var sale = await _facturation.DeleteFacturacionAsync(id, user);
+                return Ok(sale);
             }
             catch (Exception ex)
             {

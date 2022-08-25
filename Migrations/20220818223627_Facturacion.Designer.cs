@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Store.Data;
@@ -12,9 +13,10 @@ using Store.Data;
 namespace Store.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220818223627_Facturacion")]
+    partial class Facturacion
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -682,15 +684,6 @@ namespace Store.Migrations
                     b.Property<int?>("ClientId")
                         .HasColumnType("int");
 
-                    b.Property<string>("CodigoDescuento")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("DescuentoXMonto")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("DescuentoXPercent")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("FacturedById")
                         .HasColumnType("nvarchar(450)");
 
@@ -706,29 +699,14 @@ namespace Store.Migrations
                     b.Property<bool>("IsCanceled")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsContado")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDescuento")
-                        .HasColumnType("bit");
-
                     b.Property<bool>("IsEventual")
                         .HasColumnType("bit");
 
                     b.Property<decimal>("MontoVenta")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal>("MontoVentaAntesDescuento")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("NombreCliente")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PaidById")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("ProductsCount")
-                        .HasColumnType("int");
 
                     b.Property<int?>("StoreId")
                         .HasColumnType("int");
@@ -740,8 +718,6 @@ namespace Store.Migrations
                     b.HasIndex("ClientId");
 
                     b.HasIndex("FacturedById");
-
-                    b.HasIndex("PaidById");
 
                     b.HasIndex("StoreId");
 
@@ -762,28 +738,7 @@ namespace Store.Migrations
                     b.Property<int>("Cantidad")
                         .HasColumnType("int");
 
-                    b.Property<string>("CodigoDescuento")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("CostoCompra")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<decimal>("CostoTotal")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("CostoTotalAntesDescuento")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("CostoTotalDespuesDescuento")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("CostoUnitario")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("Descuento")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("DescuentoXPercent")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("FacturacionId")
@@ -794,15 +749,6 @@ namespace Store.Migrations
 
                     b.Property<bool>("IsAnulado")
                         .HasColumnType("bit");
-
-                    b.Property<bool>("IsDescuento")
-                        .HasColumnType("bit");
-
-                    b.Property<decimal>("PVD")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("PVM")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("ProductId")
                         .HasColumnType("int");
@@ -1205,9 +1151,6 @@ namespace Store.Migrations
 
                     b.Property<string>("CodigoDescuento")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("CostoCompra")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("CostoTotal")
                         .HasColumnType("decimal(18,2)");
@@ -1747,10 +1690,6 @@ namespace Store.Migrations
                         .WithMany()
                         .HasForeignKey("FacturedById");
 
-                    b.HasOne("Store.Entities.User", "PaidBy")
-                        .WithMany()
-                        .HasForeignKey("PaidById");
-
                     b.HasOne("Store.Entities.Almacen", "Store")
                         .WithMany()
                         .HasForeignKey("StoreId");
@@ -1760,8 +1699,6 @@ namespace Store.Migrations
                     b.Navigation("Client");
 
                     b.Navigation("FacturedBy");
-
-                    b.Navigation("PaidBy");
 
                     b.Navigation("Store");
                 });
