@@ -204,6 +204,7 @@ namespace Store.Helpers.FacturacionHelper
                         CostoTotalAntesDescuento = item.CostoTotalAntesDescuento,
                         CostoTotalDespuesDescuento = item.CostoTotalDespuesDescuento,
                         CostoTotal = item.CostoTotal,
+                        CostoCompra = item.CostoCompra
                     };
                 detalles.Add(saleDetail); //Se agrega a la lista
 

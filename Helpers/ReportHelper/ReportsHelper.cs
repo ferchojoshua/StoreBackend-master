@@ -437,9 +437,9 @@ namespace Store.Helpers.ReportHelper
             return result;
         }
 
-        public async Task<ICollection<Sales>> ReportCierreDiario(CierreDiarioViewModel model)
+        public async Task<DailyCloseResponse> ReportCierreDiario(CierreDiarioViewModel model)
         {
-            List<Sales> result = new();
+            DailyCloseResponse result = new();
             DateOnly fechaDesde = DateOnly.Parse(model.FechaDesde);
             DateOnly fechaHasta = DateOnly.Parse(model.FechaHasta);
 
@@ -450,7 +450,7 @@ namespace Store.Helpers.ReportHelper
             DateTime fechaHoraHasta = fechaHasta.ToDateTime(horaHasta);
             if (model.StoreId != 0)
             {
-                result = await _context.Sales
+                var salesByStore = await _context.Sales
                     .Include(s => s.Client)
                     .Include(s => s.SaleDetails)
                     .Where(
@@ -458,15 +458,71 @@ namespace Store.Helpers.ReportHelper
                             s.Store.Id == model.StoreId
                             && s.FechaVenta >= fechaHoraDesde
                             && s.FechaVenta <= fechaHoraHasta
+                            && s.IsAnulado == false
                     )
                     .ToListAsync();
+
+                var salesByStoreAnulated = await _context.SaleDetails
+                    .Where(
+                        s =>
+                            s.Store.Id == model.StoreId
+                            && s.FechaAnulacion >= fechaHoraDesde
+                            && s.FechaAnulacion <= fechaHoraHasta
+                            && s.IsAnulado
+                    )
+                    .ToListAsync();
+
+                var abonoByStore = await _context.Abonos
+                    .Include(a => a.Sale)
+                    .ThenInclude(s => s.Client)
+                    .Where(
+                        a =>
+                            a.Store.Id == model.StoreId
+                            && a.FechaAbono >= fechaHoraDesde
+                            && a.FechaAbono <= fechaHoraDesde
+                    )
+                    .ToListAsync();
+
+                result.SaleList = salesByStore;
+                result.AnulatedSaleList = salesByStoreAnulated;
+                result.AbonoList = abonoByStore;
+
                 return result;
             }
-            result = await _context.Sales
+            var sales = await _context.Sales
                 .Include(s => s.Client)
                 .Include(s => s.SaleDetails)
-                .Where(s => s.FechaVenta >= fechaHoraDesde && s.FechaVenta <= fechaHoraHasta)
+                .Where(
+                    s =>
+                        s.FechaVenta >= fechaHoraDesde
+                        && s.FechaVenta <= fechaHoraHasta
+                        && s.IsAnulado == false
+                )
                 .ToListAsync();
+
+            var salesAnulated = await _context.SaleDetails
+                .Where(
+                    s =>
+                        s.FechaAnulacion >= fechaHoraDesde
+                        && s.FechaAnulacion <= fechaHoraHasta
+                        && s.IsAnulado
+                )
+                .ToListAsync();
+
+            var abono = await _context.Abonos
+                .Include(a => a.Sale)
+                .ThenInclude(s => s.Client)
+                .Where(
+                    a =>
+                        a.FechaAbono >= fechaHoraDesde
+                        && a.FechaAbono <= fechaHoraHasta
+                        && a.Sale.IsContado == false
+                )
+                .ToListAsync();
+
+            result.SaleList = sales;
+            result.AnulatedSaleList = salesAnulated;
+            result.AbonoList = abono;
             return result;
         }
     }

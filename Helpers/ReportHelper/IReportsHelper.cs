@@ -9,6 +9,6 @@ namespace Store.Helpers.ReportHelper
         Task<ICollection<Sales>> ReportMasterVentas(MasterVentasViewModel model);
         Task<ICollection<Sales>> ReportCuentasXCobrar(CuentasXCobrarViewModel model);
         Task<ICollection<ReportResponse>> ReportArticulosVendidos(ArtVendidosViewModel model);
-        Task<ICollection<Sales>> ReportCierreDiario(CierreDiarioViewModel model);
+        Task<DailyCloseResponse> ReportCierreDiario(CierreDiarioViewModel model);
     }
 }
