@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Store.Data;
@@ -12,9 +13,10 @@ using Store.Data;
 namespace Store.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220826222133_deletedDetail")]
+    partial class deletedDetail
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1189,64 +1191,6 @@ namespace Store.Migrations
                     b.ToTable("Rols");
                 });
 
-            modelBuilder.Entity("Store.Entities.SaleAnulation", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<string>("AnulatedById")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("FechaAnulacion")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("MontoAnulado")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int?>("VentaAfectadaId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AnulatedById");
-
-                    b.HasIndex("VentaAfectadaId");
-
-                    b.ToTable("SaleAnulations");
-                });
-
-            modelBuilder.Entity("Store.Entities.SaleAnulationDetails", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<int>("CantidadAnulada")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("FechaAnulacion")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("SaleAnulationId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("SaleDetailAfectadoId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SaleAnulationId");
-
-                    b.HasIndex("SaleDetailAfectadoId");
-
-                    b.ToTable("SaleAnulationDetails");
-                });
-
             modelBuilder.Entity("Store.Entities.SaleDetail", b =>
                 {
                     b.Property<int>("Id")
@@ -1973,34 +1917,6 @@ namespace Store.Migrations
                     b.Navigation("Almacen");
                 });
 
-            modelBuilder.Entity("Store.Entities.SaleAnulation", b =>
-                {
-                    b.HasOne("Store.Entities.User", "AnulatedBy")
-                        .WithMany()
-                        .HasForeignKey("AnulatedById");
-
-                    b.HasOne("Store.Entities.Sales", "VentaAfectada")
-                        .WithMany()
-                        .HasForeignKey("VentaAfectadaId");
-
-                    b.Navigation("AnulatedBy");
-
-                    b.Navigation("VentaAfectada");
-                });
-
-            modelBuilder.Entity("Store.Entities.SaleAnulationDetails", b =>
-                {
-                    b.HasOne("Store.Entities.SaleAnulation", null)
-                        .WithMany("SaleAnulationDetails")
-                        .HasForeignKey("SaleAnulationId");
-
-                    b.HasOne("Store.Entities.SaleDetail", "SaleDetailAfectado")
-                        .WithMany()
-                        .HasForeignKey("SaleDetailAfectadoId");
-
-                    b.Navigation("SaleDetailAfectado");
-                });
-
             modelBuilder.Entity("Store.Entities.SaleDetail", b =>
                 {
                     b.HasOne("Store.Entities.User", "AnulatedBy")
@@ -2098,11 +2014,6 @@ namespace Store.Migrations
             modelBuilder.Entity("Store.Entities.Rol", b =>
                 {
                     b.Navigation("Permissions");
-                });
-
-            modelBuilder.Entity("Store.Entities.SaleAnulation", b =>
-                {
-                    b.Navigation("SaleAnulationDetails");
                 });
 
             modelBuilder.Entity("Store.Entities.Sales", b =>

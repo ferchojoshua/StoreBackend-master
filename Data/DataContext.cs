@@ -40,6 +40,9 @@ namespace Store.Data
         public DbSet<Rol> Rols { get; set; }
         public DbSet<Sales> Sales { get; set; }
         public DbSet<SaleDetail> SaleDetails { get; set; }
+        public DbSet<SaleAnulation> SaleAnulations { get; set; }
+        public DbSet<SaleAnulationDetails> SaleAnulationDetails { get; set; }
+
         public DbSet<TipoNegocio> TipoNegocios { get; set; }
         public DbSet<UserSession> UserSession { get; set; }
 

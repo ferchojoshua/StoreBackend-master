@@ -406,11 +406,22 @@ namespace Store.Helpers.SalesHelper
                 item.IsAnulado = true;
                 _context.Entry(item).State = EntityState.Modified;
             }
+            List<SaleAnulationDetails> saleAnulationDetailList = new();
             foreach (var item in sale.SaleDetails)
             {
                 item.IsAnulado = true;
                 item.AnulatedBy = user;
                 item.FechaAnulacion = hoy;
+
+                SaleAnulationDetails saleAnulationDetail =
+                    new()
+                    {
+                        FechaAnulacion = hoy,
+                        CantidadAnulada = item.Cantidad,
+                        SaleDetailAfectado = item
+                    };
+
+                saleAnulationDetailList.Add(saleAnulationDetail);
 
                 //Modificamos las existencias
                 Existence existence = await _context.Existences.FirstOrDefaultAsync(
@@ -442,6 +453,21 @@ namespace Store.Helpers.SalesHelper
                 _context.Kardex.Add(kardex);
             }
             sale.IsAnulado = true;
+            sale.FechaAnulacion = hoy;
+            sale.AnulatedBy = user;
+
+            SaleAnulation saleAnulation =
+                new()
+                {
+                    VentaAfectada = sale,
+                    MontoAnulado = sale.MontoVenta,
+                    FechaAnulacion = hoy,
+                    AnulatedBy = user,
+                    SaleAnulationDetails = saleAnulationDetailList
+                };
+
+            _context.SaleAnulations.Add(saleAnulation);
+
             if (!sale.IsEventual)
             {
                 sale.Client.ContadorCompras -= 1;
@@ -511,6 +537,7 @@ namespace Store.Helpers.SalesHelper
                 .ThenInclude(sd => sd.Store)
                 .Include(s => s.SaleDetails)
                 .ThenInclude(sd => sd.Product)
+                .Include(s => s.SaleDetails)
                 .FirstOrDefaultAsync(s => s.Id == model.IdSale);
 
             decimal salidaEfectivo = sale.MontoVenta - model.Monto;
@@ -529,6 +556,17 @@ namespace Store.Helpers.SalesHelper
                     item.IsAnulado = true;
                     item.AnulatedBy = user;
                     item.FechaAnulacion = hoy;
+
+                    // SaleDetailsAnulations detalleAnulation =
+                    //     new()
+                    //     {
+                    //         FechaAnulacion = hoy,
+                    //         CantidadAnulada = item.Cantidad,
+                    //         SaleDetail = item,
+                    //         AnulatedBy = user
+                    //     };
+
+                    // _context.SaleDetailsAnulations.Add(detalleAnulation);
 
                     //hay que restarle a las existencias y agregar la salida al kardex
                     Existence existence = await _context.Existences.FirstOrDefaultAsync(
@@ -568,6 +606,19 @@ namespace Store.Helpers.SalesHelper
                     diferencia = item.Cantidad - sd.Cantidad;
                     item.Cantidad = sd.Cantidad;
                     item.CostoTotal = sd.CostoTotal;
+                    item.IsPartialAnulation = sd.IsPartialAnulation;
+                    item.CantidadAnulada = sd.CantidadAnulada;
+
+                    // SaleDetailsAnulations detalleAnulation =
+                    //     new()
+                    //     {
+                    //         FechaAnulacion = hoy,
+                    //         CantidadAnulada = diferencia,
+                    //         SaleDetail = item,
+                    //         AnulatedBy = user
+                    //     };
+
+                    // _context.SaleDetailsAnulations.Add(detalleAnulation);
                 }
                 // Modificamos las existencias
                 //es es mayor que cero

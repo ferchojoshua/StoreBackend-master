@@ -360,7 +360,7 @@ namespace Store.Controllers.API
                 return Ok(user);
             }
 
-            if (!await _userHelper.IsAutorized(user.Rol, "SALES UPDATE"))
+            if (!await _userHelper.IsAutorized(user.Rol, "SALES DELETE"))
             {
                 return Unauthorized();
             }

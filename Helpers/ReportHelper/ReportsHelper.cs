@@ -463,6 +463,8 @@ namespace Store.Helpers.ReportHelper
                     .ToListAsync();
 
                 var salesByStoreAnulated = await _context.SaleDetails
+                    .Include(sd => sd.Sales)
+                    .ThenInclude(s => s.Client)
                     .Where(
                         s =>
                             s.Store.Id == model.StoreId
@@ -489,6 +491,7 @@ namespace Store.Helpers.ReportHelper
 
                 return result;
             }
+
             var sales = await _context.Sales
                 .Include(s => s.Client)
                 .Include(s => s.SaleDetails)
@@ -500,14 +503,28 @@ namespace Store.Helpers.ReportHelper
                 )
                 .ToListAsync();
 
-            var salesAnulated = await _context.SaleDetails
-                .Where(
-                    s =>
-                        s.FechaAnulacion >= fechaHoraDesde
-                        && s.FechaAnulacion <= fechaHoraHasta
-                        && s.IsAnulado
-                )
-                .ToListAsync();
+            // var devoluciones = await _context.SaleDetailsAnulations
+            //     .Include(s => s.SaleDetail)
+            //     .ThenInclude(s => s.Sales.Client)
+            //     .Where(
+            //         s => s.FechaAnulacion >= fechaHoraDesde && s.FechaAnulacion <= fechaHoraHasta
+            //     )
+            //     .ToListAsync();
+
+            // var salesAnulated = await _context.SaleDetails
+            //     .Include(a => a.Sales)
+            //     .ThenInclude(s => s.Client)
+            //     .Where(
+            //         s =>
+            //             s.FechaAnulacion >= fechaHoraDesde
+            //             && s.FechaAnulacion <= fechaHoraHasta
+            //             && (s.IsAnulado || s.IsPartialAnulation)
+            //     )
+            //     .ToListAsync();
+
+            // var nulated = salesAnulated.GroupBy(x => x.Sales).Select(x => new { Venta = x.Key });
+            // var ventasAnuladas = nulated.Select(s => s.Venta);
+            // var ventasAnuladasDetails = ventasAnuladas.Where(s => s.SaleDetails.Select(sd => sd.IsAnulado || sd.IsPartialAnulation))
 
             var abono = await _context.Abonos
                 .Include(a => a.Sale)
@@ -521,7 +538,7 @@ namespace Store.Helpers.ReportHelper
                 .ToListAsync();
 
             result.SaleList = sales;
-            result.AnulatedSaleList = salesAnulated;
+            // result.AnulatedSaleList = salesAnulated;
             result.AbonoList = abono;
             return result;
         }

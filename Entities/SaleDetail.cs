@@ -5,6 +5,7 @@ namespace Store.Entities
         public int Id { get; set; }
         public Almacen Store { get; set; }
         public Producto Product { get; set; }
+        public Sales Sales { get; set; }
         public int Cantidad { get; set; }
         public bool IsDescuento { get; set; }
         public decimal CostoCompra { get; set; }
@@ -19,6 +20,8 @@ namespace Store.Entities
         public decimal CostoTotalDespuesDescuento { get; set; }
         public decimal CostoTotal { get; set; }
         public bool IsAnulado { get; set; }
+        public bool IsPartialAnulation { get; set; }
+        public int CantidadAnulada { get; set; }
         public User AnulatedBy { get; set; }
         public DateTime FechaAnulacion { get; set; }
     }
