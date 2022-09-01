@@ -365,7 +365,8 @@ namespace Store.Controllers.API
             return NoContent();
         }
 
-        [HttpDelete("DeleteFamilia/{id}")]
+        [HttpPost]
+        [Route("DeleteFamilia/{id}")]
         public async Task<IActionResult> DeleteFamilia(int id)
         {
             string email = User.Claims

@@ -86,7 +86,7 @@ namespace Store.Controllers.API
             try
             {
                 var result = await _reportHelper.ReportCuentasXCobrar(model);
-                return Ok(result.OrderByDescending(r => r.FechaVenta));
+                return Ok(result.OrderBy(r => r.Client.NombreCliente));
             }
             catch (Exception ex)
             {
@@ -122,7 +122,7 @@ namespace Store.Controllers.API
             try
             {
                 var result = await _reportHelper.ReportArticulosVendidos(model);
-                return Ok(result);
+                return Ok(result.OrderBy(x => x.Producto));
             }
             catch (Exception ex)
             {
@@ -159,6 +159,41 @@ namespace Store.Controllers.API
             {
                 var result = await _reportHelper.ReportCierreDiario(model);
                 return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("GetCajaChica")]
+        public async Task<ActionResult<IEnumerable<Sales>>> GetCajaChica(
+            [FromBody] CajaChicaViewModel model
+        )
+        {
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "CAJACHICA VER"))
+            {
+                return Unauthorized();
+            }
+            try
+            {
+                var result = await _reportHelper.ReportCajaChica(model);
+                return Ok(result.OrderBy(x => x.Fecha));
             }
             catch (Exception ex)
             {

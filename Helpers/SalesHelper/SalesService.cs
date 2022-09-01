@@ -382,12 +382,14 @@ namespace Store.Helpers.SalesHelper
         public async Task<Sales> AnularSaleAsync(int id, Entities.User user)
         {
             DateTime hoy = DateTime.Now;
+
             Sales sale = await _context.Sales
                 .Include(s => s.Client)
                 .Include(s => s.SaleDetails)
                 .ThenInclude(sd => sd.Store)
                 .Include(s => s.SaleDetails)
                 .ThenInclude(sd => sd.Product)
+                .Include(s => s.Store)
                 .FirstOrDefaultAsync(s => s.Id == id);
 
             var movList = await _context.CajaMovments
@@ -400,12 +402,14 @@ namespace Store.Helpers.SalesHelper
             {
                 return sale;
             }
+
             var abono = await _context.Abonos.Where(a => a.Sale == sale).ToListAsync();
             foreach (var item in abono)
             {
                 item.IsAnulado = true;
                 _context.Entry(item).State = EntityState.Modified;
             }
+
             List<SaleAnulationDetails> saleAnulationDetailList = new();
             foreach (var item in sale.SaleDetails)
             {
@@ -452,6 +456,7 @@ namespace Store.Helpers.SalesHelper
                     };
                 _context.Kardex.Add(kardex);
             }
+
             sale.IsAnulado = true;
             sale.FechaAnulacion = hoy;
             sale.AnulatedBy = user;
@@ -463,7 +468,8 @@ namespace Store.Helpers.SalesHelper
                     MontoAnulado = sale.MontoVenta,
                     FechaAnulacion = hoy,
                     AnulatedBy = user,
-                    SaleAnulationDetails = saleAnulationDetailList
+                    SaleAnulationDetails = saleAnulationDetailList,
+                    Store = sale.Store
                 };
 
             _context.SaleAnulations.Add(saleAnulation);
@@ -538,6 +544,7 @@ namespace Store.Helpers.SalesHelper
                 .Include(s => s.SaleDetails)
                 .ThenInclude(sd => sd.Product)
                 .Include(s => s.SaleDetails)
+                .Include(s => s.Store)
                 .FirstOrDefaultAsync(s => s.Id == model.IdSale);
 
             decimal salidaEfectivo = sale.MontoVenta - model.Monto;
@@ -546,6 +553,9 @@ namespace Store.Helpers.SalesHelper
             {
                 return sale;
             }
+
+            List<SaleAnulationDetails> detalleList = new();
+            decimal montoAnulado = 0;
             foreach (var item in sale.SaleDetails)
             {
                 int diferencia = 0;
@@ -557,16 +567,15 @@ namespace Store.Helpers.SalesHelper
                     item.AnulatedBy = user;
                     item.FechaAnulacion = hoy;
 
-                    // SaleDetailsAnulations detalleAnulation =
-                    //     new()
-                    //     {
-                    //         FechaAnulacion = hoy,
-                    //         CantidadAnulada = item.Cantidad,
-                    //         SaleDetail = item,
-                    //         AnulatedBy = user
-                    //     };
-
-                    // _context.SaleDetailsAnulations.Add(detalleAnulation);
+                    SaleAnulationDetails detalleAnulation =
+                        new()
+                        {
+                            FechaAnulacion = hoy,
+                            CantidadAnulada = item.Cantidad,
+                            SaleDetailAfectado = item
+                        };
+                    montoAnulado += item.CostoTotal;
+                    detalleList.Add(detalleAnulation);
 
                     //hay que restarle a las existencias y agregar la salida al kardex
                     Existence existence = await _context.Existences.FirstOrDefaultAsync(
@@ -603,22 +612,26 @@ namespace Store.Helpers.SalesHelper
                 }
                 else
                 {
+                    decimal diferenciaDinero = 0;
                     diferencia = item.Cantidad - sd.Cantidad;
+                    diferenciaDinero = item.CostoTotal - sd.CostoTotal;
                     item.Cantidad = sd.Cantidad;
                     item.CostoTotal = sd.CostoTotal;
                     item.IsPartialAnulation = sd.IsPartialAnulation;
                     item.CantidadAnulada = sd.CantidadAnulada;
 
-                    // SaleDetailsAnulations detalleAnulation =
-                    //     new()
-                    //     {
-                    //         FechaAnulacion = hoy,
-                    //         CantidadAnulada = diferencia,
-                    //         SaleDetail = item,
-                    //         AnulatedBy = user
-                    //     };
-
-                    // _context.SaleDetailsAnulations.Add(detalleAnulation);
+                    if (diferencia > 0)
+                    {
+                        SaleAnulationDetails detalleAnulation =
+                            new()
+                            {
+                                FechaAnulacion = hoy,
+                                CantidadAnulada = diferencia,
+                                SaleDetailAfectado = item
+                            };
+                        montoAnulado += diferenciaDinero;
+                        detalleList.Add(detalleAnulation);
+                    }
                 }
                 // Modificamos las existencias
                 //es es mayor que cero
@@ -675,6 +688,20 @@ namespace Store.Helpers.SalesHelper
                 .ToListAsync();
 
             var mov = movList.Where(m => m.Id == movList.Max(k => k.Id)).FirstOrDefault();
+
+            SaleAnulation newAnulation =
+                new()
+                {
+                    VentaAfectada = sale,
+                    MontoAnulado = montoAnulado,
+                    FechaAnulacion = hoy,
+                    AnulatedBy = user,
+                    SaleAnulationDetails = detalleList,
+                    Store = sale.Store
+                };
+
+            _context.SaleAnulations.Add(newAnulation);
+
             await _context.SaveChangesAsync();
 
             List<CountAsientoContableDetails> countAsientoContableDetailsList = new();

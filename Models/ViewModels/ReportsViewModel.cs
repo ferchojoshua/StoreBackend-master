@@ -73,4 +73,16 @@ namespace Store.Models.ViewModels
         [Required]
         public int StoreId { get; set; }
     }
+
+    public class CajaChicaViewModel
+    {
+        [Required]
+        public DateTime Desde { get; set; }
+
+        [Required]
+        public DateTime Hasta { get; set; }
+
+        [Required]
+        public int StoreId { get; set; }
+    }
 }

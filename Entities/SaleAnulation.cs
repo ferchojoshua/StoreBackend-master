@@ -8,5 +8,6 @@ namespace Store.Entities
         public DateTime FechaAnulacion { get; set; }
         public User AnulatedBy { get; set; }
         public ICollection<SaleAnulationDetails> SaleAnulationDetails { get; set; }
+        public Almacen Store { get; set; }
     }
 }

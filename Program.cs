@@ -32,7 +32,7 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development
     builder.Services.AddDbContext<DataContext>(
         opt =>
             opt.UseSqlServer(
-                builder.Configuration.GetConnectionString("DevConnetion"),
+                builder.Configuration.GetConnectionString("MigConnetion"),
                 x => x.UseNetTopologySuite()
             )
     );

@@ -462,15 +462,16 @@ namespace Store.Helpers.ReportHelper
                     )
                     .ToListAsync();
 
-                var salesByStoreAnulated = await _context.SaleDetails
-                    .Include(sd => sd.Sales)
+                var devolucionesByStore = await _context.SaleAnulations
+                    .Include(s => s.VentaAfectada)
                     .ThenInclude(s => s.Client)
+                    .Include(s => s.AnulatedBy)
+                    .Include(s => s.Store)
                     .Where(
                         s =>
                             s.Store.Id == model.StoreId
                             && s.FechaAnulacion >= fechaHoraDesde
                             && s.FechaAnulacion <= fechaHoraHasta
-                            && s.IsAnulado
                     )
                     .ToListAsync();
 
@@ -486,7 +487,7 @@ namespace Store.Helpers.ReportHelper
                     .ToListAsync();
 
                 result.SaleList = salesByStore;
-                result.AnulatedSaleList = salesByStoreAnulated;
+                result.AnulatedSaleList = devolucionesByStore;
                 result.AbonoList = abonoByStore;
 
                 return result;
@@ -503,28 +504,15 @@ namespace Store.Helpers.ReportHelper
                 )
                 .ToListAsync();
 
-            // var devoluciones = await _context.SaleDetailsAnulations
-            //     .Include(s => s.SaleDetail)
-            //     .ThenInclude(s => s.Sales.Client)
-            //     .Where(
-            //         s => s.FechaAnulacion >= fechaHoraDesde && s.FechaAnulacion <= fechaHoraHasta
-            //     )
-            //     .ToListAsync();
-
-            // var salesAnulated = await _context.SaleDetails
-            //     .Include(a => a.Sales)
-            //     .ThenInclude(s => s.Client)
-            //     .Where(
-            //         s =>
-            //             s.FechaAnulacion >= fechaHoraDesde
-            //             && s.FechaAnulacion <= fechaHoraHasta
-            //             && (s.IsAnulado || s.IsPartialAnulation)
-            //     )
-            //     .ToListAsync();
-
-            // var nulated = salesAnulated.GroupBy(x => x.Sales).Select(x => new { Venta = x.Key });
-            // var ventasAnuladas = nulated.Select(s => s.Venta);
-            // var ventasAnuladasDetails = ventasAnuladas.Where(s => s.SaleDetails.Select(sd => sd.IsAnulado || sd.IsPartialAnulation))
+            var devoluciones = await _context.SaleAnulations
+                .Include(s => s.VentaAfectada)
+                .ThenInclude(s => s.Client)
+                .Include(s => s.AnulatedBy)
+                .Include(s => s.Store)
+                .Where(
+                    s => s.FechaAnulacion >= fechaHoraDesde && s.FechaAnulacion <= fechaHoraHasta
+                )
+                .ToListAsync();
 
             var abono = await _context.Abonos
                 .Include(a => a.Sale)
@@ -538,9 +526,36 @@ namespace Store.Helpers.ReportHelper
                 .ToListAsync();
 
             result.SaleList = sales;
-            // result.AnulatedSaleList = salesAnulated;
+            result.AnulatedSaleList = devoluciones;
             result.AbonoList = abono;
             return result;
+        }
+
+        public async Task<ICollection<CajaMovment>> ReportCajaChica(CajaChicaViewModel model)
+        {
+            if (model.StoreId != 0)
+            {
+                var cajaMovsById = await _context.CajaMovments
+                    .Where(
+                        c =>
+                            c.Fecha.Date >= model.Desde.Date
+                            && c.Fecha.Date <= model.Hasta.Date
+                            && c.Store.Id == model.StoreId
+                            && c.CajaTipo.Id == 1
+                    )
+                    .ToListAsync();
+                return cajaMovsById;
+            }
+
+            var cajaMovs = await _context.CajaMovments
+                .Where(
+                    c =>
+                        c.Fecha.Date >= model.Desde.Date
+                        && c.Fecha.Date <= model.Hasta.Date
+                        && c.CajaTipo.Id == 1
+                )
+                .ToListAsync();
+            return cajaMovs;
         }
     }
 }
