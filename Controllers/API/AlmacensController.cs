@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Store.Data;
 using Store.Entities;
+using Store.Helpers.StoreService;
 using Store.Helpers.User;
 using Store.Models.Responses;
 using Store.Models.ViewModels;
@@ -17,11 +18,17 @@ namespace Store.Controllers.API
     public class AlmacensController : ControllerBase
     {
         private readonly IUserHelper _userHelper;
+        private readonly IStoreHelper _storeHelper;
         private readonly DataContext _context;
 
-        public AlmacensController(DataContext context, IUserHelper userHelper)
+        public AlmacensController(
+            DataContext context,
+            IUserHelper userHelper,
+            IStoreHelper storeHelper
+        )
         {
             _userHelper = userHelper;
+            _storeHelper = storeHelper;
             _context = context;
         }
 
@@ -88,7 +95,6 @@ namespace Store.Controllers.API
             }
         }
 
-        // GET: api/Almacens/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Almacen>> GetAlmacen(int id)
         {
@@ -123,10 +129,9 @@ namespace Store.Controllers.API
             return almacen;
         }
 
-        // PUT: api/Almacens/
         [HttpPost]
         [Route("UpdateAlmacen")]
-        public async Task<IActionResult> UpdateAlmacen([FromBody] Almacen almacen)
+        public async Task<IActionResult> UpdateAlmacen([FromBody] Almacen model)
         {
             if (!ModelState.IsValid)
             {
@@ -140,7 +145,7 @@ namespace Store.Controllers.API
             {
                 return Ok(user);
             }
-            if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS UPD ATE"))
+            if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS UPDATE"))
             {
                 return Unauthorized();
             }
@@ -152,23 +157,20 @@ namespace Store.Controllers.API
                 await _userHelper.LogoutAsync();
                 return Ok("eX01");
             }
-            _context.Entry(almacen).State = EntityState.Modified;
+
             try
             {
-                await _context.SaveChangesAsync();
+                var store = _storeHelper.UpdateStoreAsync(model);
+                if (store == null)
+                {
+                    return NotFound(store);
+                }
+                return Ok(store);
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception ex)
             {
-                if (!AlmacenExists(almacen.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return BadRequest(ex.Message);
             }
-            return NoContent();
         }
 
         // POST: api/Almacens

@@ -100,6 +100,7 @@ namespace Store.Helpers.FacturacionHelper
         public async Task<ICollection<Facturacion>> GetCancelledFacturacionAsync(int storeId)
         {
             var result = await _context.Facturacions
+                .Include(f => f.Client)
                 .Where(f => f.IsCanceled && f.IsAnulado == false && f.Store.Id == storeId)
                 .ToListAsync();
 

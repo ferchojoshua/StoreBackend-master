@@ -440,14 +440,14 @@ namespace Store.Helpers.ReportHelper
         public async Task<DailyCloseResponse> ReportCierreDiario(CierreDiarioViewModel model)
         {
             DailyCloseResponse result = new();
-            DateOnly fechaDesde = DateOnly.Parse(model.FechaDesde);
-            DateOnly fechaHasta = DateOnly.Parse(model.FechaHasta);
+            // DateOnly fechaDesde = DateOnly.Parse(model.FechaDesde);
+            // DateOnly fechaHasta = DateOnly.Parse(model.FechaHasta);
 
-            TimeOnly horaDesde = TimeOnly.Parse(model.HoraDesde);
-            TimeOnly horaHasta = TimeOnly.Parse(model.HoraHasta);
+            // TimeOnly horaDesde = TimeOnly.Parse(model.HoraDesde);
+            // TimeOnly horaHasta = TimeOnly.Parse(model.HoraHasta);
 
-            DateTime fechaHoraDesde = fechaDesde.ToDateTime(horaDesde);
-            DateTime fechaHoraHasta = fechaHasta.ToDateTime(horaHasta);
+            DateTime fechaHoraDesde = DateTime.Parse(model.Desde);
+            DateTime fechaHoraHasta = DateTime.Parse(model.Hasta);
             if (model.StoreId != 0)
             {
                 var salesByStore = await _context.Sales

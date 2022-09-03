@@ -2,12 +2,14 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Store.Data;
 using Store.Entities;
 using Store.Helpers.ProdMovements;
 using Store.Helpers.ProductExistenceService;
 using Store.Helpers.User;
+using Store.Hubs;
 using Store.Models.Responses;
 using Store.Models.ViewModels;
 
@@ -22,18 +24,21 @@ namespace Store.Controllers.API
         private readonly IProductMovementsHelper _pMHelper;
         private readonly IProdExistService _prodExistService;
         private readonly DataContext _context;
+        private readonly IHubContext<UpdateHub> _hubContext;
 
         public ExistenceController(
             DataContext context,
             IUserHelper userHelper,
             IProductMovementsHelper pMHelper,
-            IProdExistService prodExistService
+            IProdExistService prodExistService,
+            IHubContext<UpdateHub> hubContext
         )
         {
             _userHelper = userHelper;
             _pMHelper = pMHelper;
             _prodExistService = prodExistService;
             _context = context;
+            _hubContext = hubContext;
         }
 
         [HttpGet("GetExistencies")]
@@ -209,6 +214,7 @@ namespace Store.Controllers.API
             try
             {
                 var result = await _pMHelper.AddMoverProductAsync(model, user);
+                await _hubContext.Clients.All.SendAsync("updateClient");
                 if (result == null)
                 {
                     return NoContent();

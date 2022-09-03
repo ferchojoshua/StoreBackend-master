@@ -59,16 +59,16 @@ namespace Store.Models.ViewModels
     public class CierreDiarioViewModel
     {
         [Required]
-        public string FechaDesde { get; set; }
+        public string Desde { get; set; }
 
         [Required]
-        public string FechaHasta { get; set; }
+        public string Hasta { get; set; }
 
-        [Required]
-        public string HoraDesde { get; set; }
+        // [Required]
+        // public string HoraDesde { get; set; }
 
-        [Required]
-        public string HoraHasta { get; set; }
+        // [Required]
+        // public string HoraHasta { get; set; }
 
         [Required]
         public int StoreId { get; set; }

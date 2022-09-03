@@ -18,6 +18,7 @@ using Store.Hubs;
 using Store.Helpers.ReportHelper;
 using StoreBackend.Hubs;
 using Store.Helpers.FacturacionHelper;
+using Store.Helpers.StoreService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +33,7 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development
     builder.Services.AddDbContext<DataContext>(
         opt =>
             opt.UseSqlServer(
-                builder.Configuration.GetConnectionString("MigConnetion"),
+                builder.Configuration.GetConnectionString("DevConnetion"),
                 x => x.UseNetTopologySuite()
             )
     );
@@ -96,6 +97,7 @@ builder.Services.AddScoped<IContService, ContService>();
 builder.Services.AddScoped<IAsientoContHelper, AsientoContHelper>();
 builder.Services.AddScoped<IReportsHelper, ReportsHelper>();
 builder.Services.AddScoped<IFacturationHelper, FacturationHelper>();
+builder.Services.AddScoped<IStoreHelper, StoreHelper>();
 
 var MyAllowSpecificOrigins = "Clients";
 builder.Services.AddCors(options =>
@@ -132,6 +134,7 @@ app.UseRouting();
 app.MapHub<NotificationHub>("notificationHub");
 app.MapHub<NewSalehub>("newSaleHub");
 app.MapHub<NewFacturaHub>("newFactHub");
+app.MapHub<UpdateHub>("updateClientHub");
 
 app.UseCors(MyAllowSpecificOrigins);
 
