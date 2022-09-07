@@ -160,7 +160,7 @@ namespace Store.Controllers.API
 
             try
             {
-                var store = _storeHelper.UpdateStoreAsync(model);
+                var store = await _storeHelper.UpdateStoreAsync(model);
                 if (store == null)
                 {
                     return NotFound(store);

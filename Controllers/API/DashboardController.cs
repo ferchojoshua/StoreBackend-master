@@ -107,7 +107,15 @@ namespace Store.Controllers.API
                 var ClientList = await _dashboardService.GetClientsByLocationAndStoreAsync(id);
                 var result = ClientList
                     .GroupBy(cl => cl.Community.Municipality)
-                    .Select(x => new { Location = x.Key.Name, Contador = x.Count() });
+                    .Select(
+                        x =>
+                            new
+                            {
+                                Location = x.Key.Name,
+                                Abrev = x.Key.Abreviatura,
+                                Contador = x.Count()
+                            }
+                    );
                 return Ok(result);
             }
             catch (Exception ex)

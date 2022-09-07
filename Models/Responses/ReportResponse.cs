@@ -11,4 +11,11 @@ namespace Store.Models.Responses
         public decimal MontoVenta { get; set; }
         public decimal Utilidad { get; set; }
     }
+    public class ProdNoVendidosResponse
+    {
+        public string BarCode { get; set; }
+        public string Producto { get; set; }
+        public int CantidadVendida { get; set; }
+        public decimal CostoCompra { get; set; }
+    }
 }

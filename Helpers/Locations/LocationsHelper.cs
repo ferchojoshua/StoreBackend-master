@@ -79,5 +79,18 @@ namespace Store.Helpers.Locations
             await _context.SaveChangesAsync();
             return comm;
         }
+
+        public async Task<Municipality> UpdateMunicipalityAsync(UpdateMunicipalityViewModel model)
+        {
+            var mun = await _context.Municipalities.FirstOrDefaultAsync(m => m.Id == model.Id);
+            if (mun == null)
+            {
+                return mun;
+            }
+            mun.Abreviatura = model.Abreviatura;
+            _context.Entry(mun).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return mun;
+        }
     }
 }

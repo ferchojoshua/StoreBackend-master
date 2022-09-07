@@ -19,4 +19,13 @@ namespace Store.Models.ViewModels
         [Required]
         public string Name { get; set; }
     }
+
+    public class UpdateMunicipalityViewModel
+    {
+        [Required]
+        public int Id { get; set; }
+
+        [Required]
+        public string Abreviatura { get; set; }
+    }
 }

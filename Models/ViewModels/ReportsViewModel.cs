@@ -56,6 +56,24 @@ namespace Store.Models.ViewModels
         public int ClientId { get; set; }
     }
 
+    public class ArtNoVendidosViewModel
+    {
+        [Required]
+        public DateTime Desde { get; set; }
+
+        [Required]
+        public DateTime Hasta { get; set; }
+
+        [Required]
+        public int StoreId { get; set; }
+
+        [Required]
+        public int TipoNegocioId { get; set; }
+
+        [Required]
+        public int FamiliaId { get; set; }
+    }
+
     public class CierreDiarioViewModel
     {
         [Required]
