@@ -552,9 +552,149 @@ namespace Store.Helpers.ReportHelper
             return cajaMovs;
         }
 
-        public async Task<ICollection<ProdNoVendidosResponse>> ReportArticulosNoVendidos(ArtNoVendidosViewModel model)
+        public async Task<ICollection<Existence>> ReportArticulosNoVendidos(
+            ArtNoVendidosViewModel model
+        )
         {
-            throw new NotImplementedException();
+            List<Sales> sales = new();
+            if (model.StoreId != 0)
+            {
+                sales = await _context.Sales
+                    .Include(s => s.Store)
+                    .Include(s => s.SaleDetails)
+                    .ThenInclude(sd => sd.Product)
+                    .Include(s => s.SaleDetails)
+                    .ThenInclude(sd => sd.Product.TipoNegocio)
+                    .Include(s => s.SaleDetails)
+                    .ThenInclude(sd => sd.Product.Familia)
+                    .Where(
+                        s =>
+                            s.IsAnulado == false
+                            && s.FechaVenta.Date >= model.Desde.Date
+                            && s.FechaVenta.Date <= model.Hasta.Date
+                            && s.Store.Id == model.StoreId
+                    )
+                    .ToListAsync();
+            }
+            else
+            {
+                sales = await _context.Sales
+                    .Include(s => s.Store)
+                    .Include(s => s.SaleDetails)
+                    .ThenInclude(sd => sd.Product)
+                    .Include(s => s.SaleDetails)
+                    .ThenInclude(sd => sd.Product.TipoNegocio)
+                    .Include(s => s.SaleDetails)
+                    .ThenInclude(sd => sd.Product.Familia)
+                    .Where(
+                        s =>
+                            s.IsAnulado == false
+                            && s.FechaVenta.Date >= model.Desde.Date
+                            && s.FechaVenta.Date <= model.Hasta.Date
+                    )
+                    .ToListAsync();
+            }
+
+            List<string> detailList = new();
+            foreach (var sale in sales)
+            {
+                foreach (var item in sale.SaleDetails)
+                {
+                    detailList.Add(item.Store.Id.ToString() + item.Product.Id.ToString());
+                }
+            }
+
+            HashSet<string> hasNoDuplicates = new(detailList);
+            List<string> detailListNoDuplicates = hasNoDuplicates.ToList();
+
+            ProdNoVendidosResponse r = new();
+
+            if (model.TipoNegocioId != 0)
+            {
+                if (model.FamiliaId != 0)
+                {
+                    var vExistences = await _context.Existences
+                        .Include(e => e.Producto)
+                        .ThenInclude(p => p.TipoNegocio)
+                        .Include(e => e.Producto)
+                        .ThenInclude(p => p.Familia)
+                        .Where(
+                            e =>
+                                e.Existencia > 0
+                                && e.Producto.TipoNegocio.Id == model.TipoNegocioId
+                                && e.Producto.Familia.Id == model.FamiliaId
+                                && !detailListNoDuplicates.Contains(
+                                    e.Almacen.Id.ToString() + e.Producto.Id.ToString()
+                                )
+                        )
+                        .OrderBy(e => e.Producto)
+                        // .OrderBy(e => e.Almacen)
+                        .ToListAsync();
+                    return vExistences;
+                }
+                else
+                {
+                    var vExistences = await _context.Existences
+                        .Include(e => e.Producto)
+                        .ThenInclude(p => p.TipoNegocio)
+                        .Include(e => e.Producto)
+                        .ThenInclude(p => p.Familia)
+                        .Where(
+                            e =>
+                                e.Existencia > 0
+                                && e.Producto.TipoNegocio.Id == model.TipoNegocioId
+                                && !detailListNoDuplicates.Contains(
+                                    e.Almacen.Id.ToString() + e.Producto.Id.ToString()
+                                )
+                        )
+                        .OrderBy(e => e.Producto)
+                        // .OrderBy(e => e.Almacen)
+                        .ToListAsync();
+                    return vExistences;
+                }
+            }
+            else
+            {
+                if (model.FamiliaId != 0)
+                {
+                    var vExistences = await _context.Existences
+                        .Include(e => e.Producto)
+                        .ThenInclude(p => p.TipoNegocio)
+                        .Include(e => e.Producto)
+                        .ThenInclude(p => p.Familia)
+                        .Where(
+                            e =>
+                                e.Existencia > 0
+                                && e.Producto.Familia.Id == model.FamiliaId
+                                && !detailListNoDuplicates.Contains(
+                                    e.Almacen.Id.ToString() + e.Producto.Id.ToString()
+                                )
+                        )
+                        .OrderBy(e => e.Producto)
+                        // .OrderBy(e => e.Almacen)
+                        .ToListAsync();
+                    return vExistences;
+                }
+                else
+                {
+                    var vExistences = await _context.Existences
+                        .Include(e => e.Producto)
+                        .ThenInclude(p => p.TipoNegocio)
+                        .Include(e => e.Producto)
+                        .ThenInclude(p => p.Familia)
+                        .Where(
+                            e =>
+                                e.Existencia > 0
+                                && !detailListNoDuplicates.Contains(
+                                    e.Almacen.Id.ToString() + e.Producto.Id.ToString()
+                                )
+                        )
+                        .OrderBy(e => e.Producto)
+                        // .OrderBy(e => e.Almacen)
+                        .ToListAsync();
+                    return vExistences;
+                }
+            }
         }
     }
 }

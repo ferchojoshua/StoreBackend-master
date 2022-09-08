@@ -9,7 +9,7 @@ namespace Store.Helpers.ReportHelper
         Task<ICollection<Sales>> ReportMasterVentas(MasterVentasViewModel model);
         Task<ICollection<Sales>> ReportCuentasXCobrar(CuentasXCobrarViewModel model);
         Task<ICollection<ReportResponse>> ReportArticulosVendidos(ArtVendidosViewModel model);
-        Task<ICollection<ProdNoVendidosResponse>> ReportArticulosNoVendidos(ArtNoVendidosViewModel model);
+        Task<ICollection<Existence>> ReportArticulosNoVendidos(ArtNoVendidosViewModel model);
         Task<ICollection<CajaMovment>> ReportCajaChica(CajaChicaViewModel model);
         Task<DailyCloseResponse> ReportCierreDiario(CierreDiarioViewModel model);
     }

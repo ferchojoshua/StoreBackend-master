@@ -200,5 +200,41 @@ namespace Store.Controllers.API
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpPost("GetProdNoVendidos")]
+        public async Task<ActionResult<IEnumerable<Sales>>> GetProdNoVendidos(
+            [FromBody] ArtNoVendidosViewModel model
+        )
+        {
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "PRODNOVENDIDOS VER"))
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                var result = await _reportHelper.ReportArticulosNoVendidos(model);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }
