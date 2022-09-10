@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Store.Data;
@@ -12,9 +13,10 @@ using Store.Data;
 namespace Store.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220909174533_saldoCreditoClient")]
+    partial class saldoCreditoClient
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -321,9 +323,6 @@ namespace Store.Migrations
                     b.Property<string>("EditadoPor")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("FacturasVencidas")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("FechaEdicion")
                         .HasColumnType("datetime2");
 
@@ -338,9 +337,6 @@ namespace Store.Migrations
 
                     b.Property<string>("NombreComercial")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("SaldoVencido")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("StoreId")
                         .HasColumnType("int");
@@ -1010,9 +1006,6 @@ namespace Store.Migrations
 
                     b.Property<int>("Cantidad")
                         .HasColumnType("int");
-
-                    b.Property<decimal>("CostUnitDespDesc")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("CostoCompra")
                         .HasColumnType("decimal(18,2)");

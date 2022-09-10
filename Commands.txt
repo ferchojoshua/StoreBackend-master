@@ -67,3 +67,25 @@ Access
 
 User : Automoto
 Pass : Automoto.2022*
+
+
+--Actualiza el saldo vencido y las facturas vencidas
+update	Clients 
+set		SaldoVencido = 
+		(
+				select 	isnull(sum(saldo),0) as saldo 
+				from	Sales as s
+				where	s.IsContado = 0 and 
+						s.IsCanceled = 0 and
+						'2022-09-09' > s.FechaVencimiento and
+						Clients.Id = s.ClientId 
+		),
+		FacturasVencidas = 
+		(
+				select 	isnull(COUNT(*),0) as Vencidas 
+				from	Sales as s
+				where	s.IsContado = 0 and 
+						s.IsCanceled = 0 and
+						FORMAT(GETDATE(), 'dd-MM-yy') > FORMAT(FechaVencimiento, 'dd-MM-yy')  and
+						Clients.Id = s.ClientId 
+		)
