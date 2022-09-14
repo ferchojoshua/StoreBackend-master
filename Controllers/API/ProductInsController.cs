@@ -31,7 +31,6 @@ namespace Store.Controllers.API
             _context = context;
         }
 
-        // GET: api/ProductIns
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ProductIn>>> GetProductIns()
         {
@@ -63,7 +62,6 @@ namespace Store.Controllers.API
                 .ToListAsync();
         }
 
-        // GET: api/ProductIns/5
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductIn>> GetProductIn(int id)
         {
@@ -102,7 +100,6 @@ namespace Store.Controllers.API
             return productIn;
         }
 
-        // PUT: api/ProductIns/5
         [HttpPost]
         [Route("PutProductIn")]
         public async Task<IActionResult> PutProductIn(
@@ -145,7 +142,6 @@ namespace Store.Controllers.API
             }
         }
 
-        // POST: api/ProductIns
         [HttpPost]
         public async Task<ActionResult<ProductIn>> PostProductIn(
             [FromBody] AddEntradaProductoViewModel model
@@ -187,7 +183,6 @@ namespace Store.Controllers.API
             }
         }
 
-        // DELETE: api/ProductIns/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProductIn(int id)
         {

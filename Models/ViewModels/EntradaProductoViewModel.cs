@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 using Store.Entities;
 
@@ -14,6 +13,9 @@ namespace Store.Models.ViewModels
 
         [Required]
         public int ProviderId { get; set; }
+
+        [Required]
+        public decimal MontFactAntDesc { get; set; }
 
         [Required]
         public decimal MontoFactura { get; set; }

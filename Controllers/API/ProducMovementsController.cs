@@ -59,34 +59,6 @@ namespace Store.Controllers.API
             {
                 return BadRequest(ex.Message);
             }
-
-            // var result = await _context.ProductMovments
-            //     // .Include(p => p.MovmentDetails)
-            //     .Include(p => p.User)
-            //     .ToListAsync();
-
-            // List<ProductMovementsResponse> pMList = new();
-            // foreach (var item in result)
-            // {
-            //     ProductMovementsResponse pM =
-            //         new()
-            //         {
-            //             Id = item.Id,
-            //             // Producto = item.Producto,
-            //             AlmacenProcedencia = await _context.Almacen.FirstOrDefaultAsync(
-            //                 a => a.Id == item.AlmacenProcedenciaId
-            //             ),
-            //             AlmacenDestino = await _context.Almacen.FirstOrDefaultAsync(
-            //                 a => a.Id == item.AlmacenDestinoId
-            //             ),
-            //             // Cantidad = item.Cantidad,
-            //             // Concepto = item.Concepto,
-            //             User = item.User,
-            //             Fecha = item.Fecha
-            //         };
-            //     pMList.Add(pM);
-            // }
-            // return Ok(pMList.OrderByDescending(p => p.Fecha));
         }
     }
 }

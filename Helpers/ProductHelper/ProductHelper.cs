@@ -71,6 +71,48 @@ namespace Store.Helpers.ProductHelper
                 .ToListAsync();
         }
 
+        public async Task<ICollection<Kardex>> ReparaKardexAsync()
+        {
+            List<Kardex> kardexByStore = new();
+            var kardexList = await _context.Kardex.Include(k => k.Product).ToListAsync();
+            var prod = kardexList.GroupBy(x => x.Product).Select(x => new { ProductId = x.Key.Id });
+            var storeList = await _context.Almacen.ToListAsync();
+
+            foreach (var item in prod)
+            {
+                foreach (var store in storeList)
+                {
+                    int entrada = 0;
+                    int salida = 0;
+                    int saldo = 0;
+
+                    var kardexMov = await _context.Kardex
+                        .Where(k => k.Almacen.Id == store.Id && k.Product.Id == item.ProductId)
+                        .ToListAsync();
+
+                    if (kardexMov != null)
+                    {
+                        foreach (var mov in kardexMov)
+                        {
+                            int saldoMov = 0;
+                            entrada = mov.Entradas;
+                            salida = mov.Salidas;
+                            saldoMov = mov.Saldo;
+                            saldo += entrada - salida;
+                            if (saldo != saldoMov)
+                            {
+                                mov.Saldo = saldo;
+                                _context.Entry(mov).State = EntityState.Modified;
+                                await _context.SaveChangesAsync();
+                            }
+                        }
+                    }
+                }
+            }
+
+            return kardexByStore;
+        }
+
         public async Task<Producto> UpdateProductAsync(UpdateProductViewModel model)
         {
             Producto producto = await _context.Productos.FindAsync(model.Id);

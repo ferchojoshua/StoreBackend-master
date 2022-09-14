@@ -70,7 +70,8 @@ namespace Store.Helpers.ProdMovements
                             Producto = prod,
                             Existencia = item.Cantidad,
                             PrecioVentaDetalle = existProcedencia.PrecioVentaDetalle,
-                            PrecioVentaMayor = existProcedencia.PrecioVentaMayor
+                            PrecioVentaMayor = existProcedencia.PrecioVentaMayor,
+                            PrecioCompra = existProcedencia.PrecioCompra
                         };
                         almacenText = existDestino.Almacen.Name;
                         _context.Existences.Add(existDestino);
@@ -82,6 +83,7 @@ namespace Store.Helpers.ProdMovements
                         existDestino.PrecioVentaDetalle = existProcedencia.PrecioVentaDetalle;
                         existDestino.PrecioVentaMayor = existProcedencia.PrecioVentaMayor;
                         almacenText = existDestino.Almacen.Name;
+                        existDestino.PrecioCompra = existProcedencia.PrecioCompra;
                         _context.Entry(existDestino).State = EntityState.Modified;
                     }
 

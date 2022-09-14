@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Store.Data;
@@ -12,9 +13,10 @@ using Store.Data;
 namespace Store.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220912151024_MejoraEntrada2")]
+    partial class MejoraEntrada2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -742,9 +744,6 @@ namespace Store.Migrations
                     b.Property<int>("ProductsCount")
                         .HasColumnType("int");
 
-                    b.Property<int?>("SaleId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("StoreId")
                         .HasColumnType("int");
 
@@ -757,8 +756,6 @@ namespace Store.Migrations
                     b.HasIndex("FacturedById");
 
                     b.HasIndex("PaidById");
-
-                    b.HasIndex("SaleId");
 
                     b.HasIndex("StoreId");
 
@@ -1846,10 +1843,6 @@ namespace Store.Migrations
                         .WithMany()
                         .HasForeignKey("PaidById");
 
-                    b.HasOne("Store.Entities.Sales", "Sale")
-                        .WithMany()
-                        .HasForeignKey("SaleId");
-
                     b.HasOne("Store.Entities.Almacen", "Store")
                         .WithMany()
                         .HasForeignKey("StoreId");
@@ -1861,8 +1854,6 @@ namespace Store.Migrations
                     b.Navigation("FacturedBy");
 
                     b.Navigation("PaidBy");
-
-                    b.Navigation("Sale");
 
                     b.Navigation("Store");
                 });

@@ -27,5 +27,9 @@ namespace Store.Entities
         public DateTime FechaAnulacion { get; set; }
         public Almacen Store { get; set; }
         public string CodigoDescuento { get; set; }
+
+#nullable enable
+        public Sales? Sale { get; set; }
+#nullable disable
     }
 }

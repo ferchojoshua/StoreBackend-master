@@ -32,7 +32,7 @@ namespace Store.Helpers.EntradaProductos
             ProductIn productIn =
                 new()
                 {
-                    TipoEntrada = "CCOMPRA",
+                    TipoEntrada = "COMPRA",
                     TipoPago = model.TipoPago,
                     NoFactura = model.NoFactura,
                     FechaIngreso = DateTime.Now,
@@ -41,6 +41,7 @@ namespace Store.Helpers.EntradaProductos
                     Almacen = alm,
                     CreatedBy = user.Id,
                     MontoFactura = model.MontoFactura,
+                    MontFactAntDesc = model.MontFactAntDesc,
                     IsCanceled = model.TipoPago != "Pago de Credito",
                 };
             List<ProductInDetails> detalles = new();
@@ -58,11 +59,12 @@ namespace Store.Helpers.EntradaProductos
                 pd.Impuesto = item.Impuesto;
                 pd.PrecioVentaMayor = item.PrecioVentaMayor;
                 pd.PrecioVentaDetalle = item.PrecioVentaDetalle;
+                pd.CostUnitDespDesc = item.CostUnitDespDesc;
                 detalles.Add(pd);
 
-                Existence existence = await _context.Existences.FirstOrDefaultAsync(
-                    e => e.Producto == prod
-                );
+                Existence existence = await _context.Existences
+                    .Where(e => e.Producto.Id == prod.Id && e.Almacen.Id == 1)
+                    .FirstOrDefaultAsync();
                 if (existence == null)
                 {
                     existence.Almacen = alm;
@@ -70,7 +72,7 @@ namespace Store.Helpers.EntradaProductos
                     existence.Existencia = pd.Cantidad;
                     existence.PrecioVentaMayor = item.PrecioVentaMayor;
                     existence.PrecioVentaDetalle = item.PrecioVentaDetalle;
-                    existence.PrecioCompra = item.CostoUnitario;
+                    existence.PrecioCompra = item.CostUnitDespDesc;
                     _context.Add(existence);
                 }
                 else
@@ -79,7 +81,7 @@ namespace Store.Helpers.EntradaProductos
                     existence.Existencia += pd.Cantidad;
                     existence.PrecioVentaMayor = item.PrecioVentaMayor;
                     existence.PrecioVentaDetalle = item.PrecioVentaDetalle;
-                    existence.PrecioCompra = item.CostoUnitario;
+                    existence.PrecioCompra = item.CostUnitDespDesc;
                     _context.Entry(existence).State = EntityState.Modified;
                 }
 

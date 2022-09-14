@@ -74,6 +74,10 @@ namespace Store.Helpers.SalesHelper
             if (cl != null)
             {
                 cl.ContadorCompras += 1;
+                if (!model.IsContado)
+                {
+                    cl.CreditoConsumido += model.MontoVenta;
+                }
                 _context.Entry(cl).State = EntityState.Modified;
             }
 
@@ -375,6 +379,9 @@ namespace Store.Helpers.SalesHelper
                 }
             }
 
+            var client = await _context.Clients.FirstOrDefaultAsync(c => c.Id == model.IdClient);
+            client.CreditoConsumido -= model.Monto;
+            _context.Entry(client).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return abonoList;
         }
@@ -460,6 +467,7 @@ namespace Store.Helpers.SalesHelper
             sale.IsAnulado = true;
             sale.FechaAnulacion = hoy;
             sale.AnulatedBy = user;
+            sale.Client.CreditoConsumido -= sale.MontoVenta;
 
             SaleAnulation saleAnulation =
                 new()
@@ -681,6 +689,8 @@ namespace Store.Helpers.SalesHelper
             {
                 sale.Saldo = model.Saldo;
             }
+
+            sale.Client.CreditoConsumido -= montoAnulado;
             _context.Entry(sale).State = EntityState.Modified;
 
             var movList = await _context.CajaMovments
@@ -795,8 +805,10 @@ namespace Store.Helpers.SalesHelper
 
             var sale = await _context.Sales
                 .Include(s => s.Store)
+                .Include(s => s.Client)
                 .FirstOrDefaultAsync(s => s.Id == model.IdSale);
             sale.Saldo -= model.Monto;
+            sale.Client.CreditoConsumido -= model.Monto;
             if (sale.Saldo == 0)
             {
                 sale.IsCanceled = true;

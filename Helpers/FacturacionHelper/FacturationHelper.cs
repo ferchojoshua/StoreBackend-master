@@ -97,10 +97,21 @@ namespace Store.Helpers.FacturacionHelper
             return fact;
         }
 
+        public async Task<ICollection<Facturacion>> GetAnulatedFacturacionAsync(int storeId)
+        {
+            var result = await _context.Facturacions
+                .Include(f => f.Client)
+                .Where(f => f.IsCanceled == false && f.IsAnulado && f.Store.Id == storeId)
+                .ToListAsync();
+
+            return result;
+        }
+
         public async Task<ICollection<Facturacion>> GetCancelledFacturacionAsync(int storeId)
         {
             var result = await _context.Facturacions
                 .Include(f => f.Client)
+                .Include(f => f.Sale)
                 .Where(f => f.IsCanceled && f.IsAnulado == false && f.Store.Id == storeId)
                 .ToListAsync();
 
@@ -116,6 +127,16 @@ namespace Store.Helpers.FacturacionHelper
                 .ToListAsync();
 
             return result;
+        }
+
+        public async Task<Sales> GetReprintBillAsync(int saleId)
+        {
+            var sale = await _context.Sales
+                .Include(s => s.Client)
+                .Include(s => s.SaleDetails)
+                .ThenInclude(sd => sd.Product)
+                .FirstOrDefaultAsync(s => s.Id == saleId);
+            return sale;
         }
 
         public async Task<Sales> PayFacturaAsync(PayFactViewModel model, Entities.User user)
@@ -143,7 +164,6 @@ namespace Store.Helpers.FacturacionHelper
             {
                 fact.Client.ContadorCompras += 1;
             }
-            _context.Entry(fact).State = EntityState.Modified;
 
             Sales sale =
                 new()
@@ -273,6 +293,7 @@ namespace Store.Helpers.FacturacionHelper
                     };
                 countAsientoContableDetailsList.Add(detalleDebito);
             }
+
             CountAsientoContableDetails detalleCredito =
                 new()
                 {
@@ -297,6 +318,9 @@ namespace Store.Helpers.FacturacionHelper
                 };
             _context.CountAsientosContables.Add(asientosContable);
 
+            await _context.SaveChangesAsync();
+            fact.Sale = sale;
+            _context.Entry(fact).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return sale;
         }
