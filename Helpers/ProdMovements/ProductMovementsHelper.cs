@@ -87,39 +87,10 @@ namespace Store.Helpers.ProdMovements
                         _context.Entry(existDestino).State = EntityState.Modified;
                     }
 
-                    //Agregamos el Kardex de entrada al almacen destino
-                    var karListDest = await _context.Kardex
-                        .Where(k => k.Product == prod && k.Almacen == existDestino.Almacen)
-                        .ToListAsync();
-
-                    Kardex karDest = karListDest
-                        .Where(k => k.Id == karListDest.Max(k => k.Id))
-                        .FirstOrDefault();
-
-                    Kardex kardex =
-                        new()
-                        {
-                            Product = prod,
-                            Fecha = DateTime.Now,
-                            Concepto = $"TRASLADO DE INVENTARIO A - {almacenText}",
-                            Almacen = await _context.Almacen.FirstOrDefaultAsync(
-                                a => a.Id == item.AlmacenDestinoId
-                            ),
-                            Entradas = existDestino.Existencia,
-                            Salidas = 0,
-                            Saldo = karDest == null ? 0 : karDest.Saldo + existDestino.Existencia,
-                            User = user
-                        };
-                    _context.Kardex.Add(kardex);
-
-                    //Agregamos el Kardex de entrada al almacen procedencia
-                    var karList = await _context.Kardex
+                    Kardex kar = await _context.Kardex
                         .Where(k => k.Product == prod && k.Almacen == existProcedencia.Almacen)
-                        .ToListAsync();
-
-                    Kardex kar = karList
-                        .Where(k => k.Id == karList.Max(k => k.Id))
-                        .FirstOrDefault();
+                        .OrderByDescending(k => k.Id)
+                        .FirstOrDefaultAsync();
 
                     Kardex kardexProcedencia =
                         new()
@@ -136,6 +107,28 @@ namespace Store.Helpers.ProdMovements
                             User = user
                         };
                     _context.Kardex.Add(kardexProcedencia);
+
+                    //Agregamos el Kardex de entrada al almacen destino
+                    Kardex karDest = await _context.Kardex
+                        .Where(k => k.Product == prod && k.Almacen == existDestino.Almacen)
+                        .OrderByDescending(k => k.Id)
+                        .FirstOrDefaultAsync();
+
+                    Kardex kardex =
+                        new()
+                        {
+                            Product = prod,
+                            Fecha = DateTime.Now,
+                            Concepto = $"TRASLADO DE INVENTARIO A - {almacenText}",
+                            Almacen = await _context.Almacen.FirstOrDefaultAsync(
+                                a => a.Id == item.AlmacenDestinoId
+                            ),
+                            Entradas = item.Cantidad,
+                            Salidas = 0,
+                            Saldo = karDest == null ? 0 : karDest.Saldo + item.Cantidad,
+                            User = user
+                        };
+                    _context.Kardex.Add(kardex);
                 }
 
                 existProcedencia.Existencia -= item.Cantidad;

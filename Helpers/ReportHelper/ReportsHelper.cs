@@ -474,9 +474,11 @@ namespace Store.Helpers.ReportHelper
                     .ThenInclude(s => s.Client)
                     .Where(
                         a =>
-                            a.Store.Id == model.StoreId
+                            a.Sale.IsContado == false
+                            && a.IsAnulado == false
+                            && a.Store.Id == model.StoreId
                             && a.FechaAbono >= fechaHoraDesde
-                            && a.FechaAbono <= fechaHoraDesde
+                            && a.FechaAbono <= fechaHoraHasta
                     )
                     .ToListAsync();
 
@@ -513,7 +515,9 @@ namespace Store.Helpers.ReportHelper
                 .ThenInclude(s => s.Client)
                 .Where(
                     a =>
-                        a.FechaAbono >= fechaHoraDesde
+                        a.Sale.IsContado == false
+                        && a.IsAnulado == false
+                        && a.FechaAbono >= fechaHoraDesde
                         && a.FechaAbono <= fechaHoraHasta
                         && a.Sale.IsContado == false
                 )

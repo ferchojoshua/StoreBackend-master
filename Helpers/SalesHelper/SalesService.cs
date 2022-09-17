@@ -381,6 +381,7 @@ namespace Store.Helpers.SalesHelper
 
             var client = await _context.Clients.FirstOrDefaultAsync(c => c.Id == model.IdClient);
             client.CreditoConsumido -= model.Monto;
+            client.SaldoVencido -= model.Monto;
             _context.Entry(client).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return abonoList;
@@ -485,6 +486,12 @@ namespace Store.Helpers.SalesHelper
             if (!sale.IsEventual)
             {
                 sale.Client.ContadorCompras -= 1;
+                sale.Client.CreditoConsumido -= sale.MontoVenta;
+                if (hoy.Date < sale.FechaVencimiento.Date)
+                {
+                    sale.Client.SaldoVencido -= sale.MontoVenta;
+                    sale.Client.FacturasVencidas -= 1;
+                }
             }
             _context.Entry(sale).State = EntityState.Modified;
 
@@ -689,8 +696,16 @@ namespace Store.Helpers.SalesHelper
             {
                 sale.Saldo = model.Saldo;
             }
+            if (!sale.IsEventual)
+            {
+                sale.Client.CreditoConsumido -= montoAnulado;
+                if (hoy.Date < sale.FechaVencimiento.Date)
+                {
+                    sale.Client.SaldoVencido -= sale.MontoVenta;
+                    sale.Client.FacturasVencidas -= 1;
+                }
+            }
 
-            sale.Client.CreditoConsumido -= montoAnulado;
             _context.Entry(sale).State = EntityState.Modified;
 
             var movList = await _context.CajaMovments
@@ -809,9 +824,11 @@ namespace Store.Helpers.SalesHelper
                 .FirstOrDefaultAsync(s => s.Id == model.IdSale);
             sale.Saldo -= model.Monto;
             sale.Client.CreditoConsumido -= model.Monto;
+            sale.Client.SaldoVencido -= model.Monto;
             if (sale.Saldo == 0)
             {
                 sale.IsCanceled = true;
+                sale.Client.FacturasVencidas -= 1;
             }
             Abono abono =
                 new()

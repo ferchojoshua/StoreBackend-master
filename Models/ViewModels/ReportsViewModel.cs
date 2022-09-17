@@ -82,12 +82,6 @@ namespace Store.Models.ViewModels
         [Required]
         public string Hasta { get; set; }
 
-        // [Required]
-        // public string HoraDesde { get; set; }
-
-        // [Required]
-        // public string HoraHasta { get; set; }
-
         [Required]
         public int StoreId { get; set; }
     }

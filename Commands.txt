@@ -69,6 +69,10 @@ User : Automoto
 Pass : Automoto.2022*
 
 
+Repara el kardex
+https://localhost:7015/api/Productos/ReparaKardex
+
+
 --Actualiza el saldo vencido y las facturas vencidas
 update	Clients 
 set		SaldoVencido = 

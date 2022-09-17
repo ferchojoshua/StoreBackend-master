@@ -71,6 +71,40 @@ namespace Store.Helpers.ProductHelper
                 .ToListAsync();
         }
 
+        public async Task<ICollection<Producto>> GetProdsDifKardex()
+        {
+            List<Producto> result = new();
+
+            var kardexList = await _context.Kardex.Include(k => k.Product).ToListAsync();
+            var prod = kardexList.GroupBy(x => x.Product).Select(x => new { ProductId = x.Key.Id });
+            var storeList = await _context.Almacen.ToListAsync();
+            foreach (var item in prod)
+            {
+                foreach (var store in storeList)
+                {
+                    try
+                    {
+                        Kardex kar = await _context.Kardex
+                            .Where(k => k.Product.Id == item.ProductId && k.Almacen == store)
+                            .OrderByDescending(k => k.Id)
+                            .FirstOrDefaultAsync();
+                        Existence exist = await _context.Existences
+                            .Where(e => e.Producto.Id == item.ProductId && e.Almacen == store)
+                            .FirstOrDefaultAsync();
+                        if (exist.Existencia != kar.Saldo)
+                        {
+                            result.Add(exist.Producto);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        continue;
+                    }
+                }
+            }
+            return result;
+        }
+
         public async Task<ICollection<Kardex>> ReparaKardexAsync()
         {
             List<Kardex> kardexByStore = new();
