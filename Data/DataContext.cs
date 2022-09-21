@@ -33,6 +33,7 @@ namespace Store.Data
         public DbSet<Permission> Permissions { get; set; }
         public DbSet<ProductIn> ProductIns { get; set; }
         public DbSet<ProductInDetails> ProductInDetails { get; set; }
+        public DbSet<ProductMovmentDetails> ProductMovmentDetails { get; set; }
         public DbSet<ProductMovments> ProductMovments { get; set; }
         public DbSet<Producto> Productos { get; set; }
         public DbSet<Provider> Providers { get; set; }

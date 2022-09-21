@@ -1,5 +1,3 @@
-using System;
-
 namespace Store.Entities
 {
     public class ProductMovmentDetails
@@ -9,6 +7,6 @@ namespace Store.Entities
         public int AlmacenProcedenciaId { get; set; }
         public int AlmacenDestinoId { get; set; }
         public int Cantidad { get; set; }
-       
+        public ProductMovments ProductMovment { get; set; }
     }
 }

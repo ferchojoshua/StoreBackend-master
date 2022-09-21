@@ -55,11 +55,18 @@ namespace Store.Controllers.API
                 await _userHelper.LogoutAsync();
                 return Ok("eX01");
             }
-            return await _context.ProductIns
-                .Include(p => p.Provider)
-                .OrderByDescending(p => p.Id)
-                .Include(p => p.ProductInDetails)
-                .ToListAsync();
+            try
+            {
+                return await _context.ProductIns
+                    .Include(p => p.Provider)
+                    .OrderByDescending(p => p.Id)
+                    .Include(p => p.ProductInDetails)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("{id}")]

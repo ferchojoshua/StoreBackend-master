@@ -367,5 +367,40 @@ namespace Store.Controllers.API
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet("GetSyncKardexExistences")]
+        public async Task<ActionResult<Kardex>> GetSyncKardexExistences()
+        {
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "KARDEX VER"))
+            {
+                return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync();
+                return Ok("eX01");
+            }
+
+            try
+            {
+                var result = await _productHelper.SyncKardexExistencesAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

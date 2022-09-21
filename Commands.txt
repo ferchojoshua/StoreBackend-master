@@ -93,3 +93,18 @@ set		SaldoVencido =
 						FORMAT(GETDATE(), 'dd-MM-yy') > FORMAT(FechaVencimiento, 'dd-MM-yy')  and
 						Clients.Id = s.ClientId 
 		)
+
+
+select * from Existences where ProductoId = 3921 order by AlmacenId
+
+select * from Productos where id = 3921
+
+select * from ProductMovmentDetails as det
+		left join ProductMovments as pm on det.ProductMovmentId = pm.Id
+	where	ProductoId = 4395 and 
+			AlmacenDestinoId = 3
+
+select * from Kardex where ProductId = 5391 and AlmacenId = 1
+select * from Kardex where ProductId = 5391 and AlmacenId = 2
+select * from Kardex where ProductId = 3915 and AlmacenId = 3 and Concepto LIKE 'TRASLADO DE INVENTARIO%'
+select * from Kardex where ProductId = 5391 and AlmacenId = 4

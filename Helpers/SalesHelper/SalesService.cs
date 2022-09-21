@@ -560,6 +560,7 @@ namespace Store.Helpers.SalesHelper
                 .ThenInclude(sd => sd.Product)
                 .Include(s => s.SaleDetails)
                 .Include(s => s.Store)
+                .Include(s => s.Client)
                 .FirstOrDefaultAsync(s => s.Id == model.IdSale);
 
             decimal salidaEfectivo = sale.MontoVenta - model.Monto;
