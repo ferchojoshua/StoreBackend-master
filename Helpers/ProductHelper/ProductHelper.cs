@@ -96,7 +96,7 @@ namespace Store.Helpers.ProductHelper
                             result.Add(exist.Producto);
                         }
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                         continue;
                     }

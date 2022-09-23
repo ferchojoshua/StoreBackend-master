@@ -20,6 +20,18 @@ namespace Store.Models.ViewModels
         public bool CreditSales { get; set; }
     }
 
+    public class IngresosViewModel
+    {
+        [Required]
+        public DateTime Desde { get; set; }
+
+        [Required]
+        public DateTime Hasta { get; set; }
+
+        [Required]
+        public int StoreId { get; set; }
+    }
+
     public class CuentasXCobrarViewModel
     {
         [Required]

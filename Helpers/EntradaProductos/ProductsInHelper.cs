@@ -67,33 +67,32 @@ namespace Store.Helpers.EntradaProductos
                     .FirstOrDefaultAsync();
                 if (existence == null)
                 {
-                    existence.Almacen = alm;
-                    existence.Producto = prod;
-                    existence.Existencia = pd.Cantidad;
-                    existence.PrecioVentaMayor = item.PrecioVentaMayor;
-                    existence.PrecioVentaDetalle = item.PrecioVentaDetalle;
-                    existence.PrecioCompra = item.CostUnitDespDesc;
+                    existence = new()
+                    {
+                        Almacen = alm,
+                        Producto = prod,
+                        Existencia = pd.Cantidad,
+                        PrecioCompra = item.CostUnitDespDesc,
+                        PrecioVentaMayor = item.PrecioVentaMayor,
+                        PrecioVentaDetalle = item.PrecioVentaDetalle,
+                        Minimo = 0,
+                        Maximo = 0
+                    };
                     _context.Add(existence);
                 }
                 else
                 {
-                    existence.Almacen = alm;
-                    existence.Existencia += pd.Cantidad;
+                    existence.Existencia += item.Cantidad;
+                    existence.PrecioCompra = item.CostUnitDespDesc;
                     existence.PrecioVentaMayor = item.PrecioVentaMayor;
                     existence.PrecioVentaDetalle = item.PrecioVentaDetalle;
-                    existence.PrecioCompra = item.CostUnitDespDesc;
                     _context.Entry(existence).State = EntityState.Modified;
                 }
 
-                int totalEntradas = _context.Kardex
-                    .Where(k => k.Product.Id == item.Product.Id && k.Almacen == alm)
-                    .Sum(k => k.Entradas);
-
-                int totaSalidas = _context.Kardex
-                    .Where(k => k.Product.Id == item.Product.Id && k.Almacen == alm)
-                    .Sum(k => k.Salidas);
-
-                int saldo = totalEntradas - totaSalidas;
+                Kardex kar = await _context.Kardex
+                    .Where(k => k.Product == prod && k.Almacen.Id == 1)
+                    .OrderByDescending(k => k.Id)
+                    .FirstOrDefaultAsync();
 
                 Kardex kardex =
                     new()
@@ -104,10 +103,10 @@ namespace Store.Helpers.EntradaProductos
                             model.TipoPago == "Pago de Credito"
                                 ? "COMPRA DE CREDITO"
                                 : "COMPRA DE CONTADO",
-                        Almacen = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == 1),
+                        Almacen = alm,
                         Entradas = item.Cantidad,
                         Salidas = 0,
-                        Saldo = saldo + item.Cantidad,
+                        Saldo = kar.Saldo + item.Cantidad,
                         User = user
                     };
                 _context.Kardex.Add(kardex);
@@ -195,7 +194,7 @@ namespace Store.Helpers.EntradaProductos
             productIn.FechaVencimiento = model.TipoPago == "Pago de Credito" ? fechaV : null;
             productIn.Provider = prov;
             productIn.EditDate = DateTime.Now;
-            productIn.EditBy = user.Email;
+            productIn.EditBy = user.Id;
             productIn.MontoFactura = model.MontoFactura;
 
             foreach (var item in model.ProductInDetails)

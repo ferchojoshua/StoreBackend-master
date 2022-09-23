@@ -207,7 +207,7 @@ namespace Store.Helpers.ReportHelper
                     sales = await _context.Sales
                         .Include(s => s.Client)
                         .Include(s => s.Store)
-                        .Include(s => s.SaleDetails)
+                        .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado == false))
                         .ThenInclude(sd => sd.Product)
                         .Include(s => s.SaleDetails)
                         .ThenInclude(sd => sd.Product.TipoNegocio)
@@ -228,7 +228,7 @@ namespace Store.Helpers.ReportHelper
                     sales = await _context.Sales
                         .Include(s => s.Client)
                         .Include(s => s.Store)
-                        .Include(s => s.SaleDetails)
+                        .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado == false))
                         .ThenInclude(sd => sd.Product)
                         .Include(s => s.SaleDetails)
                         .ThenInclude(sd => sd.Product.TipoNegocio)
@@ -251,7 +251,7 @@ namespace Store.Helpers.ReportHelper
                     sales = await _context.Sales
                         .Include(s => s.Client)
                         .Include(s => s.Store)
-                        .Include(s => s.SaleDetails)
+                        .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado == false))
                         .ThenInclude(sd => sd.Product)
                         .Include(s => s.SaleDetails)
                         .ThenInclude(sd => sd.Product.TipoNegocio)
@@ -271,7 +271,7 @@ namespace Store.Helpers.ReportHelper
                     sales = await _context.Sales
                         .Include(s => s.Client)
                         .Include(s => s.Store)
-                        .Include(s => s.SaleDetails)
+                        .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado == false))
                         .ThenInclude(sd => sd.Product)
                         .Include(s => s.SaleDetails)
                         .ThenInclude(sd => sd.Product.TipoNegocio)
@@ -699,6 +699,38 @@ namespace Store.Helpers.ReportHelper
                     return vExistences;
                 }
             }
+        }
+
+        public async Task<ICollection<Abono>> ReportIngresos(IngresosViewModel model)
+        {
+            if (model.StoreId != 0)
+            {
+                var ingresosByStore = await _context.Abonos
+                    .Include(a => a.Sale)
+                    .ThenInclude(s => s.Client)
+                    .Where(
+                        s =>
+                            s.IsAnulado == false
+                            && s.FechaAbono >= model.Desde
+                            && s.FechaAbono <= model.Hasta
+                            && s.Store.Id == model.StoreId
+                            && s.IsAnulado == false
+                    )
+                    .ToListAsync();
+                return ingresosByStore;
+            }
+            var ingresos = await _context.Abonos
+                .Include(a => a.Sale)
+                .ThenInclude(s => s.Client)
+                .Where(
+                    s =>
+                        s.IsAnulado == false
+                        && s.FechaAbono >= model.Desde
+                        && s.FechaAbono <= model.Hasta
+                        && s.IsAnulado == false
+                )
+                .ToListAsync();
+            return ingresos;
         }
     }
 }

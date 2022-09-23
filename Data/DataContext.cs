@@ -23,6 +23,7 @@ namespace Store.Data
         public DbSet<CountLibros> CountLibros { get; set; }
         public DbSet<CuentasXCobrarDailyCheck> CuentasXCobrarDailyChecks { get; set; }
         public DbSet<Department> Departments { get; set; }
+        // public DbSet<ErrorLog> ErrorLogs { get; set; }
         public DbSet<Existence> Existences { get; set; }
         public DbSet<ExistencesDailyCheck> ExistencesDailyChecks { get; set; }
         public DbSet<Facturacion> Facturacions { get; set; }

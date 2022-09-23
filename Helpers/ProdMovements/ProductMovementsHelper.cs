@@ -39,7 +39,11 @@ namespace Store.Helpers.ProdMovements
 
                 //Aca Buscamos la existencia en el almacen prodecencia
                 Existence existProcedencia = await _context.Existences
-                    .Where(e => e.Producto == prod && e.Almacen.Id == item.AlmacenProcedenciaId)
+                    .Where(
+                        e =>
+                            e.Producto.Id == item.IdProducto
+                            && e.Almacen.Id == item.AlmacenProcedenciaId
+                    )
                     .FirstOrDefaultAsync();
 
                 //if is null or procedence is major than 0 return null
@@ -49,14 +53,17 @@ namespace Store.Helpers.ProdMovements
                 }
                 else
                 {
-                    if (existProcedencia.Existencia < item.Cantidad)
+                    existProcedencia.Existencia -= item.Cantidad;
+                    if (item.Cantidad > existProcedencia.Existencia)
                     {
                         return null;
                     }
 
                     //Aca Buscamos la existencia en el almacen prodecencia
                     Existence existDestino = await _context.Existences.FirstOrDefaultAsync(
-                        e => e.Producto == prod && e.Almacen.Id == item.AlmacenDestinoId
+                        e =>
+                            e.Producto.Id == item.IdProducto
+                            && e.Almacen.Id == item.AlmacenDestinoId
                     );
 
                     //si es nulo se crea nuevo y se agrega a la DB
@@ -69,9 +76,11 @@ namespace Store.Helpers.ProdMovements
                             ),
                             Producto = prod,
                             Existencia = item.Cantidad,
+                            PrecioCompra = existProcedencia.PrecioCompra,
                             PrecioVentaDetalle = existProcedencia.PrecioVentaDetalle,
                             PrecioVentaMayor = existProcedencia.PrecioVentaMayor,
-                            PrecioCompra = existProcedencia.PrecioCompra
+                            Maximo = 0,
+                            Minimo = 0
                         };
                         almacenText = existDestino.Almacen.Name;
                         _context.Existences.Add(existDestino);
@@ -82,9 +91,10 @@ namespace Store.Helpers.ProdMovements
                         existDestino.Existencia += item.Cantidad;
                         existDestino.PrecioVentaDetalle = existProcedencia.PrecioVentaDetalle;
                         existDestino.PrecioVentaMayor = existProcedencia.PrecioVentaMayor;
-                        almacenText = existDestino.Almacen.Name;
                         existDestino.PrecioCompra = existProcedencia.PrecioCompra;
                         _context.Entry(existDestino).State = EntityState.Modified;
+                        
+                        almacenText = existDestino.Almacen.Name;
                     }
 
                     Kardex kar = await _context.Kardex
@@ -131,7 +141,6 @@ namespace Store.Helpers.ProdMovements
                     _context.Kardex.Add(kardex);
                 }
 
-                existProcedencia.Existencia -= item.Cantidad;
                 _context.Entry(existProcedencia).State = EntityState.Modified;
 
                 await _context.SaveChangesAsync();
