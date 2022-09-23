@@ -230,11 +230,13 @@ namespace Store.Helpers.FacturacionHelper
                 detalles.Add(saleDetail); //Se agrega a la lista
 
                 //Agregamos el Kardex de entrada al almacen destino
-                var karList = await _context.Kardex
-                    .Where(k => k.Product.Id == item.Product.Id && k.Almacen == item.Store)
-                    .ToListAsync();
+                         Kardex kar = await _context.Kardex
+                        .Where(k => k.Product.Id == item.Product.Id && k.Almacen == item.Store)
+                        .OrderByDescending(k => k.Id)
+                        .FirstOrDefaultAsync();
 
-                Kardex kar = karList.Where(k => k.Id == karList.Max(k => k.Id)).FirstOrDefault();
+                int saldo = kar == null ? 0 : kar.Saldo;
+
 
                 Kardex kardex =
                     new()
@@ -245,7 +247,7 @@ namespace Store.Helpers.FacturacionHelper
                         Almacen = item.Store,
                         Entradas = 0,
                         Salidas = item.Cantidad,
-                        Saldo = kar.Saldo - item.Cantidad,
+                        Saldo = saldo - item.Cantidad,
                         User = user
                     };
                 _context.Kardex.Add(kardex);
@@ -289,7 +291,7 @@ namespace Store.Helpers.FacturacionHelper
                     {
                         Cuenta = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 72),
                         Debito = sale.MontoVenta,
-                        Credito = 0
+                        Credito = 0 
                     };
                 countAsientoContableDetailsList.Add(detalleDebito);
             }

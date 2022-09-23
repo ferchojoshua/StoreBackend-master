@@ -54,7 +54,7 @@ namespace Store.Helpers.ProdMovements
                 else
                 {
                     existProcedencia.Existencia -= item.Cantidad;
-                    if (item.Cantidad > existProcedencia.Existencia)
+                    if (existProcedencia.Existencia < 0)
                     {
                         return null;
                     }
@@ -93,7 +93,7 @@ namespace Store.Helpers.ProdMovements
                         existDestino.PrecioVentaMayor = existProcedencia.PrecioVentaMayor;
                         existDestino.PrecioCompra = existProcedencia.PrecioCompra;
                         _context.Entry(existDestino).State = EntityState.Modified;
-                        
+
                         almacenText = existDestino.Almacen.Name;
                     }
 
@@ -101,6 +101,8 @@ namespace Store.Helpers.ProdMovements
                         .Where(k => k.Product == prod && k.Almacen == existProcedencia.Almacen)
                         .OrderByDescending(k => k.Id)
                         .FirstOrDefaultAsync();
+
+                    int saldo = kar == null ? 0 : kar.Saldo;
 
                     Kardex kardexProcedencia =
                         new()
@@ -113,7 +115,7 @@ namespace Store.Helpers.ProdMovements
                             ),
                             Entradas = 0,
                             Salidas = item.Cantidad,
-                            Saldo = kar == null ? 0 : kar.Saldo - item.Cantidad,
+                            Saldo = saldo - item.Cantidad,
                             User = user
                         };
                     _context.Kardex.Add(kardexProcedencia);
@@ -123,6 +125,8 @@ namespace Store.Helpers.ProdMovements
                         .Where(k => k.Product == prod && k.Almacen == existDestino.Almacen)
                         .OrderByDescending(k => k.Id)
                         .FirstOrDefaultAsync();
+
+                    int saldoDest = karDest == null ? 0 : karDest.Saldo;
 
                     Kardex kardex =
                         new()
@@ -135,7 +139,7 @@ namespace Store.Helpers.ProdMovements
                             ),
                             Entradas = item.Cantidad,
                             Salidas = 0,
-                            Saldo = karDest == null ? 0 : karDest.Saldo + item.Cantidad,
+                            Saldo = saldoDest + item.Cantidad,
                             User = user
                         };
                     _context.Kardex.Add(kardex);

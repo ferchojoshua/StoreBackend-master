@@ -154,11 +154,12 @@ namespace Store.Helpers.SalesHelper
                 detalles.Add(saleDetail); //Se agrega a la lista
 
                 //Agregamos el Kardex de entrada al almacen destino
-                var karList = await _context.Kardex
-                    .Where(k => k.Product.Id == item.Product.Id && k.Almacen == item.Store)
-                    .ToListAsync();
+                 Kardex kar = await _context.Kardex
+                        .Where(k => k.Product == prod && k.Almacen == item.Store)
+                        .OrderByDescending(k => k.Id)
+                        .FirstOrDefaultAsync();
 
-                Kardex kar = karList.Where(k => k.Id == karList.Max(k => k.Id)).FirstOrDefault();
+                int saldo = kar == null ? 0 : kar.Saldo;
 
                 Kardex kardex =
                     new()
@@ -169,7 +170,7 @@ namespace Store.Helpers.SalesHelper
                         Almacen = alm,
                         Entradas = 0,
                         Salidas = item.Cantidad,
-                        Saldo = kar.Saldo - item.Cantidad,
+                        Saldo = saldo - item.Cantidad,
                         User = user
                     };
                 _context.Kardex.Add(kardex);
@@ -444,11 +445,12 @@ namespace Store.Helpers.SalesHelper
                 _context.Entry(existence).State = EntityState.Modified;
 
                 //Agregamos el Kardex de entrada al almacen destino
-                var karList = await _context.Kardex
-                    .Where(k => k.Product.Id == item.Product.Id && k.Almacen == item.Store)
-                    .ToListAsync();
+                 Kardex kar = await _context.Kardex
+                        .Where(k => k.Product.Id == item.Product.Id && k.Almacen == item.Store)
+                        .OrderByDescending(k => k.Id)
+                        .FirstOrDefaultAsync();
 
-                Kardex kar = karList.Where(k => k.Id == karList.Max(k => k.Id)).FirstOrDefault();
+                int saldo = kar == null ? 0 : kar.Saldo;
 
                 Kardex kardex =
                     new()
@@ -459,7 +461,7 @@ namespace Store.Helpers.SalesHelper
                         Almacen = item.Store,
                         Entradas = item.Cantidad,
                         Salidas = 0,
-                        Saldo = kar.Saldo + item.Cantidad,
+                        Saldo = saldo + item.Cantidad,
                         User = user
                     };
                 _context.Kardex.Add(kardex);
@@ -603,13 +605,13 @@ namespace Store.Helpers.SalesHelper
 
                     // Agregamos el Kardex de entrada al almacen destino
                     //Buscamos el ultimo reguistro de ese producto en el kardex
-                    var karList = await _context.Kardex
+                      Kardex kar = await _context.Kardex
                         .Where(k => k.Product.Id == item.Product.Id && k.Almacen == item.Store)
-                        .ToListAsync();
+                        .OrderByDescending(k => k.Id)
+                        .FirstOrDefaultAsync();
 
-                    Kardex kar = karList
-                        .Where(k => k.Id == karList.Max(k => k.Id))
-                        .FirstOrDefault();
+                     int saldo = kar == null ? 0 : kar.Saldo;
+
 
                     //creamos el objeto kardex
                     Kardex kardex =
@@ -621,7 +623,7 @@ namespace Store.Helpers.SalesHelper
                             Almacen = item.Store,
                             Entradas = item.Cantidad,
                             Salidas = 0,
-                            Saldo = kar.Saldo + item.Cantidad,
+                            Saldo = saldo + item.Cantidad,
                             User = user
                         };
                     _context.Kardex.Add(kardex);
@@ -650,7 +652,7 @@ namespace Store.Helpers.SalesHelper
                     }
                 }
                 // Modificamos las existencias
-                //es es mayor que cero
+                //es mayor que cero
                 //hay que sumarle a las existencias y agregar la entrada al kardex
                 if (diferencia > 0)
                 {
@@ -665,13 +667,13 @@ namespace Store.Helpers.SalesHelper
 
                     // Agregamos el Kardex de entrada al almacen destino
                     //Buscamos el ultimo reguistro de ese producto en el kardex
-                    var karList = await _context.Kardex
-                        .Where(k => k.Product.Id == item.Product.Id && k.Almacen == item.Store)
-                        .ToListAsync();
+                    
+                    Kardex kar = await _context.Kardex
+                         .Where(k => k.Product.Id == item.Product.Id && k.Almacen == item.Store)
+                        .OrderByDescending(k => k.Id)
+                        .FirstOrDefaultAsync();
 
-                    Kardex kar = karList
-                        .Where(k => k.Id == karList.Max(k => k.Id))
-                        .FirstOrDefault();
+                    int saldo = kar == null ? 0 : kar.Saldo;
 
                     //creamos el objeto kardex
                     Kardex kardex =
@@ -683,7 +685,7 @@ namespace Store.Helpers.SalesHelper
                             Almacen = item.Store,
                             Entradas = item.Cantidad,
                             Salidas = 0,
-                            Saldo = kar.Saldo + item.Cantidad,
+                            Saldo = saldo + item.Cantidad,
                             User = user
                         };
                     _context.Kardex.Add(kardex);
