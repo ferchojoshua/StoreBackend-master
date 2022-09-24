@@ -88,6 +88,7 @@ namespace Store.Helpers.ProductHelper
                             .Where(k => k.Product.Id == item.ProductId && k.Almacen == store)
                             .OrderByDescending(k => k.Id)
                             .FirstOrDefaultAsync();
+                            
                         Existence exist = await _context.Existences
                             .Where(e => e.Producto.Id == item.ProductId && e.Almacen == store)
                             .FirstOrDefaultAsync();

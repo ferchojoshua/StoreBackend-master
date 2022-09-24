@@ -108,3 +108,5 @@ select * from Kardex where ProductId = 5391 and AlmacenId = 1
 select * from Kardex where ProductId = 5391 and AlmacenId = 2
 select * from Kardex where ProductId = 3915 and AlmacenId = 3 and Concepto LIKE 'TRASLADO DE INVENTARIO%'
 select * from Kardex where ProductId = 5391 and AlmacenId = 4
+
+http://automoto.eastus.cloudapp.azure.com/automoto
