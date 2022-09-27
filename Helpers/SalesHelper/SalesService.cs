@@ -154,10 +154,10 @@ namespace Store.Helpers.SalesHelper
                 detalles.Add(saleDetail); //Se agrega a la lista
 
                 //Agregamos el Kardex de entrada al almacen destino
-                 Kardex kar = await _context.Kardex
-                        .Where(k => k.Product == prod && k.Almacen == item.Store)
-                        .OrderByDescending(k => k.Id)
-                        .FirstOrDefaultAsync();
+                Kardex kar = await _context.Kardex
+                    .Where(k => k.Product == prod && k.Almacen == item.Store)
+                    .OrderByDescending(k => k.Id)
+                    .FirstOrDefaultAsync();
 
                 int saldo = kar == null ? 0 : kar.Saldo;
 
@@ -271,6 +271,7 @@ namespace Store.Helpers.SalesHelper
 
             decimal sobra = model.Monto;
             var sales = await _context.Sales
+                .Include(c => c.Client)
                 .Where(
                     s =>
                         s.IsAnulado == false
@@ -278,6 +279,7 @@ namespace Store.Helpers.SalesHelper
                         && s.IsCanceled == false
                 )
                 .ToListAsync();
+
             foreach (var item in sales)
             {
                 if (sobra > 0)
@@ -296,6 +298,11 @@ namespace Store.Helpers.SalesHelper
                         };
 
                         item.Saldo -= sobra;
+                        if (item.Client.SaldoVencido > 0)
+                        {
+                            item.Client.SaldoVencido -= abono.Monto;
+                        }
+                        item.Client.CreditoConsumido -= abono.Monto;
                         sobra = 0;
                         abonoList.Add(abono);
                     }
@@ -311,8 +318,15 @@ namespace Store.Helpers.SalesHelper
                                 s => s.Id == model.IdStore
                             )
                         };
+
                         item.Saldo = 0;
                         item.IsCanceled = true;
+                        if (item.Client.SaldoVencido > 0)
+                        {
+                            item.Client.SaldoVencido -= abono.Monto;
+                            item.Client.FacturasVencidas -= 1;
+                        }
+                        item.Client.CreditoConsumido -= abono.Monto;
                         sobra = 0;
                         abonoList.Add(abono);
                     }
@@ -334,6 +348,12 @@ namespace Store.Helpers.SalesHelper
                         sobra -= item.Saldo;
                         item.Saldo = 0;
                         item.IsCanceled = true;
+                        if (item.Client.SaldoVencido > 0)
+                        {
+                            item.Client.SaldoVencido -= abono.Monto;
+                            item.Client.FacturasVencidas -= 1;
+                        }
+                        item.Client.CreditoConsumido -= abono.Monto;
                     }
 
                     _context.Entry(item).State = EntityState.Modified;
@@ -379,11 +399,6 @@ namespace Store.Helpers.SalesHelper
                     _context.CountAsientosContables.Add(asientosContable);
                 }
             }
-
-            var client = await _context.Clients.FirstOrDefaultAsync(c => c.Id == model.IdClient);
-            client.CreditoConsumido -= model.Monto;
-            client.SaldoVencido -= model.Monto;
-            _context.Entry(client).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return abonoList;
         }
@@ -445,10 +460,10 @@ namespace Store.Helpers.SalesHelper
                 _context.Entry(existence).State = EntityState.Modified;
 
                 //Agregamos el Kardex de entrada al almacen destino
-                 Kardex kar = await _context.Kardex
-                        .Where(k => k.Product.Id == item.Product.Id && k.Almacen == item.Store)
-                        .OrderByDescending(k => k.Id)
-                        .FirstOrDefaultAsync();
+                Kardex kar = await _context.Kardex
+                    .Where(k => k.Product.Id == item.Product.Id && k.Almacen == item.Store)
+                    .OrderByDescending(k => k.Id)
+                    .FirstOrDefaultAsync();
 
                 int saldo = kar == null ? 0 : kar.Saldo;
 
@@ -470,7 +485,6 @@ namespace Store.Helpers.SalesHelper
             sale.IsAnulado = true;
             sale.FechaAnulacion = hoy;
             sale.AnulatedBy = user;
-            sale.Client.CreditoConsumido -= sale.MontoVenta;
 
             SaleAnulation saleAnulation =
                 new()
@@ -489,6 +503,7 @@ namespace Store.Helpers.SalesHelper
             {
                 sale.Client.ContadorCompras -= 1;
                 sale.Client.CreditoConsumido -= sale.MontoVenta;
+
                 if (hoy.Date < sale.FechaVencimiento.Date)
                 {
                     sale.Client.SaldoVencido -= sale.MontoVenta;
@@ -605,13 +620,12 @@ namespace Store.Helpers.SalesHelper
 
                     // Agregamos el Kardex de entrada al almacen destino
                     //Buscamos el ultimo reguistro de ese producto en el kardex
-                      Kardex kar = await _context.Kardex
+                    Kardex kar = await _context.Kardex
                         .Where(k => k.Product.Id == item.Product.Id && k.Almacen == item.Store)
                         .OrderByDescending(k => k.Id)
                         .FirstOrDefaultAsync();
 
-                     int saldo = kar == null ? 0 : kar.Saldo;
-
+                    int saldo = kar == null ? 0 : kar.Saldo;
 
                     //creamos el objeto kardex
                     Kardex kardex =
@@ -667,9 +681,9 @@ namespace Store.Helpers.SalesHelper
 
                     // Agregamos el Kardex de entrada al almacen destino
                     //Buscamos el ultimo reguistro de ese producto en el kardex
-                    
+
                     Kardex kar = await _context.Kardex
-                         .Where(k => k.Product.Id == item.Product.Id && k.Almacen == item.Store)
+                        .Where(k => k.Product.Id == item.Product.Id && k.Almacen == item.Store)
                         .OrderByDescending(k => k.Id)
                         .FirstOrDefaultAsync();
 
@@ -704,8 +718,7 @@ namespace Store.Helpers.SalesHelper
                 sale.Client.CreditoConsumido -= montoAnulado;
                 if (hoy.Date < sale.FechaVencimiento.Date)
                 {
-                    sale.Client.SaldoVencido -= sale.MontoVenta;
-                    sale.Client.FacturasVencidas -= 1;
+                    sale.Client.SaldoVencido -= montoAnulado;
                 }
             }
 
@@ -826,8 +839,7 @@ namespace Store.Helpers.SalesHelper
                 .Include(s => s.Client)
                 .FirstOrDefaultAsync(s => s.Id == model.IdSale);
             sale.Saldo -= model.Monto;
-            sale.Client.CreditoConsumido -= model.Monto;
-            sale.Client.SaldoVencido -= model.Monto;
+
             if (sale.Saldo == 0)
             {
                 sale.IsCanceled = true;
@@ -842,6 +854,13 @@ namespace Store.Helpers.SalesHelper
                     FechaAbono = DateTime.Now,
                     Store = sale.Store
                 };
+
+            if (sale.Client.SaldoVencido > 0)
+            {
+                sale.Client.SaldoVencido -= abono.Monto;
+            }
+            sale.Client.CreditoConsumido -= abono.Monto;
+
             _context.Entry(sale).State = EntityState.Modified;
             _context.Abonos.Add(abono);
 

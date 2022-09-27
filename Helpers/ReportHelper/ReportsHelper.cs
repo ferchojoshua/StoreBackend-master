@@ -452,7 +452,7 @@ namespace Store.Helpers.ReportHelper
                             s.Store.Id == model.StoreId
                             && s.FechaVenta >= fechaHoraDesde
                             && s.FechaVenta <= fechaHoraHasta
-                            && s.IsAnulado == false
+                    // && s.IsAnulado == false
                     )
                     .ToListAsync();
 
@@ -493,10 +493,8 @@ namespace Store.Helpers.ReportHelper
                 .Include(s => s.Client)
                 .Include(s => s.SaleDetails)
                 .Where(
-                    s =>
-                        s.FechaVenta >= fechaHoraDesde
-                        && s.FechaVenta <= fechaHoraHasta
-                        && s.IsAnulado == false
+                    s => s.FechaVenta >= fechaHoraDesde && s.FechaVenta <= fechaHoraHasta
+                // && s.IsAnulado == false
                 )
                 .ToListAsync();
 
