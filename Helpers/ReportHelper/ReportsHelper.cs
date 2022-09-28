@@ -24,6 +24,7 @@ namespace Store.Helpers.ReportHelper
                 {
                     result = await _context.Sales
                         .Include(s => s.Client)
+                        .Include(s => s.SaleDetails)
                         .Include(s => s.Store)
                         .Where(
                             s =>
@@ -38,6 +39,7 @@ namespace Store.Helpers.ReportHelper
                 {
                     result = await _context.Sales
                         .Include(s => s.Client)
+                        .Include(s => s.SaleDetails)
                         .Include(s => s.Store)
                         .Where(
                             s =>
@@ -53,6 +55,7 @@ namespace Store.Helpers.ReportHelper
                 {
                     result = await _context.Sales
                         .Include(s => s.Client)
+                        .Include(s => s.SaleDetails)
                         .Include(s => s.Store)
                         .Where(
                             s =>
@@ -71,6 +74,7 @@ namespace Store.Helpers.ReportHelper
                 {
                     result = await _context.Sales
                         .Include(s => s.Client)
+                        .Include(s => s.SaleDetails)
                         .Include(s => s.Store)
                         .Where(
                             s =>
@@ -87,6 +91,7 @@ namespace Store.Helpers.ReportHelper
                     result = await _context.Sales
                         .Include(s => s.Client)
                         .Include(s => s.Store)
+                        .Include(s => s.SaleDetails)
                         .Where(
                             s =>
                                 s.IsAnulado == false
@@ -102,6 +107,7 @@ namespace Store.Helpers.ReportHelper
                 {
                     result = await _context.Sales
                         .Include(s => s.Client)
+                        .Include(s => s.SaleDetails)
                         .Include(s => s.Store)
                         .Where(
                             s =>

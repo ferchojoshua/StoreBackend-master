@@ -110,3 +110,4 @@ select * from Kardex where ProductId = 3915 and AlmacenId = 3 and Concepto LIKE 
 select * from Kardex where ProductId = 5391 and AlmacenId = 4
 
 http://automoto.eastus.cloudapp.azure.com/automoto
+
