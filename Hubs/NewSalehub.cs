@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
 
-namespace StoreBackend.Hubs
+namespace Store.Hubs
 {
     public class NewSalehub : Hub
     {

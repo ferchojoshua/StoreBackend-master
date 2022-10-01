@@ -45,7 +45,7 @@ namespace Store.Controllers.API
             token = token["Bearer ".Length..].Trim();
             if (user.UserSession.UserToken != token)
             {
-                await _userHelper.LogoutAsync();
+                await _userHelper.LogoutAsync(user);
                 return Ok("eX01");
             }
             if (!await _userHelper.IsAutorized(user.Rol, "CONT VER"))
@@ -79,7 +79,7 @@ namespace Store.Controllers.API
             token = token["Bearer ".Length..].Trim();
             if (user.UserSession.UserToken != token)
             {
-                await _userHelper.LogoutAsync();
+                await _userHelper.LogoutAsync(user);
                 return Ok("eX01");
             }
             if (!await _userHelper.IsAutorized(user.Rol, "CONT VER"))
@@ -113,7 +113,7 @@ namespace Store.Controllers.API
             token = token["Bearer ".Length..].Trim();
             if (user.UserSession.UserToken != token)
             {
-                await _userHelper.LogoutAsync();
+                await _userHelper.LogoutAsync(user);
                 return Ok("eX01");
             }
             if (!await _userHelper.IsAutorized(user.Rol, "CONT VER"))
@@ -149,7 +149,7 @@ namespace Store.Controllers.API
             token = token["Bearer ".Length..].Trim();
             if (user.UserSession.UserToken != token)
             {
-                await _userHelper.LogoutAsync();
+                await _userHelper.LogoutAsync(user);
                 return Ok("eX01");
             }
             if (!await _userHelper.IsAutorized(user.Rol, "CONT VER"))
@@ -183,7 +183,7 @@ namespace Store.Controllers.API
             token = token["Bearer ".Length..].Trim();
             if (user.UserSession.UserToken != token)
             {
-                await _userHelper.LogoutAsync();
+                await _userHelper.LogoutAsync(user);
                 return Ok("eX01");
             }
             if (!await _userHelper.IsAutorized(user.Rol, "CONT VER"))
@@ -226,7 +226,7 @@ namespace Store.Controllers.API
             token = token["Bearer ".Length..].Trim();
             if (user.UserSession.UserToken != token)
             {
-                await _userHelper.LogoutAsync();
+                await _userHelper.LogoutAsync(user);
                 return Ok("eX01");
             }
 
@@ -267,7 +267,7 @@ namespace Store.Controllers.API
             token = token["Bearer ".Length..].Trim();
             if (user.UserSession.UserToken != token)
             {
-                await _userHelper.LogoutAsync();
+                await _userHelper.LogoutAsync(user);
                 return Ok("eX01");
             }
 
@@ -301,7 +301,7 @@ namespace Store.Controllers.API
             token = token["Bearer ".Length..].Trim();
             if (user.UserSession.UserToken != token)
             {
-                await _userHelper.LogoutAsync();
+                await _userHelper.LogoutAsync(user);
                 return Ok("eX01");
             }
 
@@ -339,7 +339,7 @@ namespace Store.Controllers.API
             token = token["Bearer ".Length..].Trim();
             if (user.UserSession.UserToken != token)
             {
-                await _userHelper.LogoutAsync();
+                await _userHelper.LogoutAsync(user);
                 return Ok("eX01");
             }
 
@@ -380,7 +380,7 @@ namespace Store.Controllers.API
             token = token["Bearer ".Length..].Trim();
             if (user.UserSession.UserToken != token)
             {
-                await _userHelper.LogoutAsync();
+                await _userHelper.LogoutAsync(user);
                 return Ok("eX01");
             }
 

@@ -151,211 +151,211 @@ namespace Store.Helpers.ProductHelper
             return kardexByStore;
         }
 
-        public async Task<ICollection<Producto>> SyncKardexExistencesAsync()
-        {
-            List<Producto> updatedProducts = new();
-            // var prodList = await _context.Productos.ToListAsync();
-            // var storeList = await _context.Almacen.ToListAsync();
-            // foreach (var prod in prodList)
-            // {
-            //     foreach (var store in storeList)
-            //     {
-            //         var entrada = await _context.ProductIns.Where(pi =>  == prod.Id && pi.)
-            //             .OrderBy(pi => pi.Id)
-            //             .ToListAsync();
+        // public Task<ICollection<Producto>> SyncKardexExistencesAsync()
+        // {
+        //     List<Producto> updatedProducts = new();
+        //     // var prodList = await _context.Productos.ToListAsync();
+        //     // var storeList = await _context.Almacen.ToListAsync();
+        //     // foreach (var prod in prodList)
+        //     // {
+        //     //     foreach (var store in storeList)
+        //     //     {
+        //     //         var entrada = await _context.ProductIns.Where(pi =>  == prod.Id && pi.)
+        //     //             .OrderBy(pi => pi.Id)
+        //     //             .ToListAsync();
 
-            //         var detalleVenta = await _context.SaleDetails
-            //             .OrderBy(sd => sd.Id)
-            //             .ToListAsync();
+        //     //         var detalleVenta = await _context.SaleDetails
+        //     //             .OrderBy(sd => sd.Id)
+        //     //             .ToListAsync();
 
-            //         var movmentDetails = await _context.ProductMovmentDetails
-            //             .OrderBy(pm => pm.Id)
-            //             .ToListAsync();
-            //     }
-            // }
+        //     //         var movmentDetails = await _context.ProductMovmentDetails
+        //     //             .OrderBy(pm => pm.Id)
+        //     //             .ToListAsync();
+        //     //     }
+        //     // }
 
-            // foreach (var item in prod)
-            // {
-            //     foreach (var store in storeList)
-            //     {
-            //         var movmentsList = await _context.ProductMovmentDetails
-            //             .Include(m => m.ProductMovment)
-            //             .Where(
-            //                 pm =>
-            //                     pm.Producto.Id == item.ProductId && pm.AlmacenDestinoId == store.Id
-            //             )
-            //             .OrderBy(m => m.Id)
-            //             .ToListAsync();
+        //     // foreach (var item in prod)
+        //     // {
+        //     //     foreach (var store in storeList)
+        //     //     {
+        //     //         var movmentsList = await _context.ProductMovmentDetails
+        //     //             .Include(m => m.ProductMovment)
+        //     //             .Where(
+        //     //                 pm =>
+        //     //                     pm.Producto.Id == item.ProductId && pm.AlmacenDestinoId == store.Id
+        //     //             )
+        //     //             .OrderBy(m => m.Id)
+        //     //             .ToListAsync();
 
-            //         var kardexMov = await _context.Kardex
-            //             .Where(
-            //                 k =>
-            //                     k.Almacen.Id == store.Id
-            //                     && k.Product.Id == item.ProductId
-            //                     && k.Concepto.Contains("TRASLADO DE INVENTARIO")
-            //             )
-            //             .OrderBy(k => k.Id)
-            //             .ToListAsync();
+        //     //         var kardexMov = await _context.Kardex
+        //     //             .Where(
+        //     //                 k =>
+        //     //                     k.Almacen.Id == store.Id
+        //     //                     && k.Product.Id == item.ProductId
+        //     //                     && k.Concepto.Contains("TRASLADO DE INVENTARIO")
+        //     //             )
+        //     //             .OrderBy(k => k.Id)
+        //     //             .ToListAsync();
 
-            //         bool isUpdated = false;
+        //     //         bool isUpdated = false;
 
-            //         for (int i = 0; i < movmentsList.Count; i++)
-            //         {
-            //             if (movmentsList.Count != 0)
-            //             {
-            //                 var kardex = await _context.Kardex
-            //                     .Where(
-            //                         k =>
-            //                             k.Almacen.Id == store.Id
-            //                             && k.Product.Id == item.ProductId
-            //                             && k.Concepto.Contains("TRASLADO DE INVENTARIO")
-            //                             && k.Fecha.Date == movmentsList[i].ProductMovment.Fecha.Date
-            //                             && k.Entradas != 0
-            //                     )
-            //                     .FirstOrDefaultAsync();
-            //                 if (movmentsList[i].Cantidad != kardex.Entradas)
-            //                 {
-            //                     if (movmentsList.Count == kardexMov.Count)
-            //                     {
-            //                         if (kardexMov[i].Salidas == 0)
-            //                         {
-            //                             kardexMov[i].Entradas = movmentsList[i].Cantidad;
-            //                             _context.Entry(kardexMov[i]).State = EntityState.Modified;
-            //                             await _context.SaveChangesAsync();
-            //                             updatedProducts.Add(kardexMov[i].Product);
-            //                             isUpdated = true;
-            //                         }
-            //                         if (isUpdated)
-            //                         {
-            //                             int entrada = 0;
-            //                             int salida = 0;
-            //                             int saldo = 0;
+        //     //         for (int i = 0; i < movmentsList.Count; i++)
+        //     //         {
+        //     //             if (movmentsList.Count != 0)
+        //     //             {
+        //     //                 var kardex = await _context.Kardex
+        //     //                     .Where(
+        //     //                         k =>
+        //     //                             k.Almacen.Id == store.Id
+        //     //                             && k.Product.Id == item.ProductId
+        //     //                             && k.Concepto.Contains("TRASLADO DE INVENTARIO")
+        //     //                             && k.Fecha.Date == movmentsList[i].ProductMovment.Fecha.Date
+        //     //                             && k.Entradas != 0
+        //     //                     )
+        //     //                     .FirstOrDefaultAsync();
+        //     //                 if (movmentsList[i].Cantidad != kardex.Entradas)
+        //     //                 {
+        //     //                     if (movmentsList.Count == kardexMov.Count)
+        //     //                     {
+        //     //                         if (kardexMov[i].Salidas == 0)
+        //     //                         {
+        //     //                             kardexMov[i].Entradas = movmentsList[i].Cantidad;
+        //     //                             _context.Entry(kardexMov[i]).State = EntityState.Modified;
+        //     //                             await _context.SaveChangesAsync();
+        //     //                             updatedProducts.Add(kardexMov[i].Product);
+        //     //                             isUpdated = true;
+        //     //                         }
+        //     //                         if (isUpdated)
+        //     //                         {
+        //     //                             int entrada = 0;
+        //     //                             int salida = 0;
+        //     //                             int saldo = 0;
 
-            //                             var reparar = await _context.Kardex
-            //                                 .Where(
-            //                                     k =>
-            //                                         k.Almacen.Id == store.Id
-            //                                         && k.Product.Id == item.ProductId
-            //                                 )
-            //                                 .ToListAsync();
-            //                             foreach (var mov in reparar)
-            //                             {
-            //                                 int saldoMov = 0;
-            //                                 entrada = mov.Entradas;
-            //                                 salida = mov.Salidas;
-            //                                 saldoMov = mov.Saldo;
-            //                                 saldo += entrada - salida;
-            //                                 if (saldo != saldoMov)
-            //                                 {
-            //                                     mov.Saldo = saldo;
-            //                                     _context.Entry(mov).State = EntityState.Modified;
-            //                                     await _context.SaveChangesAsync();
-            //                                 }
-            //                             }
-            //                         }
-            //                     }
-            //                     else
-            //                     {
-            //                         if (kardex.Salidas == 0)
-            //                         {
-            //                             kardex.Entradas = movmentsList[i].Cantidad;
-            //                             _context.Entry(kardex).State = EntityState.Modified;
-            //                             await _context.SaveChangesAsync();
-            //                             updatedProducts.Add(kardex.Product);
-            //                             isUpdated = true;
-            //                         }
-            //                         if (isUpdated)
-            //                         {
-            //                             int entrada = 0;
-            //                             int salida = 0;
-            //                             int saldo = 0;
+        //     //                             var reparar = await _context.Kardex
+        //     //                                 .Where(
+        //     //                                     k =>
+        //     //                                         k.Almacen.Id == store.Id
+        //     //                                         && k.Product.Id == item.ProductId
+        //     //                                 )
+        //     //                                 .ToListAsync();
+        //     //                             foreach (var mov in reparar)
+        //     //                             {
+        //     //                                 int saldoMov = 0;
+        //     //                                 entrada = mov.Entradas;
+        //     //                                 salida = mov.Salidas;
+        //     //                                 saldoMov = mov.Saldo;
+        //     //                                 saldo += entrada - salida;
+        //     //                                 if (saldo != saldoMov)
+        //     //                                 {
+        //     //                                     mov.Saldo = saldo;
+        //     //                                     _context.Entry(mov).State = EntityState.Modified;
+        //     //                                     await _context.SaveChangesAsync();
+        //     //                                 }
+        //     //                             }
+        //     //                         }
+        //     //                     }
+        //     //                     else
+        //     //                     {
+        //     //                         if (kardex.Salidas == 0)
+        //     //                         {
+        //     //                             kardex.Entradas = movmentsList[i].Cantidad;
+        //     //                             _context.Entry(kardex).State = EntityState.Modified;
+        //     //                             await _context.SaveChangesAsync();
+        //     //                             updatedProducts.Add(kardex.Product);
+        //     //                             isUpdated = true;
+        //     //                         }
+        //     //                         if (isUpdated)
+        //     //                         {
+        //     //                             int entrada = 0;
+        //     //                             int salida = 0;
+        //     //                             int saldo = 0;
 
-            //                             var reparar = await _context.Kardex
-            //                                 .Where(
-            //                                     k =>
-            //                                         k.Almacen.Id == store.Id
-            //                                         && k.Product.Id == item.ProductId
-            //                                 )
-            //                                 .ToListAsync();
-            //                             foreach (var mov in reparar)
-            //                             {
-            //                                 int saldoMov = 0;
-            //                                 entrada = mov.Entradas;
-            //                                 salida = mov.Salidas;
-            //                                 saldoMov = mov.Saldo;
-            //                                 saldo += entrada - salida;
-            //                                 if (saldo != saldoMov)
-            //                                 {
-            //                                     mov.Saldo = saldo;
-            //                                     _context.Entry(mov).State = EntityState.Modified;
-            //                                     await _context.SaveChangesAsync();
-            //                                 }
-            //                             }
-            //                         }
-            //                     }
-            //                 }
-            //             }
-            //         }
+        //     //                             var reparar = await _context.Kardex
+        //     //                                 .Where(
+        //     //                                     k =>
+        //     //                                         k.Almacen.Id == store.Id
+        //     //                                         && k.Product.Id == item.ProductId
+        //     //                                 )
+        //     //                                 .ToListAsync();
+        //     //                             foreach (var mov in reparar)
+        //     //                             {
+        //     //                                 int saldoMov = 0;
+        //     //                                 entrada = mov.Entradas;
+        //     //                                 salida = mov.Salidas;
+        //     //                                 saldoMov = mov.Saldo;
+        //     //                                 saldo += entrada - salida;
+        //     //                                 if (saldo != saldoMov)
+        //     //                                 {
+        //     //                                     mov.Saldo = saldo;
+        //     //                                     _context.Entry(mov).State = EntityState.Modified;
+        //     //                                     await _context.SaveChangesAsync();
+        //     //                                 }
+        //     //                             }
+        //     //                         }
+        //     //                     }
+        //     //                 }
+        //     //             }
+        //     //         }
 
-            //         // foreach (var movmen in movmentsList)
-            //         // {
-            //         //     var kardexMov = await _context.Kardex
-            //         //         .Where(k => k.Almacen.Id == store.Id && k.Product.Id == item.ProductId)
-            //         //         .ToListAsync();
-            //         // if (kardexMov != null)
-            //         // {
-            //         //     foreach (var mov in kardexMov)
-            //         //     {
-            //         //         if (mov.Concepto.Contains("TRASLADO DE INVENTARIO"))
-            //         //         {
-            //         //             int entrada = 0;
-            //         //             int salida = 0;
-            //         //             int saldo = 0;
+        //     //         // foreach (var movmen in movmentsList)
+        //     //         // {
+        //     //         //     var kardexMov = await _context.Kardex
+        //     //         //         .Where(k => k.Almacen.Id == store.Id && k.Product.Id == item.ProductId)
+        //     //         //         .ToListAsync();
+        //     //         // if (kardexMov != null)
+        //     //         // {
+        //     //         //     foreach (var mov in kardexMov)
+        //     //         //     {
+        //     //         //         if (mov.Concepto.Contains("TRASLADO DE INVENTARIO"))
+        //     //         //         {
+        //     //         //             int entrada = 0;
+        //     //         //             int salida = 0;
+        //     //         //             int saldo = 0;
 
-            //         //             int iO = Math.Abs(mov.Entradas - mov.Salidas);
-            //         //             if (movmen.Cantidad != iO)
-            //         //             {
-            //         //                 int saldoMov = 0;
-            //         //                 entrada = movmen.Cantidad;
-            //         //                 salida = mov.Salidas;
-            //         //                 saldoMov = mov.Saldo;
-            //         //                 saldo += entrada - salida;
-            //         //                 break;
-            //         //             }
-            //         //             else
-            //         //             {
-            //         //                 continue;
-            //         //             }
-            //         //         }
-            //         //     }
-            //         // }
-            //         // }
-            //         // int entrada = 0;
-            //         // int salida = 0;
-            //         // int saldo = 0;
+        //     //         //             int iO = Math.Abs(mov.Entradas - mov.Salidas);
+        //     //         //             if (movmen.Cantidad != iO)
+        //     //         //             {
+        //     //         //                 int saldoMov = 0;
+        //     //         //                 entrada = movmen.Cantidad;
+        //     //         //                 salida = mov.Salidas;
+        //     //         //                 saldoMov = mov.Saldo;
+        //     //         //                 saldo += entrada - salida;
+        //     //         //                 break;
+        //     //         //             }
+        //     //         //             else
+        //     //         //             {
+        //     //         //                 continue;
+        //     //         //             }
+        //     //         //         }
+        //     //         //     }
+        //     //         // }
+        //     //         // }
+        //     //         // int entrada = 0;
+        //     //         // int salida = 0;
+        //     //         // int saldo = 0;
 
-            //         // if (kardexMov != null)
-            //         // {
-            //         //     foreach (var mov in kardexMov)
-            //         //     {
-            //         //         int saldoMov = 0;
-            //         //         entrada = mov.Entradas;
-            //         //         salida = mov.Salidas;
-            //         //         saldoMov = mov.Saldo;
-            //         //         saldo += entrada - salida;
-            //         //         if (saldo != saldoMov)
-            //         //         {
-            //         //             mov.Saldo = saldo;
-            //         //             _context.Entry(mov).State = EntityState.Modified;
-            //         //             await _context.SaveChangesAsync();
-            //         //         }
-            //         //     }
-            //         // }
-            //     }
-            // }
+        //     //         // if (kardexMov != null)
+        //     //         // {
+        //     //         //     foreach (var mov in kardexMov)
+        //     //         //     {
+        //     //         //         int saldoMov = 0;
+        //     //         //         entrada = mov.Entradas;
+        //     //         //         salida = mov.Salidas;
+        //     //         //         saldoMov = mov.Saldo;
+        //     //         //         saldo += entrada - salida;
+        //     //         //         if (saldo != saldoMov)
+        //     //         //         {
+        //     //         //             mov.Saldo = saldo;
+        //     //         //             _context.Entry(mov).State = EntityState.Modified;
+        //     //         //             await _context.SaveChangesAsync();
+        //     //         //         }
+        //     //         //     }
+        //     //         // }
+        //     //     }
+        //     // }
 
-            return updatedProducts;
-        }
+        //     // return updatedProducts;
+        // }
 
         public async Task<Producto> UpdateProductAsync(UpdateProductViewModel model)
         {

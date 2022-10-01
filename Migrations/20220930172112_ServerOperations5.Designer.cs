@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Store.Data;
@@ -12,9 +13,10 @@ using Store.Data;
 namespace Store.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220930172112_ServerOperations5")]
+    partial class ServerOperations5
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1205,9 +1207,6 @@ namespace Store.Migrations
 
                     b.Property<DateTime>("EndOperations")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsServerAccess")
-                        .HasColumnType("bit");
 
                     b.Property<string>("RoleName")
                         .HasColumnType("nvarchar(450)");

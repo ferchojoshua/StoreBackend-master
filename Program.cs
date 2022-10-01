@@ -16,9 +16,11 @@ using StoreBackend.Helpers.ContabilidadService;
 using Store.Helpers.AsientoContHelper;
 using Store.Hubs;
 using Store.Helpers.ReportHelper;
-using StoreBackend.Hubs;
 using Store.Helpers.FacturacionHelper;
 using Store.Helpers.StoreService;
+using Store;
+using Store.Helpers.Worker;
+using Store.Helpers.ServerHelper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,14 +38,14 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development
                 builder.Configuration.GetConnectionString("DevConnetion"),
                 x => x.UseNetTopologySuite()
             )
-            // opt.UseSqlServer(
-            //     builder.Configuration.GetConnectionString("MigConnetion"),
-            //     x => x.UseNetTopologySuite()
-            // )
-            // opt.UseSqlServer(
-            //     builder.Configuration.GetConnectionString("LocalConn"),
-            //     x => x.UseNetTopologySuite()
-            // )
+    // opt.UseSqlServer(
+    //     builder.Configuration.GetConnectionString("MigConnetion"),
+    //     x => x.UseNetTopologySuite()
+    // )
+    // opt.UseSqlServer(
+    //     builder.Configuration.GetConnectionString("LocalConn"),
+    //     x => x.UseNetTopologySuite()
+    // )
     );
 }
 else
@@ -106,6 +108,9 @@ builder.Services.AddScoped<IAsientoContHelper, AsientoContHelper>();
 builder.Services.AddScoped<IReportsHelper, ReportsHelper>();
 builder.Services.AddScoped<IFacturationHelper, FacturationHelper>();
 builder.Services.AddScoped<IStoreHelper, StoreHelper>();
+builder.Services.AddScoped<IServerService, ServerService>();
+
+builder.Services.AddHostedService<Worker>().AddSingleton<IWorkerService, WorkerService>();
 
 var MyAllowSpecificOrigins = "Clients";
 builder.Services.AddCors(options =>
@@ -124,8 +129,14 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddCors();
-
 var app = builder.Build();
+
+// using (var serviceScope = app.Services.CreateAsyncScope())
+// {
+//     var services = serviceScope.ServiceProvider;
+//     var myDependency = services.GetRequiredService<IServerService>();
+//     myDependency.Config();
+// }
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -143,6 +154,7 @@ app.MapHub<NotificationHub>("notificationHub");
 app.MapHub<NewSalehub>("newSaleHub");
 app.MapHub<NewFacturaHub>("newFactHub");
 app.MapHub<UpdateHub>("updateClientHub");
+app.MapHub<ServerHub>("serverHub");
 
 app.UseCors(MyAllowSpecificOrigins);
 

@@ -66,6 +66,7 @@ namespace Store.Controllers.API
                             user.UserSession.ExpirationDateToken = results.expiration;
                             user.UserSession.UserBrowser = model.UserBrowser;
                             user.UserSession.UserSO = model.UserSO;
+                            user.IsActiveSession = true;
                             await _userHelper.UpdateUserAsync(user);
                             return Ok(results);
                         }
@@ -91,7 +92,7 @@ namespace Store.Controllers.API
                 await _userHelper.LogoutUserAsync(user);
                 return Ok();
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex);
             }
@@ -119,7 +120,7 @@ namespace Store.Controllers.API
                 }
                 if (user.UserSession.UserToken != token)
                 {
-                    await _userHelper.LogoutAsync();
+                    await _userHelper.LogoutAsync(user);
                     return Ok("eX01");
                 }
                 return Ok(user);
@@ -152,7 +153,7 @@ namespace Store.Controllers.API
                 }
                 if (user.UserSession.UserToken != token)
                 {
-                    await _userHelper.LogoutAsync();
+                    await _userHelper.LogoutAsync(user);
                     return Ok("eX01");
                 }
                 return Ok(await _userHelper.ChangeThemeAsync(user));
@@ -168,12 +169,18 @@ namespace Store.Controllers.API
         [Route("Logout")]
         public async Task<IActionResult> Logout()
         {
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
             try
             {
-                await _userHelper.LogoutAsync();
+                User user = await _userHelper.GetUserByEmailAsync(email);
+                await _userHelper.LogoutAsync(user);
                 return Ok();
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -200,7 +207,7 @@ namespace Store.Controllers.API
             token = token["Bearer ".Length..].Trim();
             if (user.UserSession.UserToken != token)
             {
-                await _userHelper.LogoutAsync();
+                await _userHelper.LogoutAsync(user);
                 return Ok("eX01");
             }
             try
@@ -210,7 +217,7 @@ namespace Store.Controllers.API
                 await _userHelper.UpdateUserAsync(user);
                 return Ok(user);
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -237,7 +244,7 @@ namespace Store.Controllers.API
             token = token["Bearer ".Length..].Trim();
             if (user.UserSession.UserToken != token)
             {
-                await _userHelper.LogoutAsync();
+                await _userHelper.LogoutAsync(user);
                 return Ok("eX01");
             }
             try
@@ -248,6 +255,42 @@ namespace Store.Controllers.API
                 user.LastName = model.LastName;
                 user.SecondLastName = model.SecondLastName;
                 user.Address = model.Address;
+                await _userHelper.UpdateUserAsync(user);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost]
+        [Route("OnCloseNavigator")]
+        public async Task<IActionResult> OnCloseNavigator()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user == null)
+            {
+                return NotFound("01");
+            }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync(user);
+                return Ok("eX01");
+            }
+            try
+            {
+                user.IsActiveSession = false;
                 await _userHelper.UpdateUserAsync(user);
                 return Ok();
             }

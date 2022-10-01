@@ -39,7 +39,7 @@ namespace Store.Controllers.API
             token = token["Bearer ".Length..].Trim();
             if (user.UserSession.UserToken != token)
             {
-                await _userHelper.LogoutAsync();
+                await _userHelper.LogoutAsync(user);
                 return Ok("eX01");
             }
             if (!await _userHelper.IsAutorized(user.Rol, "USER VER"))
@@ -66,7 +66,7 @@ namespace Store.Controllers.API
             token = token["Bearer ".Length..].Trim();
             if (user.UserSession.UserToken != token)
             {
-                await _userHelper.LogoutAsync();
+                await _userHelper.LogoutAsync(user);
                 return Ok("eX01");
             }
             if (!await _userHelper.IsAutorized(user.Rol, "USER VER"))
@@ -93,7 +93,7 @@ namespace Store.Controllers.API
             token = token["Bearer ".Length..].Trim();
             if (user.UserSession.UserToken != token)
             {
-                await _userHelper.LogoutAsync();
+                await _userHelper.LogoutAsync(user);
                 return Ok("eX01");
             }
             if (!await _userHelper.IsAutorized(user.Rol, "USER VER"))
@@ -125,7 +125,7 @@ namespace Store.Controllers.API
             token = token["Bearer ".Length..].Trim();
             if (usr.UserSession.UserToken != token)
             {
-                await _userHelper.LogoutAsync();
+                await _userHelper.LogoutAsync(usr);
                 return Ok("eX01");
             }
             if (!await _userHelper.IsAutorized(usr.Rol, "USER CREATE"))
@@ -199,7 +199,7 @@ namespace Store.Controllers.API
             token = token["Bearer ".Length..].Trim();
             if (usr.UserSession.UserToken != token)
             {
-                await _userHelper.LogoutAsync();
+                await _userHelper.LogoutAsync(usr);
                 return Ok("eX01");
             }
             if (!await _userHelper.IsAutorized(usr.Rol, "USER UPDATE"))
@@ -257,7 +257,7 @@ namespace Store.Controllers.API
             token = token["Bearer ".Length..].Trim();
             if (usr.UserSession.UserToken != token)
             {
-                await _userHelper.LogoutAsync();
+                await _userHelper.LogoutAsync(usr);
                 return Ok("eX01");
             }
             if (!await _userHelper.IsAutorized(usr.Rol, "USER DELETE"))
@@ -301,7 +301,7 @@ namespace Store.Controllers.API
             token = token["Bearer ".Length..].Trim();
             if (usr.UserSession.UserToken != token)
             {
-                await _userHelper.LogoutAsync();
+                await _userHelper.LogoutAsync(usr);
                 return Ok("eX01");
             }
             if (!await _userHelper.IsAutorized(usr.Rol, "USER UPDATE"))

@@ -16,6 +16,7 @@ namespace Store.Entities
         public Rol Rol { get; set; }
         public bool IsActive { get; set; }
         public bool IsDarkMode { get; set; }
+        public bool IsActiveSession { get; set; }
         public bool IsDefaultPass { get; set; }
         public UserSession UserSession { get; set; }
         public ICollection<Almacen> StoreAccess { get; set; }

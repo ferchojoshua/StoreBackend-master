@@ -43,7 +43,7 @@ namespace Store.Controllers.API
             token = token["Bearer ".Length..].Trim();
             if (user.UserSession.UserToken != token)
             {
-                await _userHelper.LogoutAsync();
+                await _userHelper.LogoutAsync(user);
                 return Ok("eX01");
             }
             return await _context.Providers.OrderBy(p => p.Nombre).ToListAsync();
@@ -69,7 +69,7 @@ namespace Store.Controllers.API
             token = token["Bearer ".Length..].Trim();
             if (user.UserSession.UserToken != token)
             {
-                await _userHelper.LogoutAsync();
+                await _userHelper.LogoutAsync(user);
                 return Ok("eX01");
             }
             Provider provider = await _context.Providers.FindAsync(id);
@@ -106,7 +106,7 @@ namespace Store.Controllers.API
             token = token["Bearer ".Length..].Trim();
             if (user.UserSession.UserToken != token)
             {
-                await _userHelper.LogoutAsync();
+                await _userHelper.LogoutAsync(user);
                 return Ok("eX01");
             }
             _context.Entry(provider).State = EntityState.Modified;
@@ -153,7 +153,7 @@ namespace Store.Controllers.API
             token = token["Bearer ".Length..].Trim();
             if (user.UserSession.UserToken != token)
             {
-                await _userHelper.LogoutAsync();
+                await _userHelper.LogoutAsync(user);
                 return Ok("eX01");
             }
             _context.Providers.Add(provider);
@@ -182,7 +182,7 @@ namespace Store.Controllers.API
             token = token["Bearer ".Length..].Trim();
             if (user.UserSession.UserToken != token)
             {
-                await _userHelper.LogoutAsync();
+                await _userHelper.LogoutAsync(user);
                 return Ok("eX01");
             }
             Provider provider = await _context.Providers.FindAsync(id);

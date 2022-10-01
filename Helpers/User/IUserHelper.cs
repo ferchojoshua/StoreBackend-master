@@ -24,7 +24,7 @@ namespace Store.Helpers.User
 
         Task<SignInResult> LoginAsync(LoginViewModel model);
 
-        Task LogoutAsync();
+        Task LogoutAsync(Entities.User user );
 
         Task LogoutUserAsync(Entities.User user);
 

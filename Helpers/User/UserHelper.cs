@@ -77,7 +77,7 @@ namespace Store.Helpers.User
                 .FirstOrDefaultAsync(u => u.Email == email);
             if (user.UserSession == null)
             {
-                await LogoutAsync();
+                await LogoutAsync(user);
                 UserSession us =
                     new()
                     {
@@ -87,9 +87,11 @@ namespace Store.Helpers.User
                     };
                 user.UserSession = us;
                 await UpdateUserAsync(user);
-                await LogoutAsync();
+                await LogoutAsync(user);
                 return user;
             }
+            user.IsActiveSession = true;
+            await UpdateUserAsync(user);
             return user;
         }
 
@@ -125,9 +127,10 @@ namespace Store.Helpers.User
             );
         }
 
-        public async Task LogoutAsync()
+        public async Task LogoutAsync(Entities.User user)
         {
-            await _signInManager.SignOutAsync();
+            user.IsActiveSession = false;
+            await UpdateUserAsync(user);
         }
 
         public async Task LogoutUserAsync(Entities.User user)
@@ -226,7 +229,14 @@ namespace Store.Helpers.User
                     new() { Description = item.Description, IsEnable = item.IsEnable };
                 permisos.Add(newPermiso);
             }
-            Rol newRol = new() { RoleName = model.RoleName, Permissions = permisos };
+            Rol newRol =
+                new()
+                {
+                    RoleName = model.RoleName,
+                    Permissions = permisos,
+                    StartOperations = model.StartOperations,
+                    EndOperations = model.EndOperations
+                };
             _context.Add(newRol);
             await _context.SaveChangesAsync();
             return newRol;
@@ -240,6 +250,8 @@ namespace Store.Helpers.User
                 return rol;
             }
             rol.RoleName = model.RoleName;
+            rol.StartOperations = model.StartOperations;
+            rol.EndOperations = model.EndOperations;
             foreach (var item in model.Permissions)
             {
                 Permission permiso = await _context.Permissions
