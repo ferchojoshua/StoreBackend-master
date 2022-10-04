@@ -210,86 +210,182 @@ namespace Store.Helpers.ReportHelper
             {
                 if (model.ClientId != 0)
                 {
-                    sales = await _context.Sales
-                        .Include(s => s.Client)
-                        .Include(s => s.Store)
-                        .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado == false))
-                        .ThenInclude(sd => sd.Product)
-                        .Include(s => s.SaleDetails)
-                        .ThenInclude(sd => sd.Product.TipoNegocio)
-                        .Include(s => s.SaleDetails)
-                        .ThenInclude(sd => sd.Product.Familia)
-                        .Where(
-                            s =>
-                                s.IsAnulado == false
-                                && s.FechaVenta.Date >= model.Desde.Date
-                                && s.FechaVenta.Date <= model.Hasta.Date
-                                && s.Store.Id == model.StoreId
-                                && s.Client.Id == model.ClientId
-                        )
-                        .ToListAsync();
+                    if (model.IncludeUncanceledSales)
+                    {
+                        sales = await _context.Sales
+                            .Include(s => s.Client)
+                            .Include(s => s.Store)
+                            .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado == false))
+                            .ThenInclude(sd => sd.Product)
+                            .Include(s => s.SaleDetails)
+                            .ThenInclude(sd => sd.Product.TipoNegocio)
+                            .Include(s => s.SaleDetails)
+                            .ThenInclude(sd => sd.Product.Familia)
+                            .Where(
+                                s =>
+                                    s.IsAnulado == false
+                                    && s.FechaVenta.Date >= model.Desde.Date
+                                    && s.FechaVenta.Date <= model.Hasta.Date
+                                    && s.Store.Id == model.StoreId
+                                    && s.Client.Id == model.ClientId
+                            )
+                            .ToListAsync();
+                    }
+                    else
+                    {
+                        sales = await _context.Sales
+                            .Include(s => s.Client)
+                            .Include(s => s.Store)
+                            .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado == false))
+                            .ThenInclude(sd => sd.Product)
+                            .Include(s => s.SaleDetails)
+                            .ThenInclude(sd => sd.Product.TipoNegocio)
+                            .Include(s => s.SaleDetails)
+                            .ThenInclude(sd => sd.Product.Familia)
+                            .Where(
+                                s =>
+                                    s.IsAnulado == false
+                                    && s.FechaVenta.Date >= model.Desde.Date
+                                    && s.FechaVenta.Date <= model.Hasta.Date
+                                    && s.Store.Id == model.StoreId
+                                    && s.Client.Id == model.ClientId
+                                    && s.IsCanceled
+                            )
+                            .ToListAsync();
+                    }
                 }
                 else
                 {
-                    sales = await _context.Sales
-                        .Include(s => s.Client)
-                        .Include(s => s.Store)
-                        .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado == false))
-                        .ThenInclude(sd => sd.Product)
-                        .Include(s => s.SaleDetails)
-                        .ThenInclude(sd => sd.Product.TipoNegocio)
-                        .Include(s => s.SaleDetails)
-                        .ThenInclude(sd => sd.Product.Familia)
-                        .Where(
-                            s =>
-                                s.IsAnulado == false
-                                && s.FechaVenta.Date >= model.Desde.Date
-                                && s.FechaVenta.Date <= model.Hasta.Date
-                                && s.Store.Id == model.StoreId
-                        )
-                        .ToListAsync();
+                    if (model.IncludeUncanceledSales)
+                    {
+                        sales = await _context.Sales
+                            .Include(s => s.Client)
+                            .Include(s => s.Store)
+                            .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado == false))
+                            .ThenInclude(sd => sd.Product)
+                            .Include(s => s.SaleDetails)
+                            .ThenInclude(sd => sd.Product.TipoNegocio)
+                            .Include(s => s.SaleDetails)
+                            .ThenInclude(sd => sd.Product.Familia)
+                            .Where(
+                                s =>
+                                    s.IsAnulado == false
+                                    && s.FechaVenta.Date >= model.Desde.Date
+                                    && s.FechaVenta.Date <= model.Hasta.Date
+                                    && s.Store.Id == model.StoreId
+                            )
+                            .ToListAsync();
+                    }
+                    else
+                    {
+                        sales = await _context.Sales
+                            .Include(s => s.Client)
+                            .Include(s => s.Store)
+                            .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado == false))
+                            .ThenInclude(sd => sd.Product)
+                            .Include(s => s.SaleDetails)
+                            .ThenInclude(sd => sd.Product.TipoNegocio)
+                            .Include(s => s.SaleDetails)
+                            .ThenInclude(sd => sd.Product.Familia)
+                            .Where(
+                                s =>
+                                    s.IsAnulado == false
+                                    && s.FechaVenta.Date >= model.Desde.Date
+                                    && s.FechaVenta.Date <= model.Hasta.Date
+                                    && s.Store.Id == model.StoreId
+                                    && s.IsCanceled
+                            )
+                            .ToListAsync();
+                    }
                 }
             }
             else
             {
                 if (model.ClientId != 0)
                 {
-                    sales = await _context.Sales
-                        .Include(s => s.Client)
-                        .Include(s => s.Store)
-                        .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado == false))
-                        .ThenInclude(sd => sd.Product)
-                        .Include(s => s.SaleDetails)
-                        .ThenInclude(sd => sd.Product.TipoNegocio)
-                        .Include(s => s.SaleDetails)
-                        .ThenInclude(sd => sd.Product.Familia)
-                        .Where(
-                            s =>
-                                s.IsAnulado == false
-                                && s.FechaVenta.Date >= model.Desde.Date
-                                && s.FechaVenta.Date <= model.Hasta.Date
-                                && s.Client.Id == model.ClientId
-                        )
-                        .ToListAsync();
+                    if (model.IncludeUncanceledSales)
+                    {
+                        sales = await _context.Sales
+                            .Include(s => s.Client)
+                            .Include(s => s.Store)
+                            .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado == false))
+                            .ThenInclude(sd => sd.Product)
+                            .Include(s => s.SaleDetails)
+                            .ThenInclude(sd => sd.Product.TipoNegocio)
+                            .Include(s => s.SaleDetails)
+                            .ThenInclude(sd => sd.Product.Familia)
+                            .Where(
+                                s =>
+                                    s.IsAnulado == false
+                                    && s.FechaVenta.Date >= model.Desde.Date
+                                    && s.FechaVenta.Date <= model.Hasta.Date
+                                    && s.Client.Id == model.ClientId
+                            )
+                            .ToListAsync();
+                    }
+                    else
+                    {
+                        sales = await _context.Sales
+                            .Include(s => s.Client)
+                            .Include(s => s.Store)
+                            .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado == false))
+                            .ThenInclude(sd => sd.Product)
+                            .Include(s => s.SaleDetails)
+                            .ThenInclude(sd => sd.Product.TipoNegocio)
+                            .Include(s => s.SaleDetails)
+                            .ThenInclude(sd => sd.Product.Familia)
+                            .Where(
+                                s =>
+                                    s.IsAnulado == false
+                                    && s.FechaVenta.Date >= model.Desde.Date
+                                    && s.FechaVenta.Date <= model.Hasta.Date
+                                    && s.Client.Id == model.ClientId
+                                    && s.IsCanceled
+                            )
+                            .ToListAsync();
+                    }
                 }
                 else
                 {
-                    sales = await _context.Sales
-                        .Include(s => s.Client)
-                        .Include(s => s.Store)
-                        .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado == false))
-                        .ThenInclude(sd => sd.Product)
-                        .Include(s => s.SaleDetails)
-                        .ThenInclude(sd => sd.Product.TipoNegocio)
-                        .Include(s => s.SaleDetails)
-                        .ThenInclude(sd => sd.Product.Familia)
-                        .Where(
-                            s =>
-                                s.IsAnulado == false
-                                && s.FechaVenta.Date >= model.Desde.Date
-                                && s.FechaVenta.Date <= model.Hasta.Date
-                        )
-                        .ToListAsync();
+                    if (model.IncludeUncanceledSales)
+                    {
+                        sales = await _context.Sales
+                            .Include(s => s.Client)
+                            .Include(s => s.Store)
+                            .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado == false))
+                            .ThenInclude(sd => sd.Product)
+                            .Include(s => s.SaleDetails)
+                            .ThenInclude(sd => sd.Product.TipoNegocio)
+                            .Include(s => s.SaleDetails)
+                            .ThenInclude(sd => sd.Product.Familia)
+                            .Where(
+                                s =>
+                                    s.IsAnulado == false
+                                    && s.FechaVenta.Date >= model.Desde.Date
+                                    && s.FechaVenta.Date <= model.Hasta.Date
+                            )
+                            .ToListAsync();
+                    }
+                    else
+                    {
+                        sales = await _context.Sales
+                            .Include(s => s.Client)
+                            .Include(s => s.Store)
+                            .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado == false))
+                            .ThenInclude(sd => sd.Product)
+                            .Include(s => s.SaleDetails)
+                            .ThenInclude(sd => sd.Product.TipoNegocio)
+                            .Include(s => s.SaleDetails)
+                            .ThenInclude(sd => sd.Product.Familia)
+                            .Where(
+                                s =>
+                                    s.IsAnulado == false
+                                    && s.FechaVenta.Date >= model.Desde.Date
+                                    && s.FechaVenta.Date <= model.Hasta.Date
+                                    && s.IsCanceled
+                            )
+                            .ToListAsync();
+                    }
                 }
             }
 
@@ -735,6 +831,41 @@ namespace Store.Helpers.ReportHelper
                 )
                 .ToListAsync();
             return ingresos;
+        }
+
+        public async Task<ICollection<ProductIn>> ReportCompras(ComprasViewModel model)
+        {
+            if (model.ContadoCompras && model.CreditCompras)
+            {
+                return await _context.ProductIns
+                    .Include(pi => pi.Provider)
+                    .Where(pi => pi.FechaIngreso >= model.Desde && pi.FechaIngreso <= model.Hasta)
+                    .ToListAsync();
+            }
+            else if (model.ContadoCompras && model.CreditCompras == false)
+            {
+                return await _context.ProductIns
+                    .Include(pi => pi.Provider)
+                    .Where(
+                        pi =>
+                            pi.FechaIngreso >= model.Desde
+                            && pi.FechaIngreso <= model.Hasta
+                            && pi.IsCanceled == true
+                    )
+                    .ToListAsync();
+            }
+            else
+            {
+                return await _context.ProductIns
+                    .Include(pi => pi.Provider)
+                    .Where(
+                        pi =>
+                            pi.FechaIngreso >= model.Desde
+                            && pi.FechaIngreso <= model.Hasta
+                            && pi.IsCanceled == true
+                    )
+                    .ToListAsync();
+            }
         }
     }
 }

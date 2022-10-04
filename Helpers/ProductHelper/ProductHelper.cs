@@ -48,6 +48,11 @@ namespace Store.Helpers.ProductHelper
         {
             return await _context.Kardex
                 .Include(k => k.User)
+                .Include(k => k.AjusteInventario)
+                .Include(k => k.EntradaProduct)
+                .Include(k => k.Sale)
+                .Include(k => k.SaleAnulation)
+                .Include(k => k.TrasladoInventario)
                 .Where(
                     k =>
                         k.Product.Id == model.ProductId

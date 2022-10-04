@@ -23,6 +23,7 @@ namespace Store.Data
         public DbSet<CountLibros> CountLibros { get; set; }
         public DbSet<CuentasXCobrarDailyCheck> CuentasXCobrarDailyChecks { get; set; }
         public DbSet<Department> Departments { get; set; }
+
         // public DbSet<ErrorLog> ErrorLogs { get; set; }
         public DbSet<Existence> Existences { get; set; }
         public DbSet<ExistencesDailyCheck> ExistencesDailyChecks { get; set; }
@@ -42,6 +43,8 @@ namespace Store.Data
         public DbSet<Rol> Rols { get; set; }
         public DbSet<Sales> Sales { get; set; }
         public DbSet<SaleDetail> SaleDetails { get; set; }
+        public DbSet<StockAdjustment> StockAdjustments { get; set; }
+        public DbSet<StockAdjustmentDetail> StockAdjustmentDetails { get; set; }
         public DbSet<SaleAnulation> SaleAnulations { get; set; }
         public DbSet<SaleAnulationDetails> SaleAnulationDetails { get; set; }
 

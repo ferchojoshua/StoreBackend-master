@@ -9,13 +9,7 @@ namespace Store.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "EndOperations",
-                table: "Rols");
-
-            migrationBuilder.DropColumn(
-                name: "StartOperations",
-                table: "Rols");
+           
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

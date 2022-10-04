@@ -8,6 +8,7 @@ namespace Store.Helpers.ReportHelper
     {
         Task<ICollection<Sales>> ReportMasterVentas(MasterVentasViewModel model);
         Task<ICollection<Abono>> ReportIngresos(IngresosViewModel model);
+        Task<ICollection<ProductIn>> ReportCompras(ComprasViewModel model);
         Task<ICollection<Sales>> ReportCuentasXCobrar(CuentasXCobrarViewModel model);
         Task<ICollection<ReportResponse>> ReportArticulosVendidos(ArtVendidosViewModel model);
         Task<ICollection<Existence>> ReportArticulosNoVendidos(ArtNoVendidosViewModel model);

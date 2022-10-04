@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Store.Data;
@@ -12,9 +13,10 @@ using Store.Data;
 namespace Store.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20221003203618_UpdateKardex3")]
+    partial class UpdateKardex3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -869,17 +871,11 @@ namespace Store.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<int?>("AjusteInventarioId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("AlmacenId")
                         .HasColumnType("int");
 
                     b.Property<string>("Concepto")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("EntradaProductId")
-                        .HasColumnType("int");
 
                     b.Property<int>("Entradas")
                         .HasColumnType("int");
@@ -890,19 +886,13 @@ namespace Store.Migrations
                     b.Property<int?>("ProductId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ProductInId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Saldo")
                         .HasColumnType("int");
 
-                    b.Property<int?>("SaleAnulationId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("SaleId")
-                        .HasColumnType("int");
-
                     b.Property<int>("Salidas")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("TrasladoInventarioId")
                         .HasColumnType("int");
 
                     b.Property<string>("UserId")
@@ -910,19 +900,11 @@ namespace Store.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AjusteInventarioId");
-
                     b.HasIndex("AlmacenId");
-
-                    b.HasIndex("EntradaProductId");
 
                     b.HasIndex("ProductId");
 
-                    b.HasIndex("SaleAnulationId");
-
-                    b.HasIndex("SaleId");
-
-                    b.HasIndex("TrasladoInventarioId");
+                    b.HasIndex("ProductInId");
 
                     b.HasIndex("UserId");
 
@@ -1477,81 +1459,6 @@ namespace Store.Migrations
                     b.ToTable("Sales");
                 });
 
-            modelBuilder.Entity("Store.Entities.StockAdjustment", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<DateTime>("Fecha")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("MontoPrecioCompra")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("MontoPrecioVenta")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("RealizadoPorId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int?>("StoreId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RealizadoPorId");
-
-                    b.HasIndex("StoreId");
-
-                    b.ToTable("StockAdjustments");
-                });
-
-            modelBuilder.Entity("Store.Entities.StockAdjustmentDetail", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<int>("Cantidad")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("MontoFinalCompra")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("MontoFinalVenta")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("PrecioCompra")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("PrecioUnitarioVenta")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int?>("ProductId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("StockAdjustmentId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("StoreId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
-
-                    b.HasIndex("StockAdjustmentId");
-
-                    b.HasIndex("StoreId");
-
-                    b.ToTable("StockAdjustmentDetails");
-                });
-
             modelBuilder.Entity("Store.Entities.TipoNegocio", b =>
                 {
                     b.Property<int>("Id")
@@ -2013,51 +1920,25 @@ namespace Store.Migrations
 
             modelBuilder.Entity("Store.Entities.Kardex", b =>
                 {
-                    b.HasOne("Store.Entities.StockAdjustment", "AjusteInventario")
-                        .WithMany("KardexMovments")
-                        .HasForeignKey("AjusteInventarioId");
-
                     b.HasOne("Store.Entities.Almacen", "Almacen")
                         .WithMany()
                         .HasForeignKey("AlmacenId");
-
-                    b.HasOne("Store.Entities.ProductIn", "EntradaProduct")
-                        .WithMany("KardexMovments")
-                        .HasForeignKey("EntradaProductId");
 
                     b.HasOne("Store.Entities.Producto", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId");
 
-                    b.HasOne("Store.Entities.SaleAnulation", "SaleAnulation")
+                    b.HasOne("Store.Entities.ProductIn", null)
                         .WithMany("KardexMovments")
-                        .HasForeignKey("SaleAnulationId");
-
-                    b.HasOne("Store.Entities.Sales", "Sale")
-                        .WithMany("KardexMovments")
-                        .HasForeignKey("SaleId");
-
-                    b.HasOne("Store.Entities.ProductMovments", "TrasladoInventario")
-                        .WithMany("KardexMovments")
-                        .HasForeignKey("TrasladoInventarioId");
+                        .HasForeignKey("ProductInId");
 
                     b.HasOne("Store.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId");
 
-                    b.Navigation("AjusteInventario");
-
                     b.Navigation("Almacen");
 
-                    b.Navigation("EntradaProduct");
-
                     b.Navigation("Product");
-
-                    b.Navigation("Sale");
-
-                    b.Navigation("SaleAnulation");
-
-                    b.Navigation("TrasladoInventario");
 
                     b.Navigation("User");
                 });
@@ -2242,40 +2123,6 @@ namespace Store.Migrations
                     b.Navigation("Store");
                 });
 
-            modelBuilder.Entity("Store.Entities.StockAdjustment", b =>
-                {
-                    b.HasOne("Store.Entities.User", "RealizadoPor")
-                        .WithMany()
-                        .HasForeignKey("RealizadoPorId");
-
-                    b.HasOne("Store.Entities.Almacen", "Store")
-                        .WithMany()
-                        .HasForeignKey("StoreId");
-
-                    b.Navigation("RealizadoPor");
-
-                    b.Navigation("Store");
-                });
-
-            modelBuilder.Entity("Store.Entities.StockAdjustmentDetail", b =>
-                {
-                    b.HasOne("Store.Entities.Producto", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId");
-
-                    b.HasOne("Store.Entities.StockAdjustment", null)
-                        .WithMany("StockAdjustmentDetails")
-                        .HasForeignKey("StockAdjustmentId");
-
-                    b.HasOne("Store.Entities.Almacen", "Store")
-                        .WithMany()
-                        .HasForeignKey("StoreId");
-
-                    b.Navigation("Product");
-
-                    b.Navigation("Store");
-                });
-
             modelBuilder.Entity("Store.Entities.User", b =>
                 {
                     b.HasOne("Store.Entities.Rol", "Rol")
@@ -2310,8 +2157,6 @@ namespace Store.Migrations
 
             modelBuilder.Entity("Store.Entities.ProductMovments", b =>
                 {
-                    b.Navigation("KardexMovments");
-
                     b.Navigation("MovmentDetails");
                 });
 
@@ -2327,23 +2172,12 @@ namespace Store.Migrations
 
             modelBuilder.Entity("Store.Entities.SaleAnulation", b =>
                 {
-                    b.Navigation("KardexMovments");
-
                     b.Navigation("SaleAnulationDetails");
                 });
 
             modelBuilder.Entity("Store.Entities.Sales", b =>
                 {
-                    b.Navigation("KardexMovments");
-
                     b.Navigation("SaleDetails");
-                });
-
-            modelBuilder.Entity("Store.Entities.StockAdjustment", b =>
-                {
-                    b.Navigation("KardexMovments");
-
-                    b.Navigation("StockAdjustmentDetails");
                 });
 
             modelBuilder.Entity("Store.Entities.TipoNegocio", b =>

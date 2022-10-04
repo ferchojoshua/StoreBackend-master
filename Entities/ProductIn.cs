@@ -17,5 +17,6 @@
         public decimal MontoFactura { get; set; }
         public bool IsCanceled { get; set; }
         public List<ProductInDetails> ProductInDetails { get; set; }
+        public ICollection<Kardex> KardexMovments { get; set; }
     }
 }

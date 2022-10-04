@@ -113,6 +113,8 @@ namespace Store.Helpers.SalesHelper
             }
 
             List<SaleDetail> detalles = new();
+            List<Kardex> KardexMovments = new();
+
             foreach (var item in model.SaleDetails)
             {
                 Producto prod = await _context.Productos.FirstOrDefaultAsync(
@@ -173,7 +175,7 @@ namespace Store.Helpers.SalesHelper
                         Saldo = saldo - item.Cantidad,
                         User = user
                     };
-                _context.Kardex.Add(kardex);
+                KardexMovments.Add(kardex);
             }
 
             if (sale.IsContado)
@@ -192,6 +194,7 @@ namespace Store.Helpers.SalesHelper
 
             //Unificamos objetos y los mandamos a la DB
             sale.SaleDetails = detalles;
+            sale.KardexMovments = KardexMovments;
             _context.Sales.Add(sale);
             await _context.SaveChangesAsync();
 
@@ -435,6 +438,8 @@ namespace Store.Helpers.SalesHelper
             }
 
             List<SaleAnulationDetails> saleAnulationDetailList = new();
+            List<Kardex> KardexMovments = new();
+
             foreach (var item in sale.SaleDetails)
             {
                 item.IsAnulado = true;
@@ -479,7 +484,7 @@ namespace Store.Helpers.SalesHelper
                         Saldo = saldo + item.Cantidad,
                         User = user
                     };
-                _context.Kardex.Add(kardex);
+                KardexMovments.Add(kardex);
             }
 
             sale.IsAnulado = true;
@@ -494,7 +499,8 @@ namespace Store.Helpers.SalesHelper
                     FechaAnulacion = hoy,
                     AnulatedBy = user,
                     SaleAnulationDetails = saleAnulationDetailList,
-                    Store = sale.Store
+                    Store = sale.Store,
+                    KardexMovments = KardexMovments
                 };
 
             _context.SaleAnulations.Add(saleAnulation);
@@ -588,6 +594,8 @@ namespace Store.Helpers.SalesHelper
             }
 
             List<SaleAnulationDetails> detalleList = new();
+            List<Kardex> KardexMovments = new();
+
             decimal montoAnulado = 0;
             foreach (var item in sale.SaleDetails)
             {
@@ -640,7 +648,7 @@ namespace Store.Helpers.SalesHelper
                             Saldo = saldo + item.Cantidad,
                             User = user
                         };
-                    _context.Kardex.Add(kardex);
+                    KardexMovments.Add(kardex);
                 }
                 else
                 {
@@ -702,7 +710,7 @@ namespace Store.Helpers.SalesHelper
                             Saldo = saldo + item.Cantidad,
                             User = user
                         };
-                    _context.Kardex.Add(kardex);
+                    KardexMovments.Add(kardex);
                 }
             }
 
@@ -738,7 +746,8 @@ namespace Store.Helpers.SalesHelper
                     FechaAnulacion = hoy,
                     AnulatedBy = user,
                     SaleAnulationDetails = detalleList,
-                    Store = sale.Store
+                    Store = sale.Store,
+                    KardexMovments = KardexMovments
                 };
 
             _context.SaleAnulations.Add(newAnulation);

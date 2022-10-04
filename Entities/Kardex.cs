@@ -11,5 +11,20 @@ namespace Store.Entities
         public int Salidas { get; set; }
         public int Saldo { get; set; }
         public User User { get; set; }
+#nullable enable
+        public ProductIn? EntradaProduct { get; set; }
+#nullable disable
+#nullable enable
+        public Sales? Sale { get; set; }
+#nullable disable
+#nullable enable
+        public ProductMovments? TrasladoInventario { get; set; }
+#nullable disable
+#nullable enable
+        public SaleAnulation? SaleAnulation { get; set; }
+#nullable disable
+#nullable enable
+        public StockAdjustment? AjusteInventario { get; set; }
+#nullable disable
     }
 }

@@ -66,6 +66,9 @@ namespace Store.Models.ViewModels
 
         [Required]
         public int ClientId { get; set; }
+
+        [Required]
+        public bool IncludeUncanceledSales { get; set; }
     }
 
     public class ArtNoVendidosViewModel
@@ -108,5 +111,20 @@ namespace Store.Models.ViewModels
 
         [Required]
         public int StoreId { get; set; }
+    }
+
+    public class ComprasViewModel
+    {
+        [Required]
+        public DateTime Desde { get; set; }
+
+        [Required]
+        public DateTime Hasta { get; set; }
+
+        [Required]
+        public bool ContadoCompras { get; set; }
+
+        [Required]
+        public bool CreditCompras { get; set; }
     }
 }

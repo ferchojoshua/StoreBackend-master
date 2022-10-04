@@ -44,7 +44,10 @@ namespace Store.Helpers.EntradaProductos
                     MontFactAntDesc = model.MontFactAntDesc,
                     IsCanceled = model.TipoPago != "Pago de Credito",
                 };
+
             List<ProductInDetails> detalles = new();
+            List<Kardex> KardexMovments = new();
+
             foreach (var item in model.ProductInDetails)
             {
                 ProductInDetails pd = new();
@@ -94,6 +97,8 @@ namespace Store.Helpers.EntradaProductos
                     .OrderByDescending(k => k.Id)
                     .FirstOrDefaultAsync();
 
+                int saldo = kar == null ? 0 : kar.Saldo;
+
                 Kardex kardex =
                     new()
                     {
@@ -106,12 +111,14 @@ namespace Store.Helpers.EntradaProductos
                         Almacen = alm,
                         Entradas = item.Cantidad,
                         Salidas = 0,
-                        Saldo = kar.Saldo + item.Cantidad,
+                        Saldo = saldo + item.Cantidad,
                         User = user
                     };
-                _context.Kardex.Add(kardex);
+                KardexMovments.Add(kardex);
             }
+
             productIn.ProductInDetails = detalles;
+            productIn.KardexMovments = KardexMovments;
             _context.ProductIns.Add(productIn);
 
             //Agregamos el registro contable

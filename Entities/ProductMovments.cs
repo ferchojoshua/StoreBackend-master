@@ -7,5 +7,6 @@ namespace Store.Entities
         public string Concepto { get; set; }
         public DateTime Fecha { get; set; }
         public ICollection<ProductMovmentDetails> MovmentDetails { get; set; }
+        public ICollection<Kardex> KardexMovments { get; set; }
     }
 }

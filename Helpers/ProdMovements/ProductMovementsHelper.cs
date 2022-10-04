@@ -20,9 +20,10 @@ namespace Store.Helpers.ProdMovements
         )
         {
             List<ProductMovmentDetails> pMList = new();
+            List<Kardex> KardexMovments = new();
+
             foreach (var item in model.MovmentDetails)
             {
-                string almacenText = "";
                 Producto prod = await _context.Productos.FirstOrDefaultAsync(
                     p => p.Id == item.IdProducto
                 );
@@ -82,7 +83,6 @@ namespace Store.Helpers.ProdMovements
                             Maximo = 0,
                             Minimo = 0
                         };
-                        almacenText = existDestino.Almacen.Name;
                         _context.Existences.Add(existDestino);
                     }
                     //si no es nulo, se edita el existente
@@ -93,8 +93,6 @@ namespace Store.Helpers.ProdMovements
                         existDestino.PrecioVentaMayor = existProcedencia.PrecioVentaMayor;
                         existDestino.PrecioCompra = existProcedencia.PrecioCompra;
                         _context.Entry(existDestino).State = EntityState.Modified;
-
-                        almacenText = existDestino.Almacen.Name;
                     }
 
                     Kardex kar = await _context.Kardex
@@ -109,7 +107,7 @@ namespace Store.Helpers.ProdMovements
                         {
                             Product = prod,
                             Fecha = DateTime.Now,
-                            Concepto = $"TRASLADO DE INVENTARIO A - {almacenText}",
+                            Concepto = "TRASLADO DE INVENTARIO",
                             Almacen = await _context.Almacen.FirstOrDefaultAsync(
                                 a => a.Id == item.AlmacenProcedenciaId
                             ),
@@ -118,7 +116,8 @@ namespace Store.Helpers.ProdMovements
                             Saldo = saldo - item.Cantidad,
                             User = user
                         };
-                    _context.Kardex.Add(kardexProcedencia);
+                    // _context.Kardex.Add(kardexProcedencia);
+                    KardexMovments.Add(kardexProcedencia);
 
                     //Agregamos el Kardex de entrada al almacen destino
                     Kardex karDest = await _context.Kardex
@@ -133,7 +132,7 @@ namespace Store.Helpers.ProdMovements
                         {
                             Product = prod,
                             Fecha = DateTime.Now,
-                            Concepto = $"TRASLADO DE INVENTARIO A - {almacenText}",
+                            Concepto = "TRASLADO DE INVENTARIO",
                             Almacen = await _context.Almacen.FirstOrDefaultAsync(
                                 a => a.Id == item.AlmacenDestinoId
                             ),
@@ -142,7 +141,8 @@ namespace Store.Helpers.ProdMovements
                             Saldo = saldoDest + item.Cantidad,
                             User = user
                         };
-                    _context.Kardex.Add(kardex);
+                    // _context.Kardex.Add(kardex);
+                    KardexMovments.Add(kardex);
                 }
 
                 _context.Entry(existProcedencia).State = EntityState.Modified;
@@ -157,7 +157,8 @@ namespace Store.Helpers.ProdMovements
                     User = user,
                     Concepto = model.Concepto,
                     Fecha = DateTime.Now,
-                    MovmentDetails = pMList
+                    MovmentDetails = pMList,
+                    KardexMovments = KardexMovments
                 };
 
             _context.ProductMovments.Add(productMovments);
@@ -179,6 +180,7 @@ namespace Store.Helpers.ProdMovements
             Entities.User user
         )
         {
+            DateTime hoy = DateTime.Now;
             Existence exist = await _context.Existences
                 .Include(e => e.Producto)
                 .Include(e => e.Almacen)
@@ -187,7 +189,13 @@ namespace Store.Helpers.ProdMovements
             {
                 return exist;
             }
+            List<StockAdjustmentDetail> stockAdjustmentDetails = new();
+
+            List<Kardex> KardexMovments = new();
+
             int diferencia = model.NewExistencias - exist.Existencia;
+            decimal sumarotiaMontoCompra = 0;
+            decimal sumatoriaMontoVenta = 0;
 
             //Este solo modifica la existencia, el kardex no
             if (diferencia == 0)
@@ -201,26 +209,44 @@ namespace Store.Helpers.ProdMovements
                 exist.PrecioVentaMayor = model.NewPVM;
                 exist.Existencia = model.NewExistencias;
 
-                //Agregamos el Kardex de entrada al almacen destino
-                var karList = await _context.Kardex
-                    .Where(k => k.Product.Id == exist.Producto.Id && k.Almacen == exist.Almacen)
-                    .ToListAsync();
+                sumarotiaMontoCompra += exist.PrecioCompra * Math.Abs(diferencia);
+                sumatoriaMontoVenta += exist.PrecioVentaMayor * Math.Abs(diferencia);
 
-                Kardex kar = karList.Where(k => k.Id == karList.Max(k => k.Id)).FirstOrDefault();
+                StockAdjustmentDetail detalle =
+                    new()
+                    {
+                        Store = exist.Almacen,
+                        Product = exist.Producto,
+                        Cantidad = Math.Abs(diferencia),
+                        PrecioCompra = exist.PrecioCompra,
+                        MontoFinalCompra = exist.PrecioCompra * Math.Abs(diferencia),
+                        PrecioUnitarioVenta = exist.PrecioVentaMayor,
+                        MontoFinalVenta = exist.PrecioVentaMayor * Math.Abs(diferencia),
+                    };
+                stockAdjustmentDetails.Add(detalle);
+
+                //Agregamos el Kardex de entrada al almacen destino
+                Kardex kar = await _context.Kardex
+                    .Where(k => k.Product.Id == exist.Producto.Id && k.Almacen == exist.Almacen)
+                    .OrderByDescending(k => k.Id)
+                    .FirstOrDefaultAsync();
+
+                int saldo = kar == null ? 0 : kar.Saldo;
 
                 Kardex kardex =
                     new()
                     {
                         Product = exist.Producto,
-                        Fecha = DateTime.Now,
+                        Fecha = hoy,
                         Concepto = "AJUSTE DE INVENTARIO",
                         Almacen = exist.Almacen,
                         Entradas = 0,
                         Salidas = Math.Abs(diferencia),
-                        Saldo = kar.Saldo + diferencia,
+                        Saldo = saldo + diferencia,
                         User = user
                     };
-                _context.Kardex.Add(kardex);
+                // _context.Kardex.Add(kardex);
+                KardexMovments.Add(kardex);
             }
             else
             {
@@ -228,27 +254,57 @@ namespace Store.Helpers.ProdMovements
                 exist.PrecioVentaMayor = model.NewPVM;
                 exist.Existencia = model.NewExistencias;
 
-                //Agregamos el Kardex de entrada al almacen destino
-                var karList = await _context.Kardex
-                    .Where(k => k.Product.Id == exist.Producto.Id && k.Almacen == exist.Almacen)
-                    .ToListAsync();
+                sumarotiaMontoCompra += exist.PrecioCompra * Math.Abs(diferencia);
+                sumatoriaMontoVenta += exist.PrecioVentaMayor * Math.Abs(diferencia);
 
-                Kardex kar = karList.Where(k => k.Id == karList.Max(k => k.Id)).FirstOrDefault();
+                StockAdjustmentDetail detalle =
+                    new()
+                    {
+                        Store = exist.Almacen,
+                        Product = exist.Producto,
+                        Cantidad = Math.Abs(diferencia),
+                        PrecioCompra = exist.PrecioCompra,
+                        MontoFinalCompra = exist.PrecioCompra * Math.Abs(diferencia),
+                        PrecioUnitarioVenta = exist.PrecioVentaMayor,
+                        MontoFinalVenta = exist.PrecioVentaMayor * Math.Abs(diferencia),
+                    };
+                stockAdjustmentDetails.Add(detalle);
+
+                //Agregamos el Kardex de entrada al almacen destino
+                Kardex kar = await _context.Kardex
+                    .Where(k => k.Product.Id == exist.Producto.Id && k.Almacen == exist.Almacen)
+                    .OrderByDescending(k => k.Id)
+                    .FirstOrDefaultAsync();
+
+                int saldo = kar == null ? 0 : kar.Saldo;
 
                 Kardex kardex =
                     new()
                     {
                         Product = exist.Producto,
-                        Fecha = DateTime.Now,
+                        Fecha = hoy,
                         Concepto = "AJUSTE DE INVENTARIO",
                         Almacen = exist.Almacen,
                         Entradas = diferencia,
                         Salidas = 0,
-                        Saldo = kar.Saldo + diferencia,
+                        Saldo = saldo + diferencia,
                         User = user
                     };
-                _context.Kardex.Add(kardex);
+                // _context.Kardex.Add(kardex);
+                KardexMovments.Add(kardex);
             }
+
+            StockAdjustment stockAdjustment =
+                new()
+                {
+                    Fecha = hoy,
+                    RealizadoPor = user,
+                    StockAdjustmentDetails = stockAdjustmentDetails,
+                    KardexMovments = KardexMovments,
+                    MontoPrecioCompra = sumarotiaMontoCompra,
+                    MontoPrecioVenta = sumatoriaMontoVenta,
+                    Store = exist.Almacen
+                };
 
             _context.Entry(exist).State = EntityState.Modified;
             await _context.SaveChangesAsync();
