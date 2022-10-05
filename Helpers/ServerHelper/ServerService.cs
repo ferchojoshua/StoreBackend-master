@@ -17,7 +17,7 @@ namespace Store.Helpers.ServerHelper
 
         public void Config()
         {
-            string conString = "";
+            string conString;
             if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
             {
                 conString = _configuration.GetConnectionString("DevConnetion");

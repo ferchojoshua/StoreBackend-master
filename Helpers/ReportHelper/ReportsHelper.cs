@@ -867,5 +867,101 @@ namespace Store.Helpers.ReportHelper
                     .ToListAsync();
             }
         }
+
+        public async Task<ICollection<TrasladoResponse>> ReportproductMovments(
+            TrasladoInventarioViewModel model
+        )
+        {
+            List<TrasladoResponse> responseList = new();
+            if (model.StoreId != 0)
+            {
+                var result = await _context.ProductMovments
+                    .Include(
+                        pm => pm.MovmentDetails.Where(pmd => pmd.AlmacenDestinoId == model.StoreId)
+                    )
+                    .ThenInclude(pmd => pmd.Producto)
+                    .Include(pm => pm.User)
+                    .Where(pd => pd.Fecha >= model.Desde && pd.Fecha <= model.Hasta)
+                    .ToListAsync();
+
+                foreach (var movment in result)
+                {
+                    if (movment.MovmentDetails.Count > 0)
+                    {
+                        decimal sumCC = 0;
+                        decimal sumVM = 0;
+                        decimal sumVD = 0;
+                        foreach (var detalle in movment.MovmentDetails)
+                        {
+                            var existencia = await _context.Existences.FirstOrDefaultAsync(
+                                e =>
+                                    e.Producto.Id == detalle.Producto.Id
+                                    && e.Almacen.Id == detalle.AlmacenDestinoId
+                            );
+                            sumCC += existencia.PrecioCompra;
+                            sumVD += existencia.PrecioVentaDetalle;
+                            sumVM += existencia.PrecioVentaMayor;
+                        }
+                        TrasladoResponse response =
+                            new()
+                            {
+                                Id = movment.Id,
+                                Usuario = movment.User.FullName,
+                                Concepto = movment.Concepto,
+                                ProductCount = movment.MovmentDetails.Count,
+                                SumCostoCompra = sumCC,
+                                SumVentaDetalle = sumVD,
+                                SumVentaMayor = sumVM,
+                                Fecha = movment.Fecha
+                            };
+                        responseList.Add(response);
+                    }
+                }
+                return responseList;
+            }
+            else
+            {
+                var result = await _context.ProductMovments
+                    .Include(pm => pm.MovmentDetails)
+                    .ThenInclude(pmd => pmd.Producto)
+                    .Include(pm => pm.User)
+                    .Where(pd => pd.Fecha >= model.Desde && pd.Fecha <= model.Hasta)
+                    .ToListAsync();
+                foreach (var movment in result)
+                {
+                    if (movment.MovmentDetails.Count > 0)
+                    {
+                        decimal sumCC = 0;
+                        decimal sumVM = 0;
+                        decimal sumVD = 0;
+                        foreach (var detalle in movment.MovmentDetails)
+                        {
+                            var existencia = await _context.Existences.FirstOrDefaultAsync(
+                                e =>
+                                    e.Producto.Id == detalle.Producto.Id
+                                    && e.Almacen.Id == detalle.AlmacenDestinoId
+                            );
+                            sumCC += existencia.PrecioCompra;
+                            sumVD += existencia.PrecioVentaDetalle;
+                            sumVM += existencia.PrecioVentaMayor;
+                        }
+                        TrasladoResponse response =
+                            new()
+                            {
+                                Id = movment.Id,
+                                Usuario = movment.User.FullName,
+                                Concepto = movment.Concepto,
+                                ProductCount = movment.MovmentDetails.Count,
+                                SumCostoCompra = sumCC,
+                                SumVentaDetalle = sumVD,
+                                SumVentaMayor = sumVM,
+                                Fecha = movment.Fecha
+                            };
+                        responseList.Add(response);
+                    }
+                }
+                return responseList;
+            }
+        }
     }
 }

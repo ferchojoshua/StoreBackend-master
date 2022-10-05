@@ -113,3 +113,4 @@ http://automoto.eastus.cloudapp.azure.com/automoto
 
 update rols set StartOperations = '2022-10-03 00:00:00', EndOperations = '2022-10-03 23:59:59' where id = 1
 
+insert into Permissions values('REPORTETRASLADOS VER', 1, 1) 

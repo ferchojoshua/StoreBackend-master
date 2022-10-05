@@ -127,4 +127,16 @@ namespace Store.Models.ViewModels
         [Required]
         public bool CreditCompras { get; set; }
     }
+
+    public class TrasladoInventarioViewModel
+    {
+        [Required]
+        public DateTime Desde { get; set; }
+
+        [Required]
+        public DateTime Hasta { get; set; }
+
+        [Required]
+        public int StoreId { get; set; }
+    }
 }

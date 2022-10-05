@@ -29,7 +29,7 @@ namespace Store.Helpers.User
             return await _context.Users
                 .Where(u => u.IsActive == true && u.Id != "cb44660e-0ec5-4328-8a88-7843241cbf72")
                 .Include(u => u.Rol)
-                .Include(u => u.StoreAccess)
+                // .Include(u => u.StoreAccess)
                 .ToListAsync();
         }
 
@@ -38,7 +38,7 @@ namespace Store.Helpers.User
             return await _context.Users
                 .Where(u => u.IsActive == false)
                 .Include(u => u.Rol)
-                .Include(u => u.StoreAccess)
+                // .Include(u => u.StoreAccess)
                 .ToListAsync();
         }
 
@@ -46,7 +46,7 @@ namespace Store.Helpers.User
         {
             return await _context.Users
                 .Include(u => u.Rol)
-                .Include(u => u.StoreAccess)
+                // .Include(u => u.StoreAccess)
                 .ToListAsync();
         }
 
