@@ -173,6 +173,15 @@ namespace Store.Helpers.EntradaProductos
             return productIn;
         }
 
+        public async Task<ProductIn> PagarFacturaAsync(int id)
+        {
+            ProductIn productIn = await _context.ProductIns.FirstOrDefaultAsync(pI => pI.Id == id);
+            productIn.IsCanceled = true;
+            _context.Entry(productIn).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return productIn;
+        }
+
         public async Task<ProductIn> UpdateProductInAsync(
             UpdateEntradaProductoViewModel model,
             Entities.User user

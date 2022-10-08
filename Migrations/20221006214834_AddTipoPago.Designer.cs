@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Store.Data;
@@ -12,9 +13,10 @@ using Store.Data;
 namespace Store.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20221006214834_AddTipoPago")]
+    partial class AddTipoPago
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -191,16 +193,10 @@ namespace Store.Migrations
                     b.Property<string>("RealizedById")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("Reference")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int?>("SaleId")
                         .HasColumnType("int");
 
                     b.Property<int?>("StoreId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("TipoPagoId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -210,8 +206,6 @@ namespace Store.Migrations
                     b.HasIndex("SaleId");
 
                     b.HasIndex("StoreId");
-
-                    b.HasIndex("TipoPagoId");
 
                     b.ToTable("Abonos");
                 });
@@ -1466,16 +1460,10 @@ namespace Store.Migrations
                     b.Property<int>("ProductsCount")
                         .HasColumnType("int");
 
-                    b.Property<string>("Reference")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<decimal>("Saldo")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("StoreId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("TipoPagoId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -1487,8 +1475,6 @@ namespace Store.Migrations
                     b.HasIndex("FacturedById");
 
                     b.HasIndex("StoreId");
-
-                    b.HasIndex("TipoPagoId");
 
                     b.ToTable("Sales");
                 });
@@ -1814,17 +1800,11 @@ namespace Store.Migrations
                         .WithMany()
                         .HasForeignKey("StoreId");
 
-                    b.HasOne("Store.Entities.TipoPago", "TipoPago")
-                        .WithMany()
-                        .HasForeignKey("TipoPagoId");
-
                     b.Navigation("RealizedBy");
 
                     b.Navigation("Sale");
 
                     b.Navigation("Store");
-
-                    b.Navigation("TipoPago");
                 });
 
             modelBuilder.Entity("Store.Entities.CajaMovment", b =>
@@ -2271,10 +2251,6 @@ namespace Store.Migrations
                         .WithMany()
                         .HasForeignKey("StoreId");
 
-                    b.HasOne("Store.Entities.TipoPago", "TipoPago")
-                        .WithMany()
-                        .HasForeignKey("TipoPagoId");
-
                     b.Navigation("AnulatedBy");
 
                     b.Navigation("Client");
@@ -2282,8 +2258,6 @@ namespace Store.Migrations
                     b.Navigation("FacturedBy");
 
                     b.Navigation("Store");
-
-                    b.Navigation("TipoPago");
                 });
 
             modelBuilder.Entity("Store.Entities.StockAdjustment", b =>

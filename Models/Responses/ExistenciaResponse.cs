@@ -11,7 +11,7 @@ namespace Store.Models.Responses
         public string TipoNegocio { get; set; }
         public string UM { get; set; }
 
-        public List<ExistenceDetail> Existence { get; set; }
+        public ICollection<ExistenceDetail> Existence { get; set; }
     }
 
     public class ExistenceDetail
@@ -21,5 +21,6 @@ namespace Store.Models.Responses
         public int Exisistencia { get; set; }
         public decimal PVD { get; set; }
         public decimal PVM { get; set; }
+        public decimal PrecioCompra { get; set; }
     }
 }

@@ -149,6 +149,45 @@ namespace Store.Controllers.API
             }
         }
 
+        [HttpPost("PagarFactura/{id}")]
+        public async Task<IActionResult> PutProductIn(int id)
+        {
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync(user);
+                return Ok("eX01");
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "ENTRADAPRODUCTOS UPDATE"))
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                var productIn = await _productsInHelper.PagarFacturaAsync(id);
+                if (productIn == null)
+                {
+                    return NotFound("Orden de compra no encontrada");
+                }
+                return Ok(productIn);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost]
         public async Task<ActionResult<ProductIn>> PostProductIn(
             [FromBody] AddEntradaProductoViewModel model

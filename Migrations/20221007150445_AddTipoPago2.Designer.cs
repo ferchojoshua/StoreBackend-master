@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Store.Data;
@@ -12,9 +13,10 @@ using Store.Data;
 namespace Store.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20221007150445_AddTipoPago2")]
+    partial class AddTipoPago2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -190,9 +192,6 @@ namespace Store.Migrations
 
                     b.Property<string>("RealizedById")
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Reference")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("SaleId")
                         .HasColumnType("int");
@@ -1465,9 +1464,6 @@ namespace Store.Migrations
 
                     b.Property<int>("ProductsCount")
                         .HasColumnType("int");
-
-                    b.Property<string>("Reference")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Saldo")
                         .HasColumnType("decimal(18,2)");

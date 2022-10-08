@@ -7,6 +7,10 @@ namespace Store.Helpers.EntradaProductos
     {
         Task<ProductIn> AddProductInAsync(AddEntradaProductoViewModel model, Entities.User user);
 
-        Task<ProductIn> UpdateProductInAsync(UpdateEntradaProductoViewModel model, Entities.User user);
+        Task<ProductIn> UpdateProductInAsync(
+            UpdateEntradaProductoViewModel model,
+            Entities.User user
+        );
+        Task<ProductIn> PagarFacturaAsync(int id);
     }
 }

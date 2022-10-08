@@ -91,6 +91,29 @@ namespace Store.Controllers.API
             return Ok(facturacions.OrderByDescending(s => s.FechaVenta));
         }
 
+        [HttpGet("GetTipoPagos")]
+        public async Task<ActionResult<IEnumerable<Facturacion>>> GetTipoPagos()
+        {
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync(user);
+                return Ok("eX01");
+            }
+
+            var facturacions = await _facturation.GetTipoPagoAsync();
+            return Ok(facturacions);
+        }
+
         [HttpGet("GetReprintSale/{id}")]
         public async Task<ActionResult<IEnumerable<Facturacion>>> GetReprintSale(int id)
         {

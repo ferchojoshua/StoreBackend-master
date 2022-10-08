@@ -58,6 +58,24 @@ namespace Store.Controllers.API
             return await _context.Productos
                 .Include(p => p.TipoNegocio)
                 .Include(p => p.Familia)
+                .Select(
+                    x =>
+                        new Producto()
+                        {
+                            Id = x.Id,
+                            TipoNegocio = new TipoNegocio()
+                            {
+                                Id = x.TipoNegocio.Id,
+                                Description = x.TipoNegocio.Description
+                            },
+                            Familia = x.Familia,
+                            Description = x.Description,
+                            BarCode = x.BarCode,
+                            Marca = x.Marca,
+                            Modelo = x.Modelo,
+                            UM = x.UM
+                        }
+                )
                 .OrderBy(p => p.Description)
                 .ToListAsync();
         }

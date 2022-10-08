@@ -27,7 +27,9 @@ namespace Store.Entities
         public User AnulatedBy { get; set; }
         public DateTime FechaAnulacion { get; set; }
         public Almacen Store { get; set; }
+        public TipoPago TipoPago { get; set; }
         public string CodigoDescuento { get; set; }
         public ICollection<Kardex> KardexMovments { get; set; }
+        public string Reference { get; set; }
     }
 }

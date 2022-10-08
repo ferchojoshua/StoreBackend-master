@@ -1,6 +1,4 @@
-using Store.Entities;
 using Store.Models.Responses;
-using Store.Models.ViewModels;
 
 namespace Store.Helpers.ProductExistenceService
 {

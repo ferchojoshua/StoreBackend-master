@@ -25,6 +25,82 @@ namespace Store.Helpers.SalesHelper
                 .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado == false))
                 .ThenInclude(sd => sd.Product)
                 .Where(s => s.IsAnulado == false && s.Store.Id == idStore && s.IsContado)
+                .Select(
+                    x =>
+                        new Sales()
+                        {
+                            Id = x.Id,
+                            IsEventual = x.IsEventual,
+                            NombreCliente = x.NombreCliente,
+                            Client =
+                                x.Client != null
+                                    ? new Client()
+                                    {
+                                        Id = x.Client.Id,
+                                        NombreCliente = x.Client.NombreCliente
+                                    }
+                                    : new Client() { },
+                            ProductsCount = x.ProductsCount,
+                            MontoVenta = x.MontoVenta,
+                            IsDescuento = x.IsDescuento,
+                            DescuentoXPercent = x.DescuentoXPercent,
+                            DescuentoXMonto = x.DescuentoXMonto,
+                            MontoVentaAntesDescuento = x.MontoVentaAntesDescuento,
+                            FechaVenta = x.FechaVenta,
+                            FacturedBy = new Entities.User()
+                            {
+                                FirstName = x.FacturedBy.FirstName,
+                                LastName = x.FacturedBy.LastName
+                            },
+                            SaleDetails = x.SaleDetails
+                                .Select(
+                                    s =>
+                                        new SaleDetail()
+                                        {
+                                            Id = s.Id,
+                                            Store = new Almacen()
+                                            {
+                                                Id = s.Store.Id,
+                                                Name = s.Store.Name
+                                            },
+                                            Product = s.Product,
+                                            Cantidad = s.Cantidad,
+                                            IsDescuento = s.IsDescuento,
+                                            CostoCompra = s.CostoCompra,
+                                            DescuentoXPercent = s.DescuentoXPercent,
+                                            Descuento = s.Descuento,
+                                            CodigoDescuento = s.CodigoDescuento,
+                                            Ganancia = s.Ganancia,
+                                            CostoUnitario = s.CostoUnitario,
+                                            PVM = s.PVM,
+                                            PVD = s.PVD,
+                                            CostoTotalAntesDescuento = s.CostoTotalAntesDescuento,
+                                            CostoTotalDespuesDescuento =
+                                                s.CostoTotalDespuesDescuento,
+                                            CostoTotal = s.CostoTotal,
+                                            IsAnulado = s.IsAnulado,
+                                            IsPartialAnulation = s.IsPartialAnulation,
+                                            CantidadAnulada = s.CantidadAnulada,
+                                            AnulatedBy = s.AnulatedBy,
+                                            FechaAnulacion = s.FechaAnulacion
+                                        }
+                                )
+                                .ToList(),
+                            IsContado = x.IsContado,
+                            IsCanceled = x.IsCanceled,
+                            Saldo = x.Saldo,
+                            FechaVencimiento = x.FechaVencimiento,
+                            IsAnulado = x.IsAnulado,
+                            AnulatedBy = new Entities.User()
+                            {
+                                FirstName = x.FacturedBy.FirstName,
+                                LastName = x.FacturedBy.LastName
+                            },
+                            FechaAnulacion = x.FechaAnulacion,
+                            Store = new Almacen() { Id = x.Store.Id, Name = x.Store.Name },
+                            CodigoDescuento = x.CodigoDescuento
+                        }
+                )
                 .ToListAsync();
         }
 
@@ -38,6 +114,82 @@ namespace Store.Helpers.SalesHelper
                 .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado == false))
                 .ThenInclude(sd => sd.Product)
                 .Where(s => s.IsAnulado == false && s.Store.Id == idStore && s.IsContado == false)
+                .Select(
+                    x =>
+                        new Sales()
+                        {
+                            Id = x.Id,
+                            IsEventual = x.IsEventual,
+                            NombreCliente = x.NombreCliente,
+                            Client =
+                                x.Client != null
+                                    ? new Client()
+                                    {
+                                        Id = x.Client.Id,
+                                        NombreCliente = x.Client.NombreCliente
+                                    }
+                                    : new Client() { },
+                            ProductsCount = x.ProductsCount,
+                            MontoVenta = x.MontoVenta,
+                            IsDescuento = x.IsDescuento,
+                            DescuentoXPercent = x.DescuentoXPercent,
+                            DescuentoXMonto = x.DescuentoXMonto,
+                            MontoVentaAntesDescuento = x.MontoVentaAntesDescuento,
+                            FechaVenta = x.FechaVenta,
+                            FacturedBy = new Entities.User()
+                            {
+                                FirstName = x.FacturedBy.FirstName,
+                                LastName = x.FacturedBy.LastName
+                            },
+                            SaleDetails = x.SaleDetails
+                                .Select(
+                                    s =>
+                                        new SaleDetail()
+                                        {
+                                            Id = s.Id,
+                                            Store = new Almacen()
+                                            {
+                                                Id = s.Store.Id,
+                                                Name = s.Store.Name
+                                            },
+                                            Product = s.Product,
+                                            Cantidad = s.Cantidad,
+                                            IsDescuento = s.IsDescuento,
+                                            CostoCompra = s.CostoCompra,
+                                            DescuentoXPercent = s.DescuentoXPercent,
+                                            Descuento = s.Descuento,
+                                            CodigoDescuento = s.CodigoDescuento,
+                                            Ganancia = s.Ganancia,
+                                            CostoUnitario = s.CostoUnitario,
+                                            PVM = s.PVM,
+                                            PVD = s.PVD,
+                                            CostoTotalAntesDescuento = s.CostoTotalAntesDescuento,
+                                            CostoTotalDespuesDescuento =
+                                                s.CostoTotalDespuesDescuento,
+                                            CostoTotal = s.CostoTotal,
+                                            IsAnulado = s.IsAnulado,
+                                            IsPartialAnulation = s.IsPartialAnulation,
+                                            CantidadAnulada = s.CantidadAnulada,
+                                            AnulatedBy = s.AnulatedBy,
+                                            FechaAnulacion = s.FechaAnulacion
+                                        }
+                                )
+                                .ToList(),
+                            IsContado = x.IsContado,
+                            IsCanceled = x.IsCanceled,
+                            Saldo = x.Saldo,
+                            FechaVencimiento = x.FechaVencimiento,
+                            IsAnulado = x.IsAnulado,
+                            AnulatedBy = new Entities.User()
+                            {
+                                FirstName = x.FacturedBy.FirstName,
+                                LastName = x.FacturedBy.LastName
+                            },
+                            FechaAnulacion = x.FechaAnulacion,
+                            Store = new Almacen() { Id = x.Store.Id, Name = x.Store.Name },
+                            CodigoDescuento = x.CodigoDescuento
+                        }
+                )
                 .ToListAsync();
         }
 
@@ -51,6 +203,82 @@ namespace Store.Helpers.SalesHelper
                 .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado))
                 .ThenInclude(sd => sd.Product)
                 .Where(s => s.IsAnulado && s.Store.Id == idStore)
+                .Select(
+                    x =>
+                        new Sales()
+                        {
+                            Id = x.Id,
+                            IsEventual = x.IsEventual,
+                            NombreCliente = x.NombreCliente,
+                            Client =
+                                x.Client != null
+                                    ? new Client()
+                                    {
+                                        Id = x.Client.Id,
+                                        NombreCliente = x.Client.NombreCliente
+                                    }
+                                    : new Client() { },
+                            ProductsCount = x.ProductsCount,
+                            MontoVenta = x.MontoVenta,
+                            IsDescuento = x.IsDescuento,
+                            DescuentoXPercent = x.DescuentoXPercent,
+                            DescuentoXMonto = x.DescuentoXMonto,
+                            MontoVentaAntesDescuento = x.MontoVentaAntesDescuento,
+                            FechaVenta = x.FechaVenta,
+                            FacturedBy = new Entities.User()
+                            {
+                                FirstName = x.FacturedBy.FirstName,
+                                LastName = x.FacturedBy.LastName
+                            },
+                            SaleDetails = x.SaleDetails
+                                .Select(
+                                    s =>
+                                        new SaleDetail()
+                                        {
+                                            Id = s.Id,
+                                            Store = new Almacen()
+                                            {
+                                                Id = s.Store.Id,
+                                                Name = s.Store.Name
+                                            },
+                                            Product = s.Product,
+                                            Cantidad = s.Cantidad,
+                                            IsDescuento = s.IsDescuento,
+                                            CostoCompra = s.CostoCompra,
+                                            DescuentoXPercent = s.DescuentoXPercent,
+                                            Descuento = s.Descuento,
+                                            CodigoDescuento = s.CodigoDescuento,
+                                            Ganancia = s.Ganancia,
+                                            CostoUnitario = s.CostoUnitario,
+                                            PVM = s.PVM,
+                                            PVD = s.PVD,
+                                            CostoTotalAntesDescuento = s.CostoTotalAntesDescuento,
+                                            CostoTotalDespuesDescuento =
+                                                s.CostoTotalDespuesDescuento,
+                                            CostoTotal = s.CostoTotal,
+                                            IsAnulado = s.IsAnulado,
+                                            IsPartialAnulation = s.IsPartialAnulation,
+                                            CantidadAnulada = s.CantidadAnulada,
+                                            AnulatedBy = s.AnulatedBy,
+                                            FechaAnulacion = s.FechaAnulacion
+                                        }
+                                )
+                                .ToList(),
+                            IsContado = x.IsContado,
+                            IsCanceled = x.IsCanceled,
+                            Saldo = x.Saldo,
+                            FechaVencimiento = x.FechaVencimiento,
+                            IsAnulado = x.IsAnulado,
+                            AnulatedBy = new Entities.User()
+                            {
+                                FirstName = x.FacturedBy.FirstName,
+                                LastName = x.FacturedBy.LastName
+                            },
+                            FechaAnulacion = x.FechaAnulacion,
+                            Store = new Almacen() { Id = x.Store.Id, Name = x.Store.Name },
+                            CodigoDescuento = x.CodigoDescuento
+                        }
+                )
                 .ToListAsync();
         }
 
@@ -64,6 +292,82 @@ namespace Store.Helpers.SalesHelper
                 .Include(s => s.SaleDetails)
                 .ThenInclude(sd => sd.Product)
                 .Where(s => s.IsAnulado == true)
+                .Select(
+                    x =>
+                        new Sales()
+                        {
+                            Id = x.Id,
+                            IsEventual = x.IsEventual,
+                            NombreCliente = x.NombreCliente,
+                            Client =
+                                x.Client != null
+                                    ? new Client()
+                                    {
+                                        Id = x.Client.Id,
+                                        NombreCliente = x.Client.NombreCliente
+                                    }
+                                    : new Client() { },
+                            ProductsCount = x.ProductsCount,
+                            MontoVenta = x.MontoVenta,
+                            IsDescuento = x.IsDescuento,
+                            DescuentoXPercent = x.DescuentoXPercent,
+                            DescuentoXMonto = x.DescuentoXMonto,
+                            MontoVentaAntesDescuento = x.MontoVentaAntesDescuento,
+                            FechaVenta = x.FechaVenta,
+                            FacturedBy = new Entities.User()
+                            {
+                                FirstName = x.FacturedBy.FirstName,
+                                LastName = x.FacturedBy.LastName
+                            },
+                            SaleDetails = x.SaleDetails
+                                .Select(
+                                    s =>
+                                        new SaleDetail()
+                                        {
+                                            Id = s.Id,
+                                            Store = new Almacen()
+                                            {
+                                                Id = s.Store.Id,
+                                                Name = s.Store.Name
+                                            },
+                                            Product = s.Product,
+                                            Cantidad = s.Cantidad,
+                                            IsDescuento = s.IsDescuento,
+                                            CostoCompra = s.CostoCompra,
+                                            DescuentoXPercent = s.DescuentoXPercent,
+                                            Descuento = s.Descuento,
+                                            CodigoDescuento = s.CodigoDescuento,
+                                            Ganancia = s.Ganancia,
+                                            CostoUnitario = s.CostoUnitario,
+                                            PVM = s.PVM,
+                                            PVD = s.PVD,
+                                            CostoTotalAntesDescuento = s.CostoTotalAntesDescuento,
+                                            CostoTotalDespuesDescuento =
+                                                s.CostoTotalDespuesDescuento,
+                                            CostoTotal = s.CostoTotal,
+                                            IsAnulado = s.IsAnulado,
+                                            IsPartialAnulation = s.IsPartialAnulation,
+                                            CantidadAnulada = s.CantidadAnulada,
+                                            AnulatedBy = s.AnulatedBy,
+                                            FechaAnulacion = s.FechaAnulacion
+                                        }
+                                )
+                                .ToList(),
+                            IsContado = x.IsContado,
+                            IsCanceled = x.IsCanceled,
+                            Saldo = x.Saldo,
+                            FechaVencimiento = x.FechaVencimiento,
+                            IsAnulado = x.IsAnulado,
+                            AnulatedBy = new Entities.User()
+                            {
+                                FirstName = x.FacturedBy.FirstName,
+                                LastName = x.FacturedBy.LastName
+                            },
+                            FechaAnulacion = x.FechaAnulacion,
+                            Store = new Almacen() { Id = x.Store.Id, Name = x.Store.Name },
+                            CodigoDescuento = x.CodigoDescuento
+                        }
+                )
                 .ToListAsync();
         }
 
@@ -81,11 +385,21 @@ namespace Store.Helpers.SalesHelper
                 _context.Entry(cl).State = EntityState.Modified;
             }
 
+            TipoPago tp = await _context.TipoPagos.FirstOrDefaultAsync(
+                t => t.Id == model.TipoPagoId
+            );
+
+            Almacen store = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == model.Storeid);
+
             Sales sale =
                 new()
                 {
                     IsEventual = model.IsEventual,
-                    NombreCliente = model.IsEventual ? model.NombreCliente : "CLIENTE EVENTUAL",
+                    NombreCliente = model.IsEventual
+                        ? model.NombreCliente == ""
+                            ? "CLIENTE EVENTUAL"
+                            : model.NombreCliente
+                        : "",
                     Client = cl,
                     ProductsCount = model.SaleDetails.Count,
                     MontoVenta = model.MontoVenta,
@@ -98,9 +412,11 @@ namespace Store.Helpers.SalesHelper
                     IsCanceled = model.IsContado, //Si es de contado, esta cancelado
                     Saldo = model.IsContado ? 0 : model.MontoVenta,
                     FechaVencimiento = hoy.AddDays(15),
-                    Store = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == model.Storeid),
+                    Store = store,
                     CodigoDescuento = model.CodigoDescuento,
-                    MontoVentaAntesDescuento = model.MontoVentaAntesDescuento
+                    MontoVentaAntesDescuento = model.MontoVentaAntesDescuento,
+                    TipoPago = model.IsContado ? tp : null,
+                    Reference = model.Reference
                 };
 
             if (model.IsContado)
@@ -120,13 +436,10 @@ namespace Store.Helpers.SalesHelper
                 Producto prod = await _context.Productos.FirstOrDefaultAsync(
                     p => p.Id == item.Product.Id
                 );
-                Almacen alm = await _context.Almacen.FirstOrDefaultAsync(
-                    a => a.Id == item.Store.Id
-                );
 
                 //Modificamos las existencias
                 Existence existence = await _context.Existences.FirstOrDefaultAsync(
-                    e => e.Producto == prod && e.Almacen == alm
+                    e => e.Producto == prod && e.Almacen == store
                 );
                 existence.Existencia -= item.Cantidad;
                 existence.PrecioVentaDetalle = item.PVD;
@@ -137,7 +450,7 @@ namespace Store.Helpers.SalesHelper
                 SaleDetail saleDetail =
                     new()
                     {
-                        Store = alm,
+                        Store = store,
                         Product = prod,
                         Cantidad = item.Cantidad,
                         IsDescuento = item.IsDescuento,
@@ -169,7 +482,7 @@ namespace Store.Helpers.SalesHelper
                         Product = prod,
                         Fecha = hoy,
                         Concepto = model.IsContado ? "VENTA DE CONTADO" : "VENTA DE CREDITO",
-                        Almacen = alm,
+                        Almacen = store,
                         Entradas = 0,
                         Salidas = item.Cantidad,
                         Saldo = saldo - item.Cantidad,
@@ -187,7 +500,9 @@ namespace Store.Helpers.SalesHelper
                         Monto = sale.MontoVenta,
                         RealizedBy = user,
                         FechaAbono = hoy,
-                        Store = detalles[0].Store
+                        Store = store,
+                        TipoPago = tp,
+                        Reference = model.Reference
                     };
                 _context.Abonos.Add(abono);
             }
@@ -266,11 +581,9 @@ namespace Store.Helpers.SalesHelper
             DateTime hoy = DateTime.Now;
             Abono abono = new();
             List<Abono> abonoList = new();
-            var movList = await _context.CajaMovments
-                .Where(c => c.Store.Id == model.IdStore && c.CajaTipo.Id == 1)
-                .ToListAsync();
-
-            var mov = movList.Where(m => m.Id == movList.Max(k => k.Id)).FirstOrDefault();
+            TipoPago tp = await _context.TipoPagos.FirstOrDefaultAsync(
+                t => t.Id == model.IdTipoPago
+            );
 
             decimal sobra = model.Monto;
             var sales = await _context.Sales
@@ -297,7 +610,9 @@ namespace Store.Helpers.SalesHelper
                             FechaAbono = hoy,
                             Store = await _context.Almacen.FirstOrDefaultAsync(
                                 s => s.Id == model.IdStore
-                            )
+                            ),
+                            TipoPago = tp,
+                            Reference = model.Reference
                         };
 
                         item.Saldo -= sobra;
@@ -319,7 +634,9 @@ namespace Store.Helpers.SalesHelper
                             FechaAbono = hoy,
                             Store = await _context.Almacen.FirstOrDefaultAsync(
                                 s => s.Id == model.IdStore
-                            )
+                            ),
+                            TipoPago = tp,
+                            Reference = model.Reference
                         };
 
                         item.Saldo = 0;
@@ -343,7 +660,9 @@ namespace Store.Helpers.SalesHelper
                             FechaAbono = hoy,
                             Store = await _context.Almacen.FirstOrDefaultAsync(
                                 s => s.Id == model.IdStore
-                            )
+                            ),
+                            TipoPago = tp,
+                            Reference = model.Reference
                         };
 
                         abonoList.Add(abono);
@@ -861,7 +1180,11 @@ namespace Store.Helpers.SalesHelper
                     Monto = model.Monto,
                     RealizedBy = user,
                     FechaAbono = DateTime.Now,
-                    Store = sale.Store
+                    Store = sale.Store,
+                    TipoPago = await _context.TipoPagos.FirstOrDefaultAsync(
+                        t => t.Id == model.IdTipoPago
+                    ),
+                    Reference = model.Reference
                 };
 
             if (sale.Client.SaldoVencido > 0)

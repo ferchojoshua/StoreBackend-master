@@ -6,7 +6,7 @@ namespace Store.Entities
     {
         public string FirstName { get; set; }
 
-        //Este id solo se usara para l;as migraciones futuras, no sirve para nada mas
+        //Este id solo se usara para las migraciones futuras, no sirve para nada mas
         public int IdUserMiration { get; set; }
         public string SecondName { get; set; }
         public string LastName { get; set; }

@@ -32,6 +32,9 @@ namespace Store.Models.ViewModels
 
         [Required]
         public decimal MontoVentaAntesDescuento { get; set; }
+
+        public int TipoPagoId { get; set; }
+        public string Reference { get; set; }
     }
 
     public class AddAbonoViewModel
@@ -43,7 +46,11 @@ namespace Store.Models.ViewModels
         public int IdStore { get; set; }
 
         [Required]
+        public int IdTipoPago { get; set; }
+
+        [Required]
         public decimal Monto { get; set; }
+        public string Reference { get; set; }
     }
 
     public class AddAbonoEspecificoViewModel
@@ -53,6 +60,10 @@ namespace Store.Models.ViewModels
 
         [Required]
         public decimal Monto { get; set; }
+
+        [Required]
+        public int IdTipoPago { get; set; }
+        public string Reference { get; set; }
     }
 
     public class EditSaleViewModel

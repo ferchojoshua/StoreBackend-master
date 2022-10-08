@@ -139,6 +139,11 @@ namespace Store.Helpers.FacturacionHelper
             return sale;
         }
 
+        public async Task<ICollection<TipoPago>> GetTipoPagoAsync()
+        {
+            return await _context.TipoPagos.ToListAsync();
+        }
+
         public async Task<Sales> PayFacturaAsync(PayFactViewModel model, Entities.User user)
         {
             Facturacion fact = await _context.Facturacions
@@ -165,6 +170,10 @@ namespace Store.Helpers.FacturacionHelper
                 fact.Client.ContadorCompras += 1;
             }
 
+            TipoPago tp = await _context.TipoPagos.FirstOrDefaultAsync(
+                t => t.Id == model.TipoPagoId
+            );
+
             Sales sale =
                 new()
                 {
@@ -184,17 +193,10 @@ namespace Store.Helpers.FacturacionHelper
                     FechaVencimiento = hoy.AddDays(15),
                     Store = fact.Store,
                     CodigoDescuento = fact.CodigoDescuento,
-                    MontoVentaAntesDescuento = fact.MontoVentaAntesDescuento
+                    MontoVentaAntesDescuento = fact.MontoVentaAntesDescuento,
+                    TipoPago = tp,
+                    Reference = model.Reference
                 };
-
-            if (fact.IsContado)
-            {
-                var movList = await _context.CajaMovments
-                    .Where(c => c.Store == fact.Store && c.CajaTipo.Id == 1)
-                    .ToListAsync();
-
-                var mov = movList.Where(m => m.Id == movList.Max(k => k.Id)).FirstOrDefault();
-            }
 
             List<SaleDetail> detalles = new();
             foreach (var item in fact.FacturaDetails)
@@ -230,13 +232,12 @@ namespace Store.Helpers.FacturacionHelper
                 detalles.Add(saleDetail); //Se agrega a la lista
 
                 //Agregamos el Kardex de entrada al almacen destino
-                         Kardex kar = await _context.Kardex
-                        .Where(k => k.Product.Id == item.Product.Id && k.Almacen == item.Store)
-                        .OrderByDescending(k => k.Id)
-                        .FirstOrDefaultAsync();
+                Kardex kar = await _context.Kardex
+                    .Where(k => k.Product.Id == item.Product.Id && k.Almacen == item.Store)
+                    .OrderByDescending(k => k.Id)
+                    .FirstOrDefaultAsync();
 
                 int saldo = kar == null ? 0 : kar.Saldo;
-
 
                 Kardex kardex =
                     new()
@@ -262,7 +263,9 @@ namespace Store.Helpers.FacturacionHelper
                         Monto = sale.MontoVenta,
                         RealizedBy = user,
                         FechaAbono = hoy,
-                        Store = detalles[0].Store
+                        Store = detalles[0].Store,
+                        TipoPago = tp,
+                        Reference = model.Reference
                     };
                 _context.Abonos.Add(abono);
             }
@@ -291,7 +294,7 @@ namespace Store.Helpers.FacturacionHelper
                     {
                         Cuenta = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 72),
                         Debito = sale.MontoVenta,
-                        Credito = 0 
+                        Credito = 0
                     };
                 countAsientoContableDetailsList.Add(detalleDebito);
             }

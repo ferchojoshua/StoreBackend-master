@@ -49,11 +49,13 @@ namespace Store.Models.ViewModels
     public class PayFactViewModel
     {
         public int FacturaId { get; set; }
+        public int TipoPagoId { get; set; }
         public bool IsDescuento { get; set; }
         public decimal DescuentoXPercent { get; set; }
         public decimal DescuentoXMonto { get; set; }
         public string CodigoDescuento { get; set; }
         public decimal MontoVenta { get; set; }
         public decimal MontoVentaAntesDescuento { get; set; }
+        public string Reference { get; set; }
     }
 }

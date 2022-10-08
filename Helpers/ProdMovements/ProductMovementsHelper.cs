@@ -172,6 +172,21 @@ namespace Store.Helpers.ProdMovements
                 .Include(p => p.MovmentDetails)
                 .ThenInclude(md => md.Producto)
                 .Include(p => p.User)
+                .Select(
+                    x =>
+                        new ProductMovments()
+                        {
+                            Id = x.Id,
+                            User = new Entities.User()
+                            {
+                                FirstName = x.User.FirstName,
+                                LastName = x.User.LastName,
+                            },
+                            Concepto = x.Concepto,
+                            Fecha = x.Fecha,
+                            MovmentDetails = x.MovmentDetails
+                        }
+                )
                 .ToListAsync();
         }
 

@@ -166,6 +166,18 @@ namespace Store.Controllers.API
                     .Include(e => e.Producto)
                     .ThenInclude(p => p.TipoNegocio)
                     .Where(e => e.Almacen.Id == model.IdAlmacen && e.Producto != null)
+                    .Select(
+                        x =>
+                            new Existence()
+                            {
+                                Id = x.Id,
+                                Producto = x.Producto,
+                                Existencia = x.Existencia,
+                                PrecioCompra = x.PrecioCompra,
+                                PrecioVentaDetalle = x.PrecioVentaDetalle,
+                                PrecioVentaMayor = x.PrecioVentaMayor
+                            }
+                    )
                     .ToListAsync();
                 if (result == null)
                 {

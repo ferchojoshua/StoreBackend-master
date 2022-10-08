@@ -47,10 +47,9 @@ namespace Store.Data
         public DbSet<StockAdjustmentDetail> StockAdjustmentDetails { get; set; }
         public DbSet<SaleAnulation> SaleAnulations { get; set; }
         public DbSet<SaleAnulationDetails> SaleAnulationDetails { get; set; }
-
         public DbSet<TipoNegocio> TipoNegocios { get; set; }
+        public DbSet<TipoPago> TipoPagos { get; set; }
         public DbSet<UserSession> UserSession { get; set; }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

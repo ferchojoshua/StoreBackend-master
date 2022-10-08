@@ -15,45 +15,40 @@ namespace Store.Helpers.ProductExistenceService
 
         public async Task<ICollection<ExistenciaResponse>> GetProductExistencesAsync()
         {
-            List<ExistenciaResponse> eRList = new();
-            var productList = await _context.Productos
+            return await _context.Productos
                 .Include(p => p.Familia)
                 .Include(p => p.TipoNegocio)
                 .Include(p => p.Existences)
                 .ThenInclude(e => e.Almacen)
-                .ToListAsync();
-            foreach (var item in productList)
-            {
-                ExistenciaResponse e = new();
-                List<ExistenceDetail> eDList = new();
-                foreach (var itemDetail in item.Existences)
-                {
-                    ExistenceDetail eD =
-                        new()
+                .Select(
+                    x =>
+                        new ExistenciaResponse()
                         {
-                            IdExistence = itemDetail.Id,
-                            Almacen = itemDetail.Almacen.Name,
-                            Exisistencia = itemDetail.Existencia,
-                            PVD = itemDetail.PrecioVentaDetalle,
-                            PVM = itemDetail.PrecioVentaMayor
-                        };
-                    eDList.Add(eD);
-                }
-                e = new()
-                {
-                    IdProducto = item.Id,
-                    BarCode = item.BarCode,
-                    Description = item.Description,
-                    Familia = item.Familia == null ? "" : item.Familia.Description,
-                    Marca = item.Marca,
-                    Modelo = item.Modelo,
-                    TipoNegocio = item.TipoNegocio == null ? "" : item.TipoNegocio.Description,
-                    UM = item.UM,
-                    Existence = eDList
-                };
-                eRList.Add(e);
-            }
-            return eRList;
+                            IdProducto = x.Id,
+                            BarCode = x.BarCode,
+                            Description = x.Description,
+                            Familia = x.Familia.Description,
+                            Marca = x.Marca,
+                            Modelo = x.Modelo,
+                            TipoNegocio = x.TipoNegocio.Description,
+                            UM = x.UM,
+                            Existence = x.Existences
+                                .Select(
+                                    e =>
+                                        new ExistenceDetail()
+                                        {
+                                            IdExistence = e.Id,
+                                            Almacen = e.Almacen.Name,
+                                            Exisistencia = e.Existencia,
+                                            PVD = e.PrecioVentaDetalle,
+                                            PVM = e.PrecioVentaMayor,
+                                            PrecioCompra = e.PrecioCompra
+                                        }
+                                )
+                                .ToList()
+                        }
+                )
+                .ToListAsync();
         }
     }
 }
