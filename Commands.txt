@@ -1,0 +1,121 @@
+--Instala entity framework cli
+dotnet tool install --global dotnet-ef
+
+--Verifica la instalacion
+dotnet ef
+
+--Agregar una migracion
+dotnet ef migrations add <Migration Name>
+
+--Actualizar la base de datos
+dotnet ef database update
+
+Agregar a los modulos
+
+-- insert into Permissions values('CLIENTS VER', 1, 1) 
+-- insert into Permissions values('CLIENTS CREATE', 1, 1) 
+-- insert into Permissions values('CLIENTS UPDATE', 1, 1) 
+-- insert into Permissions values('CLIENTS DELETE', 1, 1) 
+
+-- insert into Permissions values('CLIENTS VER', 0, 2) 
+-- insert into Permissions values('CLIENTS CREATE', 0, 2) 
+-- insert into Permissions values('CLIENTS UPDATE', 0, 2) 
+-- insert into Permissions values('CLIENTS DELETE', 0, 2) 
+
+-- insert into Permissions values('CLIENTS VER', 0, 6) 
+-- insert into Permissions values('CLIENTS CREATE', 0, 6) 
+-- insert into Permissions values('CLIENTS UPDATE', 0, 6) 
+-- insert into Permissions values('CLIENTS DELETE', 0, 6)
+-- ---------------------------------------------------------------
+
+-- insert into Permissions values('COMMUNITIES VER', 1, 1) 
+-- insert into Permissions values('COMMUNITIES CREATE', 1, 1) 
+-- insert into Permissions values('COMMUNITIES UPDATE', 1, 1) 
+-- insert into Permissions values('COMMUNITIES DELETE', 1, 1) 
+
+-- insert into Permissions values('COMMUNITIES VER', 0, 2) 
+-- insert into Permissions values('COMMUNITIES CREATE', 0, 2) 
+-- insert into Permissions values('COMMUNITIES UPDATE', 0, 2) 
+-- insert into Permissions values('COMMUNITIES DELETE', 0, 2) 
+
+-- insert into Permissions values('COMMUNITIES VER', 0, 6) 
+-- insert into Permissions values('COMMUNITIES CREATE', 0, 6) 
+-- insert into Permissions values('COMMUNITIES UPDATE', 0, 6) 
+-- insert into Permissions values('COMMUNITIES DELETE', 0, 6) 
+-- ----------------------------------------------------------
+
+-- insert into Permissions values('SALES VER', 1, 1) 
+-- insert into Permissions values('SALES CREATE', 1, 1) 
+-- insert into Permissions values('SALES UPDATE', 1, 1) 
+-- insert into Permissions values('SALES DELETE', 1, 1) 
+
+-- insert into Permissions values('SALES VER', 0, 2) 
+-- insert into Permissions values('SALES CREATE', 0, 2) 
+-- insert into Permissions values('SALES UPDATE', 0, 2) 
+-- insert into Permissions values('SALES DELETE', 0, 2) 
+
+-- insert into Permissions values('SALES VER', 0, 6) 
+-- insert into Permissions values('SALES CREATE', 0, 6) 
+-- insert into Permissions values('SALES UPDATE', 0, 6) 
+-- insert into Permissions values('SALES DELETE', 0, 6) 
+
+-- para publicar
+dotnet publish -o publish
+
+
+Access
+
+User : Automoto
+Pass : Automoto.2022*
+
+
+Repara el kardex
+https://localhost:7015/api/Productos/ReparaKardex
+
+
+--Actualiza el saldo vencido y las facturas vencidas
+update	Clients 
+set		SaldoVencido = 
+		(
+				select 	isnull(sum(saldo),0) as saldo 
+				from	Sales as s
+				where	s.IsContado = 0 and 
+						s.IsCanceled = 0 and
+						'2022-09-09' > s.FechaVencimiento and
+						Clients.Id = s.ClientId 
+		),
+		FacturasVencidas = 
+		(
+				select 	isnull(COUNT(*),0) as Vencidas 
+				from	Sales as s
+				where	s.IsContado = 0 and 
+						s.IsCanceled = 0 and
+						FORMAT(GETDATE(), 'dd-MM-yy') > FORMAT(FechaVencimiento, 'dd-MM-yy')  and
+						Clients.Id = s.ClientId 
+		)
+
+
+select * from Existences where ProductoId = 3921 order by AlmacenId
+
+select * from Productos where id = 3921
+
+select * from ProductMovmentDetails as det
+		left join ProductMovments as pm on det.ProductMovmentId = pm.Id
+	where	ProductoId = 4395 and 
+			AlmacenDestinoId = 3
+
+select * from Kardex where ProductId = 5391 and AlmacenId = 1
+select * from Kardex where ProductId = 5391 and AlmacenId = 2
+select * from Kardex where ProductId = 3915 and AlmacenId = 3 and Concepto LIKE 'TRASLADO DE INVENTARIO%'
+select * from Kardex where ProductId = 5391 and AlmacenId = 4
+
+http://automoto.eastus.cloudapp.azure.com/automoto
+
+update rols set StartOperations = '2022-10-03 00:00:00', EndOperations = '2022-10-03 23:59:59' where id = 1
+
+insert into Permissions values('REPORTETRASLADOS VER', 1, 1) 
+
+insert into TipoPagos VALUES ('EFECTIVO')
+insert into TipoPagos VALUES ('TRANSFERENCIA')
+insert into TipoPagos VALUES ('TARJETA')
+insert into TipoPagos VALUES ('CHEQUE')
