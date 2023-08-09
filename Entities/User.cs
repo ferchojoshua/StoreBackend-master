@@ -18,7 +18,7 @@ namespace Store.Entities
         public bool IsDarkMode { get; set; }
         public bool IsActiveSession { get; set; }
         public bool IsDefaultPass { get; set; }
-        public UserSession UserSession { get; set; }
+        public UserSession UserSession { get; set; }    
         public ICollection<Almacen> StoreAccess { get; set; }
     }
 }

@@ -2,13 +2,13 @@ using Microsoft.EntityFrameworkCore;
 using Store.Data;
 using Store.Models.Responses;
 
-namespace Store.Helpers.ProductExistenceService
+namespace Store.Helpers.ProductRecalExistenceService
 {
-    public class ProdExistService : IProdExistService
+    public class ProdRecalExistService : IProdRecalExistService
     {
         private readonly DataContext _context;
 
-        public ProdExistService(DataContext context)
+        public ProdRecalExistService(DataContext context)
         {
             _context = context;
         }

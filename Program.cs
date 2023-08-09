@@ -30,14 +30,15 @@ builder.Services
     .AddControllers()
     .AddJsonOptions(s => s.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
+
 if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
 {
     builder.Services.AddDbContext<DataContext>(
         opt =>
-            opt.UseSqlServer(
-                builder.Configuration.GetConnectionString("DevConnetion"),
-                x => x.UseNetTopologySuite()
-            )
+    //opt.UseSqlServer(
+    //    builder.Configuration.GetConnectionString("DevConnetion"),
+    //    x => x.UseNetTopologySuite()
+    //)
     // opt.UseSqlServer(
     //     builder.Configuration.GetConnectionString("MigConnetion"),
     //     x => x.UseNetTopologySuite()
@@ -45,7 +46,11 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development
     // opt.UseSqlServer(
     //     builder.Configuration.GetConnectionString("LocalConn"),
     //     x => x.UseNetTopologySuite()
-    // )
+    //)
+    opt.UseSqlServer(
+    builder.Configuration.GetConnectionString("ProdConnetion"),
+    x => x.UseNetTopologySuite()
+    )
     );
 }
 else

@@ -671,8 +671,7 @@ namespace Store.Helpers.ReportHelper
                     .ThenInclude(sd => sd.Product.TipoNegocio)
                     .Include(s => s.SaleDetails)
                     .ThenInclude(sd => sd.Product.Familia)
-                    .Where(
-                        s =>
+                    .Where(s => 
                             s.IsAnulado == false
                             && s.FechaVenta.Date >= model.Desde.Date
                             && s.FechaVenta.Date <= model.Hasta.Date
@@ -680,6 +679,27 @@ namespace Store.Helpers.ReportHelper
                     )
                     .ToListAsync();
             }
+            else if (model.StoreId == 0 && model.TipoNegocioId != 0)
+            {
+                sales = await _context.Sales
+                    .Include(s => s.Store)
+                    .Include(s => s.SaleDetails)
+                    .ThenInclude(sd => sd.Product)
+                    .Include(s => s.SaleDetails)
+                    .ThenInclude(sd => sd.Product.TipoNegocio)
+                    .Include(s => s.SaleDetails)
+                    .ThenInclude(sd => sd.Product.Familia)
+                    .Where(
+                        s =>
+                            s.IsAnulado == false
+                            && s.FechaVenta.Date >= model.Desde.Date
+                            && s.FechaVenta.Date <= model.Hasta.Date
+                            && s.Store.Id >= model.StoreId
+
+                    )
+                    .ToListAsync();
+            }
+
             else
             {
                 sales = await _context.Sales
@@ -695,6 +715,7 @@ namespace Store.Helpers.ReportHelper
                             s.IsAnulado == false
                             && s.FechaVenta.Date >= model.Desde.Date
                             && s.FechaVenta.Date <= model.Hasta.Date
+                             && s.Store.Id >= model.StoreId 
                     )
                     .ToListAsync();
             }
@@ -713,9 +734,9 @@ namespace Store.Helpers.ReportHelper
 
             ProdNoVendidosResponse r = new();
 
-            if (model.TipoNegocioId != 0)
+            if (model.StoreId != 0)
             {
-                if (model.FamiliaId != 0)
+                if (model.FamiliaId != 0 && model.TipoNegocioId != 0 && model.StoreId != 0)
                 {
                     var vExistences = await _context.Existences
                         .Include(e => e.Producto)
@@ -727,12 +748,71 @@ namespace Store.Helpers.ReportHelper
                                 e.Existencia > 0
                                 && e.Producto.TipoNegocio.Id == model.TipoNegocioId
                                 && e.Producto.Familia.Id == model.FamiliaId
-                                && !detailListNoDuplicates.Contains(
-                                    e.Almacen.Id.ToString() + e.Producto.Id.ToString()
+                                && e.Almacen.Id == model.StoreId  // se Mejoro la consult GCHAVEZ 03/06/2023
+                                && !detailListNoDuplicates.Contains(e.Almacen.Id.ToString() + e.Producto.Id.ToString()
                                 )
                         )
-                        .OrderBy(e => e.Producto)
-                        // .OrderBy(e => e.Almacen)
+                        .OrderBy(e => e.Producto).ThenBy(e => e.Almacen.Id) // se Mejoro la consult GCHAVEZ 03/06/2023
+                        .ToListAsync();
+                    return vExistences;
+                }
+                else if (model.FamiliaId == 0 && model.TipoNegocioId != 0 && model.StoreId != 0)
+                {
+                    var vExistences = await _context.Existences
+                        .Include(e => e.Producto)
+                        .ThenInclude(p => p.TipoNegocio)
+                        .Include(e => e.Producto)
+                        .ThenInclude(p => p.Familia)
+                        .Where(
+                            e =>
+                                e.Existencia > 0
+                                && e.Producto.TipoNegocio.Id == model.TipoNegocioId
+                                && e.Producto.Familia.Id >= model.FamiliaId
+                                && e.Almacen.Id == model.StoreId  // se Mejoro la consult GCHAVEZ 03/06/2023
+                                && !detailListNoDuplicates.Contains(e.Almacen.Id.ToString() + e.Producto.Id.ToString()
+                                )
+                        )
+                        .OrderBy(e => e.Producto).ThenBy(e => e.Almacen.Id) // se Mejoro la consult GCHAVEZ 03/06/2023
+                        .ToListAsync();
+                    return vExistences;
+                }
+                else if (model.FamiliaId != 0 && model.TipoNegocioId == 0 && model.StoreId != 0)
+                {
+                    var vExistences = await _context.Existences
+                        .Include(e => e.Producto)
+                        .ThenInclude(p => p.TipoNegocio)
+                        .Include(e => e.Producto)
+                        .ThenInclude(p => p.Familia)
+                        .Where(
+                            e =>
+                                e.Existencia > 0
+                                && e.Producto.TipoNegocio.Id >= model.TipoNegocioId
+                                && e.Producto.Familia.Id == model.FamiliaId
+                                && e.Almacen.Id == model.StoreId  // se Mejoro la consult GCHAVEZ 03/06/2023
+                                && !detailListNoDuplicates.Contains(e.Almacen.Id.ToString() + e.Producto.Id.ToString()
+                                )
+                        )
+                        .OrderBy(e => e.Producto).ThenBy(e => e.Almacen.Id) // se Mejoro la consult GCHAVEZ 03/06/2023
+                        .ToListAsync();
+                    return vExistences;
+                }
+                else if (model.FamiliaId == 0 && model.TipoNegocioId == 0 && model.StoreId != 0)
+                {
+                    var vExistences = await _context.Existences
+                        .Include(e => e.Producto)
+                        .ThenInclude(p => p.TipoNegocio)
+                        .Include(e => e.Producto)
+                        .ThenInclude(p => p.Familia)
+                        .Where(
+                            e =>
+                                e.Existencia > 0
+                                && e.Producto.TipoNegocio.Id >= model.TipoNegocioId
+                                && e.Producto.Familia.Id >= model.FamiliaId
+                                && e.Almacen.Id == model.StoreId  // se Mejoro la consult GCHAVEZ 03/06/2023
+                                && !detailListNoDuplicates.Contains(e.Almacen.Id.ToString() + e.Producto.Id.ToString()
+                                )
+                        )
+                        .OrderBy(e => e.Producto).ThenBy(e => e.Almacen.Id) // se Mejoro la consult GCHAVEZ 03/06/2023
                         .ToListAsync();
                     return vExistences;
                 }
@@ -747,11 +827,13 @@ namespace Store.Helpers.ReportHelper
                             e =>
                                 e.Existencia > 0
                                 && e.Producto.TipoNegocio.Id == model.TipoNegocioId
-                                && !detailListNoDuplicates.Contains(
-                                    e.Almacen.Id.ToString() + e.Producto.Id.ToString()
+                                 && e.Producto.Familia.Id >= model.FamiliaId
+                                && e.Almacen.Id == model.StoreId  // se Mejoro la consult GCHAVEZ 03/06/2023
+                                && !detailListNoDuplicates.Contains(e.Almacen.Id.ToString() + e.Producto.Id.ToString()                          
                                 )
                         )
-                        .OrderBy(e => e.Producto)
+                        //.OrderBy(e => e.Producto)
+                        .OrderBy(e => e.Producto).ThenBy(e => e.Almacen.Id)
                         // .OrderBy(e => e.Almacen)
                         .ToListAsync();
                     return vExistences;
@@ -759,7 +841,7 @@ namespace Store.Helpers.ReportHelper
             }
             else
             {
-                if (model.FamiliaId != 0)
+                 if (model.FamiliaId != 0 && model.StoreId != 0 && model.TipoNegocioId != 0)
                 {
                     var vExistences = await _context.Existences
                         .Include(e => e.Producto)
@@ -770,12 +852,70 @@ namespace Store.Helpers.ReportHelper
                             e =>
                                 e.Existencia > 0
                                 && e.Producto.Familia.Id == model.FamiliaId
-                                && !detailListNoDuplicates.Contains(
-                                    e.Almacen.Id.ToString() + e.Producto.Id.ToString()
-                                )
+                                && !detailListNoDuplicates.Contains(e.Almacen.Id.ToString() + e.Producto.Id.ToString())
+                                 && e.Almacen.Id == model.StoreId  // se Mejoro la consult GCHAVEZ 03/06/2023
                         )
-                        .OrderBy(e => e.Producto)
-                        // .OrderBy(e => e.Almacen)
+                        .OrderBy(e => e.Producto).OrderByDescending(e => e.Almacen.Id) // se Mejoro la consult GCHAVEZ 09/06/2023
+                                                                                    
+                        .ToListAsync();
+                    return vExistences;
+                }
+                else if (model.FamiliaId == 0 && model.StoreId != 0 && model.TipoNegocioId != 0)
+                {
+                    var vExistences = await _context.Existences
+                        .Include(e => e.Producto)
+                        .ThenInclude(p => p.TipoNegocio)
+                        .Include(e => e.Producto)
+                        .ThenInclude(p => p.Familia)
+                        .Where(
+                            e =>
+                                e.Existencia > 0
+                                 && e.Producto.Familia.Id >= model.FamiliaId
+                                && !detailListNoDuplicates.Contains(e.Almacen.Id.ToString() + e.Producto.Id.ToString())
+                                && e.Almacen.Id >= model.StoreId  // se Mejoro la consult GCHAVEZ 03/06/2023
+
+                                )
+                        .OrderBy(e => e.Producto).OrderByDescending(e => e.Almacen.Id) // se Mejoro la consult GCHAVEZ 09/06/2023
+                        .ToListAsync();
+                    return vExistences;
+                }
+                else if (model.FamiliaId == 0 && model.StoreId == 0 && model.TipoNegocioId != 0)
+                {
+                    var vExistences = await _context.Existences
+                        .Include(e => e.Producto)
+                        .ThenInclude(p => p.TipoNegocio)
+                        .Include(e => e.Producto)
+                        .ThenInclude(p => p.Familia)
+                        .Where(
+                            e =>
+                                e.Existencia > 0
+                                 && e.Producto.Familia.Id >= model.FamiliaId
+                                && !detailListNoDuplicates.Contains(e.Almacen.Id.ToString() + e.Producto.Id.ToString())
+                                && e.Almacen.Id >= model.StoreId  // se Mejoro la consult GCHAVEZ 03/06/2023
+                                && e.Producto.TipoNegocio.Id == model.TipoNegocioId
+
+                                )
+                        .OrderBy(e => e.Producto).OrderByDescending(e => e.Almacen.Id) // se Mejoro la consult GCHAVEZ 09/06/2023
+                        .ToListAsync();
+                    return vExistences;
+                }
+                else if (model.FamiliaId != 0 && model.StoreId == 0 && model.TipoNegocioId == 0)
+                {
+                    var vExistences = await _context.Existences
+                        .Include(e => e.Producto)
+                        .ThenInclude(p => p.TipoNegocio)
+                        .Include(e => e.Producto)
+                        .ThenInclude(p => p.Familia)
+                        .Where(
+                            e =>
+                                e.Existencia > 0
+                                 && e.Producto.Familia.Id == model.FamiliaId
+                                && !detailListNoDuplicates.Contains(e.Almacen.Id.ToString() + e.Producto.Id.ToString())
+                                && e.Almacen.Id >= model.StoreId  // se Mejoro la consult GCHAVEZ 03/06/2023
+                                && e.Producto.TipoNegocio.Id >= model.TipoNegocioId
+
+                                )
+                        .OrderBy(e => e.Producto).OrderByDescending(e => e.Almacen.Id) // se Mejoro la consult GCHAVEZ 09/06/2023
                         .ToListAsync();
                     return vExistences;
                 }
@@ -789,12 +929,11 @@ namespace Store.Helpers.ReportHelper
                         .Where(
                             e =>
                                 e.Existencia > 0
-                                && !detailListNoDuplicates.Contains(
-                                    e.Almacen.Id.ToString() + e.Producto.Id.ToString()
+                                && !detailListNoDuplicates.Contains(e.Almacen.Id.ToString() + e.Producto.Id.ToString())
+                                //&& e.Almacen.Id == model.StoreId  // se Mejoro la consult GCHAVEZ 03/06/2023
+                                                                               
                                 )
-                        )
-                        .OrderBy(e => e.Producto)
-                        // .OrderBy(e => e.Almacen)
+                        .OrderBy(e => e.Producto).OrderByDescending(e => e.Almacen.Id) // se Mejoro la consult GCHAVEZ 09/06/2023
                         .ToListAsync();
                     return vExistences;
                 }

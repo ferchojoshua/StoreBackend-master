@@ -6,6 +6,9 @@ namespace Store.Models.ViewModels
     public class AddEntradaProductoViewModel
     {
         [Required]
+        public int AlmacenId { get; set; }
+
+        [Required]
         public string NoFactura { get; set; }
 
         [Required]
@@ -46,6 +49,9 @@ namespace Store.Models.ViewModels
 
         [Required]
         public decimal MontoFactura { get; set; }
+
+        [Required]
+        public int AlmacenId { get; set; }
 
         [Required]
         public List<ProductInDetails> ProductInDetails { get; set; }

@@ -17,6 +17,8 @@ namespace Store.Helpers.SalesHelper
 
         public async Task<ICollection<Sales>> GetContadoSalesByStoreAsync(int idStore)
         {
+            DateTime hoy = DateTime.Now;
+
             return await _context.Sales
                 .Include(s => s.Client)
                 .Include(s => s.FacturedBy)
@@ -24,7 +26,7 @@ namespace Store.Helpers.SalesHelper
                 .ThenInclude(sd => sd.Store)
                 .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado == false))
                 .ThenInclude(sd => sd.Product)
-                .Where(s => s.IsAnulado == false && s.Store.Id == idStore && s.IsContado)
+                .Where(s => s.IsAnulado == false && s.FechaVenta.Year == hoy.Year && s.Store.Id == idStore && s.IsContado)
                 .Select(
                     x =>
                         new Sales()
@@ -106,6 +108,8 @@ namespace Store.Helpers.SalesHelper
 
         public async Task<ICollection<Sales>> GetCreditoSalesByStoreAsync(int idStore)
         {
+
+            DateTime hoy = DateTime.Now;
             return await _context.Sales
                 .Include(s => s.Client)
                 .Include(s => s.FacturedBy)
@@ -113,7 +117,7 @@ namespace Store.Helpers.SalesHelper
                 .ThenInclude(sd => sd.Store)
                 .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado == false))
                 .ThenInclude(sd => sd.Product)
-                .Where(s => s.IsAnulado == false && s.Store.Id == idStore && s.IsContado == false)
+                .Where(s => s.IsAnulado == false && s.FechaVenta.Year == hoy.Year  && s.Store.Id == idStore && s.IsContado == false)
                 .Select(
                     x =>
                         new Sales()
@@ -195,6 +199,7 @@ namespace Store.Helpers.SalesHelper
 
         public async Task<ICollection<Sales>> GetAnulatedSalesByStoreAsync(int idStore)
         {
+            DateTime hoy = DateTime.Now;
             return await _context.Sales
                 .Include(s => s.Client)
                 .Include(s => s.FacturedBy)
@@ -202,7 +207,7 @@ namespace Store.Helpers.SalesHelper
                 .ThenInclude(sd => sd.Store)
                 .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado))
                 .ThenInclude(sd => sd.Product)
-                .Where(s => s.IsAnulado && s.Store.Id == idStore)
+                .Where(s => s.IsAnulado &&  s.FechaVenta.Year == hoy.Year && s.Store.Id == idStore)
                 .Select(
                     x =>
                         new Sales()

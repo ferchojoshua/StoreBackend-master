@@ -25,11 +25,12 @@ namespace Store.Helpers.User
 
         #region Metodos User
         public async Task<ICollection<Entities.User>> GetActiveUsersAsync()
-        {
+            {
             return await _context.Users
-                .Where(u => u.IsActive == true && u.Id != "cb44660e-0ec5-4328-8a88-7843241cbf72")
+                .Where(u => u.IsActive == true 
+                && u.Id != "cb44660e-0ec5-4328-8a88-7843241cbf72")
                 .Include(u => u.Rol)
-                // .Include(u => u.StoreAccess)
+                .Include(u => u.StoreAccess)    /*Esta Linea se habilito para poder mostrar los almacenes solicitado por Victor GCHAVEZ 15062023*/
                 .ToListAsync();
         }
 
@@ -57,7 +58,7 @@ namespace Store.Helpers.User
 
         public async Task<Entities.User> GetUserAsync(string userName)
         {
-            return await _context.Users
+                return await _context.Users
                 .Where(u => u.IsActive == true)
                 .Include(u => u.Rol)
                 .ThenInclude(ur => ur.Permissions)

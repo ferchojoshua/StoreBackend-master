@@ -7,6 +7,7 @@ using Store.Data;
 using Store.Entities;
 using Store.Helpers.ProductHelper;
 using Store.Helpers.User;
+using Store.Migrations;
 using Store.Models.ViewModels;
 
 namespace Store.Controllers.API
@@ -31,7 +32,7 @@ namespace Store.Controllers.API
             _context = context;
         }
 
-        // GET: api/Productos
+        // GET: api/Productos Reutilizada por Recall
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Producto>>> GetProductos()
         {
@@ -79,6 +80,43 @@ namespace Store.Controllers.API
                 .OrderBy(p => p.Description)
                 .ToListAsync();
         }
+
+       [HttpGet("GetProductsRecalById/{id}")]
+        public async Task<ActionResult<IEnumerable<Producto>>> GetProductsRecalById(int id)
+        {
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS VER"))
+            {
+                return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync(user);
+                return Ok("eX01");
+            }
+
+
+            try
+            {
+                var Producto = await _productHelper.GetProductsRecalByIdAsync(id);
+                return Ok(Producto.OrderByDescending(s => s.Id));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
 
         // GET: api/Productos/5
         [HttpGet("{id}")]
@@ -336,7 +374,7 @@ namespace Store.Controllers.API
             try
             {
                 var kardex = await _productHelper.GetKardex(model);
-                return Ok(kardex);
+               return Ok(kardex);
             }
             catch (Exception ex)
             {

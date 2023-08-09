@@ -4,6 +4,7 @@ using Store.Entities;
 using Store.Helpers.AsientoContHelper;
 using Store.Models.ViewModels;
 using StoreBackend.Models.ViewModels;
+using System.Data;
 
 namespace Store.Helpers.EntradaProductos
 {
@@ -25,9 +26,8 @@ namespace Store.Helpers.EntradaProductos
         {
             DateTime fechaV = DateTime.Now;
             fechaV.AddDays(15);
-            Almacen alm = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == 1);
-            Provider prov = await _context.Providers.FirstOrDefaultAsync(
-                p => p.Id == model.ProviderId
+            Almacen alm = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == model.AlmacenId);
+            Provider prov = await _context.Providers.FirstOrDefaultAsync(p => p.Id == model.ProviderId
             );
             ProductIn productIn =
                 new()
@@ -51,9 +51,7 @@ namespace Store.Helpers.EntradaProductos
             foreach (var item in model.ProductInDetails)
             {
                 ProductInDetails pd = new();
-                Producto prod = await _context.Productos.FirstOrDefaultAsync(
-                    p => p.Id == item.Product.Id
-                );
+                Producto prod = await _context.Productos.FirstOrDefaultAsync(p => p.Id == item.Product.Id);
                 pd.Product = prod;
                 pd.Cantidad = item.Cantidad;
                 pd.CostoCompra = item.CostoCompra;
@@ -66,7 +64,7 @@ namespace Store.Helpers.EntradaProductos
                 detalles.Add(pd);
 
                 Existence existence = await _context.Existences
-                    .Where(e => e.Producto.Id == prod.Id && e.Almacen.Id == 1)
+                    .Where(e => e.Producto.Id == prod.Id && e.Almacen.Id == model.AlmacenId)
                     .FirstOrDefaultAsync();
                 if (existence == null)
                 {
@@ -93,7 +91,7 @@ namespace Store.Helpers.EntradaProductos
                 }
 
                 Kardex kar = await _context.Kardex
-                    .Where(k => k.Product == prod && k.Almacen.Id == 1)
+                    .Where(k => k.Product == prod && k.Almacen.Id == model.AlmacenId)
                     .OrderByDescending(k => k.Id)
                     .FirstOrDefaultAsync();
 
@@ -173,6 +171,53 @@ namespace Store.Helpers.EntradaProductos
             return productIn;
         }
 
+        //public Task<List<ProductsRecal>> GetAllProductsRecal(int Fam, int TipoNego, int Alm, int ProductoId)
+        //{
+        //    List<ProductsRecal> ProductsRecal = new List<ProductsRecal>();
+        //    string connectionString = "conString"; //configuration.GetConnectionString("DefaultConnection");
+        //    string query = @"dbo.uspProductsList";
+
+        //    try
+        //    {
+        //        SqlConnection connection = new SqlConnection(connectionString);
+
+        //        using (connection)
+        //        {
+        //            connection.Open();
+        //            ProductsRecal = connection.Query<ProductsRecal>(query, new { Familia = Fam, TipoNegocio = TipoNego, Almacen = Alm, ProductoId = ProductoId }, commandType: CommandType.StoredProcedure).ToList();
+        //        }
+        //    }
+        //    catch (Exception)
+        //    {
+        //        throw;
+        //    }
+        //    return Task.FromResult(ProductsRecal);
+        //}
+        //public Task<List<ProductsRecal>> GetAllProductsRecal()
+        //{
+        //    List<ProductsRecal> ProductsRecal = new List<ProductsRecal>();
+        //    string connectionString = "conString"; //configuration.GetConnectionString("DefaultConnection");
+        //    string query = @"dbo.uspProductsList";
+
+        //    try
+        //    {
+        //        SqlConnection connection = new SqlConnection(connectionString);
+
+        //        using (connection)
+        //        {
+        //            connection.Open();
+        //            ProductsRecal = connection.Query<ProductsRecal>(query, new { }, commandType: CommandType.StoredProcedure).ToList();
+        //        }
+        //    }
+        //    catch (Exception)
+        //    {
+        //        throw;
+        //    }
+        //    return Task.FromResult(ProductsRecal);
+        //}
+
+
+
         public async Task<ProductIn> PagarFacturaAsync(int id)
         {
             ProductIn productIn = await _context.ProductIns.FirstOrDefaultAsync(pI => pI.Id == id);
@@ -181,6 +226,31 @@ namespace Store.Helpers.EntradaProductos
             await _context.SaveChangesAsync();
             return productIn;
         }
+
+
+        //public Task<List<ProductsRecal>> GetAllProductsRecal(int Fam, int TipoNego, int Alm, int ProductoId)
+        //{
+        //    List<ProductsRecal> ProductsRecal = new List<ProductsRecal>();
+        //    string connectionString = "conString"; //configuration.GetConnectionString("DefaultConnection");
+        //         //    string connectionString = configuration.GetConnectionString("conString");
+        //    string query = @"dbo.uspProductsList";
+
+        //    try
+        //    {
+        //        SqlConnection connection = new SqlConnection(connectionString);
+
+        //        using (connection)
+        //        {
+        //            connection.Open();
+        //            ProductsRecal = connection.Query<ProductsRecal>(query, new { Familia = Fam, TipoNegocio = TipoNego, Almacen = Alm, ProductoId = ProductoId }, commandType: CommandType.StoredProcedure).ToList();
+        //        }
+        //    }
+        //    catch (Exception)
+        //    {
+        //        throw;
+        //    }
+        //    return Task.FromResult(ProductsRecal);
+        //}
 
         public async Task<ProductIn> UpdateProductInAsync(
             UpdateEntradaProductoViewModel model,

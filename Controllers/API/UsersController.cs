@@ -304,7 +304,7 @@ namespace Store.Controllers.API
                 await _userHelper.LogoutAsync(usr);
                 return Ok("eX01");
             }
-            if (!await _userHelper.IsAutorized(usr.Rol, "USER UPDATE"))
+            if (!await _userHelper.IsAutorized(usr.Rol, "   USER UPDATE"))
             {
                 return Unauthorized();
             }

@@ -106,6 +106,7 @@ namespace Store.Helpers.ClientService
                     s =>
                         s.IsAnulado == false
                         && s.FechaAbono.Month == DateTime.Now.Month
+                        && s.FechaAbono.Year == DateTime.Now.Year
                         && s.Store.Id == idStore
                 )
                 .ToListAsync();
@@ -182,6 +183,7 @@ namespace Store.Helpers.ClientService
                     s =>
                         s.IsAnulado == false
                         && s.FechaAbono.Month == hoy.Month
+                        && s.FechaAbono.Year == hoy.Year
                         && s.Store.Id == idStore
                 )
                 .ToListAsync();

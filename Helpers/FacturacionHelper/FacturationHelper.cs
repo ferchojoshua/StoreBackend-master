@@ -99,9 +99,11 @@ namespace Store.Helpers.FacturacionHelper
 
         public async Task<ICollection<Facturacion>> GetAnulatedFacturacionAsync(int storeId)
         {
+
+            DateTime hoy = DateTime.Now;
             var result = await _context.Facturacions
                 .Include(f => f.Client)
-                .Where(f => f.IsCanceled == false && f.IsAnulado && f.Store.Id == storeId)
+                .Where(f => f.IsCanceled == false && f.IsAnulado && f.FechaVenta.Year == hoy.Year && f.Store.Id == storeId )
                 .ToListAsync();
 
             return result;
@@ -109,10 +111,11 @@ namespace Store.Helpers.FacturacionHelper
 
         public async Task<ICollection<Facturacion>> GetCancelledFacturacionAsync(int storeId)
         {
+            DateTime hoy = DateTime.Now;
             var result = await _context.Facturacions
                 .Include(f => f.Client)
                 .Include(f => f.Sale)
-                .Where(f => f.IsCanceled && f.IsAnulado == false && f.Store.Id == storeId)
+                .Where(f => f.IsCanceled && f.IsAnulado == false  && f.FechaVenta.Year == hoy.Year && f.Store.Id == storeId)
                 .ToListAsync();
 
             return result;
@@ -120,10 +123,12 @@ namespace Store.Helpers.FacturacionHelper
 
         public async Task<ICollection<Facturacion>> GetFacturacionAsync(int storeId)
         {
+            DateTime hoy = DateTime.Now;
+
             var result = await _context.Facturacions
                 .Include(f => f.Client)
                 .Include(f => f.FacturaDetails)
-                .Where(f => f.IsCanceled == false && f.IsAnulado == false && f.Store.Id == storeId)
+                .Where(f => f.IsCanceled == false && f.FechaVenta.Year == hoy.Year && f.IsAnulado == false && f.Store.Id == storeId)
                 .ToListAsync();
 
             return result;

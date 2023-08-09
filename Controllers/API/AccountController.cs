@@ -58,8 +58,8 @@ namespace Store.Controllers.API
                             var results = new
                             {
                                 token = new JwtSecurityTokenHandler().WriteToken(token),
-                                expiration = token.ValidTo,
-                                user
+                                expiration = token.ValidTo,user
+                                //user
                             };
 
                             user.UserSession.UserToken = results.token;

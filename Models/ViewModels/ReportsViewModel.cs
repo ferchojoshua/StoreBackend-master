@@ -80,7 +80,7 @@ namespace Store.Models.ViewModels
         public DateTime Hasta { get; set; }
 
         [Required]
-        public int StoreId { get; set; }
+        public int? StoreId { get; set; }
 
         [Required]
         public int TipoNegocioId { get; set; }

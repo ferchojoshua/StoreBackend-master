@@ -69,7 +69,7 @@ namespace Store.Controllers.API
         [HttpGet("GetStoresByUser")]
         public async Task<ActionResult<IEnumerable<Almacen>>> GetStoresByUser()
         {
-            string email = User.Claims
+                string email = User.Claims
                 .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
                 .Value;
             User user = await _userHelper.GetUserByEmailAsync(email);
