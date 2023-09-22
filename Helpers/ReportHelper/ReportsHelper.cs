@@ -1102,5 +1102,17 @@ namespace Store.Helpers.ReportHelper
                 return responseList;
             }
         }
+
+        /* M. Sc. Mario Talavera */
+        public async Task<IEnumerable<ProductosInventario>> GetProductosInventarioAsync(ProductosInventarioViewModel model)
+        {
+            var result = await _context.ProductosInventario
+                .FromSqlInterpolated($"EXEC GetProductosInventario @ProductID={model.ProductID}, @StoreID={model.StoreID}, @TipoNegocioID={model.TipoNegocioID}")
+                .ToListAsync();
+
+            return result;
+        }
+
+
     }
 }

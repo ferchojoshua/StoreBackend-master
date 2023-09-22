@@ -17,5 +17,8 @@ namespace Store.Helpers.ReportHelper
         Task<ICollection<Existence>> ReportArticulosNoVendidos(ArtNoVendidosViewModel model);
         Task<ICollection<CajaMovment>> ReportCajaChica(CajaChicaViewModel model);
         Task<DailyCloseResponse> ReportCierreDiario(CierreDiarioViewModel model);
+        /* M. Sc. Mario Talavera */
+        Task<IEnumerable<ProductosInventario>> GetProductosInventarioAsync(ProductosInventarioViewModel model);
+        
     }
 }
