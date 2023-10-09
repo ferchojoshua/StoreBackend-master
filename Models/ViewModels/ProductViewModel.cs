@@ -24,6 +24,10 @@ namespace Store.Models.ViewModels
 
         [Required]
         public string UM { get; set; }
+
+
+        //public int? StoreId { get; set; }
+        //public object[] Id { get; internal set; }
     }
 
     public class GetKardexViewModel

@@ -1,40 +1,32 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Store.Data;
+using Microsoft.Data.SqlClient;
 using Store.Entities;
-using Store.Helpers.ProductHelper;
+using Store.Helpers.ReportHelper;
 using Store.Helpers.User;
-using Store.Migrations;
 using Store.Models.ViewModels;
 
 namespace Store.Controllers.API
 {
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
-    [ApiController]
-    public class ProductosController : ControllerBase
+    public class ReportsController : Controller
     {
         private readonly IUserHelper _userHelper;
-        private readonly IProductHelper _productHelper;
-        private readonly DataContext _context;
+        private readonly IReportsHelper _reportHelper;
 
-        public ProductosController(
-            DataContext context,
-            IUserHelper userHelper,
-            IProductHelper productHelper
-        )
+        public ReportsController(IUserHelper userHelper, IReportsHelper reportHelper)
         {
             _userHelper = userHelper;
-            _productHelper = productHelper;
-            _context = context;
+            _reportHelper = reportHelper;
         }
 
-        // GET: api/Productos Reutilizada por Recall
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Producto>>> GetProductos()
+        [HttpPost("GetMasterVentas")]
+        public async Task<ActionResult<IEnumerable<Sales>>> GetMasterVentas(
+            [FromBody] MasterVentasViewModel model
+        )
         {
             string email = User.Claims
                 .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
@@ -44,11 +36,6 @@ namespace Store.Controllers.API
             {
                 return Ok(user);
             }
-            if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS VER"))
-            {
-                return Unauthorized();
-            }
-
             string token = HttpContext.Request.Headers["Authorization"];
             token = token["Bearer ".Length..].Trim();
             if (user.UserSession.UserToken != token)
@@ -56,60 +43,15 @@ namespace Store.Controllers.API
                 await _userHelper.LogoutAsync(user);
                 return Ok("eX01");
             }
-            return await _context.Productos
-                .Include(p => p.TipoNegocio)
-                .Include(p => p.Familia)
-                .Select(
-                    x =>
-                        new Producto()
-                        {
-                            Id = x.Id,
-                            TipoNegocio = new TipoNegocio()
-                            {
-                                Id = x.TipoNegocio.Id,
-                                Description = x.TipoNegocio.Description
-                            },
-                            Familia = x.Familia,
-                            Description = x.Description,
-                            BarCode = x.BarCode,
-                            Marca = x.Marca,
-                            Modelo = x.Modelo,
-                            UM = x.UM
-                        }
-                )
-                .OrderBy(p => p.Description)
-                .ToListAsync();
-        }
-
-       [HttpGet("GetProductsRecalById/{id}")]
-        public async Task<ActionResult<IEnumerable<Producto>>> GetProductsRecalById(int id)
-        {
-            string email = User.Claims
-                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
-                .Value;
-            User user = await _userHelper.GetUserByEmailAsync(email);
-            if (user.IsDefaultPass)
-            {
-                return Ok(user);
-            }
-            if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS VER"))
+            if (!await _userHelper.IsAutorized(user.Rol, "MASTER VENTAS VER"))
             {
                 return Unauthorized();
             }
-
-            string token = HttpContext.Request.Headers["Authorization"];
-            token = token["Bearer ".Length..].Trim();
-            if (user.UserSession.UserToken != token)
-            {
-                await _userHelper.LogoutAsync(user);
-                return Ok("eX01");
-            }
-
 
             try
             {
-                var Producto = await _productHelper.GetProductsRecalByIdAsync(id);
-                return Ok(Producto.OrderByDescending(s => s.Id));
+                var result = await _reportHelper.ReportMasterVentas(model);
+                return Ok(result.OrderByDescending(r => r.FechaVenta));
             }
             catch (Exception ex)
             {
@@ -117,10 +59,10 @@ namespace Store.Controllers.API
             }
         }
 
-
-        // GET: api/Productos/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Producto>> GetProducto(int id)
+        [HttpPost("GetCuentasXCobrar")]
+        public async Task<ActionResult<IEnumerable<Sales>>> GetCuentasXCobrar(
+            [FromBody] CuentasXCobrarViewModel model
+        )
         {
             string email = User.Claims
                 .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
@@ -130,11 +72,6 @@ namespace Store.Controllers.API
             {
                 return Ok(user);
             }
-            if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS VER"))
-            {
-                return Unauthorized();
-            }
-
             string token = HttpContext.Request.Headers["Authorization"];
             token = token["Bearer ".Length..].Trim();
             if (user.UserSession.UserToken != token)
@@ -142,52 +79,15 @@ namespace Store.Controllers.API
                 await _userHelper.LogoutAsync(user);
                 return Ok("eX01");
             }
-            Producto producto = await _context.Productos
-                .Include(p => p.TipoNegocio)
-                .Include(p => p.Familia)
-                .FirstOrDefaultAsync(p => p.Id == id);
-
-            if (producto == null)
-            {
-                return NotFound();
-            }
-
-            return producto;
-        }
-
-        [HttpPost]
-        [Route("UpdateProduct")]
-        public async Task<IActionResult> UpdateProduct([FromBody] UpdateProductViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest();
-            }
-            string email = User.Claims
-                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
-                .Value;
-            User user = await _userHelper.GetUserByEmailAsync(email);
-            if (user.IsDefaultPass)
-            {
-                return Ok(user);
-            }
-            if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS UPDATE"))
+            if (!await _userHelper.IsAutorized(user.Rol, "CUENTASXCOBRAR VER"))
             {
                 return Unauthorized();
-            }
-
-            string token = HttpContext.Request.Headers["Authorization"];
-            token = token["Bearer ".Length..].Trim();
-            if (user.UserSession.UserToken != token)
-            {
-                await _userHelper.LogoutAsync(user);
-                return Ok("eX01");
             }
 
             try
             {
-                var prod = await _productHelper.UpdateProductAsync(model);
-                return Ok(prod);
+                var result = await _reportHelper.ReportCuentasXCobrar(model);
+                return Ok(result.OrderBy(r => r.Client.NombreCliente));
             }
             catch (Exception ex)
             {
@@ -195,14 +95,11 @@ namespace Store.Controllers.API
             }
         }
 
-        // POST: api/Productos
-        [HttpPost]
-        public async Task<ActionResult<Producto>> PostProducto([FromBody] ProductViewModel model)
+        [HttpPost("GetProdVendidos")]
+        public async Task<ActionResult<IEnumerable<Sales>>> GetArtVendidos(
+            [FromBody] ArtVendidosViewModel model
+        )
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest();
-            }
             string email = User.Claims
                 .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
                 .Value;
@@ -211,11 +108,6 @@ namespace Store.Controllers.API
             {
                 return Ok(user);
             }
-            if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS CREATE"))
-            {
-                return Unauthorized();
-            }
-
             string token = HttpContext.Request.Headers["Authorization"];
             token = token["Bearer ".Length..].Trim();
             if (user.UserSession.UserToken != token)
@@ -223,11 +115,15 @@ namespace Store.Controllers.API
                 await _userHelper.LogoutAsync(user);
                 return Ok("eX01");
             }
+            if (!await _userHelper.IsAutorized(user.Rol, "PRODVENDIDOS VER"))
+            {
+                return Unauthorized();
+            }
 
             try
             {
-                var prod = await _productHelper.AddProductAsync(model);
-                return Ok(prod);
+                var result = await _reportHelper.ReportArticulosVendidos(model);
+                return Ok(result.OrderBy(x => x.Producto));
             }
             catch (Exception ex)
             {
@@ -235,9 +131,10 @@ namespace Store.Controllers.API
             }
         }
 
-        // DELETE: api/Productos/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProducto(int id)
+        [HttpPost("GetCierreDiario")]
+        public async Task<ActionResult<IEnumerable<Sales>>> GetCierreDiario(
+            [FromBody] CierreDiarioViewModel model
+        )
         {
             string email = User.Claims
                 .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
@@ -247,11 +144,6 @@ namespace Store.Controllers.API
             {
                 return Ok(user);
             }
-            if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS DELETE"))
-            {
-                return Unauthorized();
-            }
-
             string token = HttpContext.Request.Headers["Authorization"];
             token = token["Bearer ".Length..].Trim();
             if (user.UserSession.UserToken != token)
@@ -259,81 +151,14 @@ namespace Store.Controllers.API
                 await _userHelper.LogoutAsync(user);
                 return Ok("eX01");
             }
-
-            Producto producto = await _context.Productos.FindAsync(id);
-            if (producto == null)
-            {
-                return NotFound();
-            }
-
-            _context.Productos.Remove(producto);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        [HttpGet("ReparaKardex")]
-        public async Task<ActionResult<Kardex>> ReparaKardex()
-        {
-            string email = User.Claims
-                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
-                .Value;
-            User user = await _userHelper.GetUserByEmailAsync(email);
-            if (user.IsDefaultPass)
-            {
-                return Ok(user);
-            }
-            if (!await _userHelper.IsAutorized(user.Rol, "KARDEX VER"))
+            if (!await _userHelper.IsAutorized(user.Rol, "CIERREDIARIO VER"))
             {
                 return Unauthorized();
-            }
-
-            string token = HttpContext.Request.Headers["Authorization"];
-            token = token["Bearer ".Length..].Trim();
-            if (user.UserSession.UserToken != token)
-            {
-                await _userHelper.LogoutAsync(user);
-                return Ok("eX01");
             }
 
             try
             {
-                var kardex = await _productHelper.ReparaKardexAsync();
-                return Ok(kardex);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpGet("GetProdsDifKardex")]
-        public async Task<ActionResult<Kardex>> GetProdsDifKardex()
-        {
-            string email = User.Claims
-                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
-                .Value;
-            User user = await _userHelper.GetUserByEmailAsync(email);
-            if (user.IsDefaultPass)
-            {
-                return Ok(user);
-            }
-            if (!await _userHelper.IsAutorized(user.Rol, "KARDEX VER"))
-            {
-                return Unauthorized();
-            }
-
-            string token = HttpContext.Request.Headers["Authorization"];
-            token = token["Bearer ".Length..].Trim();
-            if (user.UserSession.UserToken != token)
-            {
-                await _userHelper.LogoutAsync(user);
-                return Ok("eX01");
-            }
-
-            try
-            {
-                var result = await _productHelper.GetProdsDifKardex();
+                var result = await _reportHelper.ReportCierreDiario(model);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -342,14 +167,11 @@ namespace Store.Controllers.API
             }
         }
 
-        [HttpPost]
-        [Route("GetKardex")]
-        public async Task<ActionResult<Kardex>> GetKardex([FromBody] GetKardexViewModel model)
+        [HttpPost("GetCajaChica")]
+        public async Task<ActionResult<IEnumerable<Sales>>> GetCajaChica(
+            [FromBody] CajaChicaViewModel model
+        )
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest();
-            }
             string email = User.Claims
                 .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
                 .Value;
@@ -358,11 +180,6 @@ namespace Store.Controllers.API
             {
                 return Ok(user);
             }
-            if (!await _userHelper.IsAutorized(user.Rol, "KARDEX VER"))
-            {
-                return Unauthorized();
-            }
-
             string token = HttpContext.Request.Headers["Authorization"];
             token = token["Bearer ".Length..].Trim();
             if (user.UserSession.UserToken != token)
@@ -370,11 +187,14 @@ namespace Store.Controllers.API
                 await _userHelper.LogoutAsync(user);
                 return Ok("eX01");
             }
-
+            if (!await _userHelper.IsAutorized(user.Rol, "CAJACHICA VER"))
+            {
+                return Unauthorized();
+            }
             try
             {
-                var kardex = await _productHelper.GetKardex(model);
-               return Ok(kardex);
+                var result = await _reportHelper.ReportCajaChica(model);
+                return Ok(result.OrderBy(x => x.Fecha));
             }
             catch (Exception ex)
             {
@@ -382,16 +202,11 @@ namespace Store.Controllers.API
             }
         }
 
-        [HttpPost]
-        [Route("GetAllStoresKardex")]
-        public async Task<ActionResult<Kardex>> GetAllStoresKardex(
-            [FromBody] GetKardexViewModel model
+        [HttpPost("GetProdNoVendidos")]
+        public async Task<ActionResult<IEnumerable<Sales>>> GetProdNoVendidos(
+            [FromBody] ArtNoVendidosViewModel model
         )
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest();
-            }
             string email = User.Claims
                 .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
                 .Value;
@@ -400,11 +215,6 @@ namespace Store.Controllers.API
             {
                 return Ok(user);
             }
-            if (!await _userHelper.IsAutorized(user.Rol, "KARDEX VER"))
-            {
-                return Unauthorized();
-            }
-
             string token = HttpContext.Request.Headers["Authorization"];
             token = token["Bearer ".Length..].Trim();
             if (user.UserSession.UserToken != token)
@@ -412,16 +222,179 @@ namespace Store.Controllers.API
                 await _userHelper.LogoutAsync(user);
                 return Ok("eX01");
             }
+            if (!await _userHelper.IsAutorized(user.Rol, "PRODNOVENDIDOS VER"))
+            {
+                return Unauthorized();
+            }
 
             try
             {
-                var kardex = await _productHelper.GetAllStoresKardex(model);
-                return Ok(kardex);
+                var result = await _reportHelper.ReportArticulosNoVendidos(model);
+                return Ok(result);
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("GetIngresos")]
+        public async Task<ActionResult<IEnumerable<Sales>>> GetIngresos(
+            [FromBody] IngresosViewModel model
+        )
+        {
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync(user);
+                return Ok("eX01");
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "INGRESOS VER"))
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                var result = await _reportHelper.ReportIngresos(model);
+                return Ok(result.OrderByDescending(r => r.FechaAbono));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("GetCompras")]
+        public async Task<ActionResult<IEnumerable<Sales>>> GetCompras(
+            [FromBody] ComprasViewModel model
+        )
+        {
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync(user);
+                return Ok("eX01");
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "REPORTECOMPRAS VER"))
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                var result = await _reportHelper.ReportCompras(model);
+                return Ok(result.OrderByDescending(r => r.Id));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("GetTrasladoInventario")]
+        public async Task<ActionResult<IEnumerable<Sales>>> GetTrasladoInventario(
+            [FromBody] TrasladoInventarioViewModel model
+        )
+        {
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync(user);
+                return Ok("eX01");
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "REPORTETRASLADOS VER"))
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                var result = await _reportHelper.ReportproductMovments(model);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
+
+        [HttpPost("GetProductosInventario")]
+            public async Task<ActionResult<IEnumerable<ProductosInventario>>> GetProductosInventario([FromBody] ProductosInventarioViewModel model)
+            {
+                string email = User.Claims
+                    .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                    .Value;
+                User user = await _userHelper.GetUserByEmailAsync(email);
+                if (user.IsDefaultPass)
+                {
+                    return Ok(user);
+                }
+                string token = HttpContext.Request.Headers["Authorization"];
+                token = token["Bearer ".Length..].Trim();
+                if (user.UserSession.UserToken != token)
+                {
+                    await _userHelper.LogoutAsync(user);
+                    return Ok("eX01");
+                }
+                if (!await _userHelper.IsAutorized(user.Rol, "INVENTARIO VER"))
+                {
+                    return Unauthorized();
+                }
+
+                try
+                {
+
+
+                    var result = await _reportHelper.GetProductosInventarioAsync(model.ProductID, model.StoreID, model.TipoNegocioID);
+
+                    //int? productID = 26882;  
+                    //int? storeID = 1;
+                    //int? tipoNegocioID = 4;
+
+                    //var requestModel = new ProductosInventarioViewModel
+                    //{
+                    //    ProductID = productID,
+                    //    StoreID = storeID,
+                    //    TipoNegocioID = tipoNegocioID
+                    //};
+
+                    //var result = await _reportHelper.GetProductosInventarioAsync(int productID, int storeID, int tipoNegocioID);
+
+                    return Ok(result);
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ex.Message);
+                }
             }
         }
     }
-}

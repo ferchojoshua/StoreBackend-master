@@ -1,8 +1,10 @@
+using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Store.Data;
 using Store.Entities;
 using Store.Models.Responses;
 using Store.Models.ViewModels;
+using System.Data;
 
 namespace Store.Helpers.ReportHelper
 {
@@ -1101,6 +1103,41 @@ namespace Store.Helpers.ReportHelper
                 }
                 return responseList;
             }
+        }
+
+        public async Task<IEnumerable<ProductosInventario>> GetProductosInventarioAsync(int? productID, int? storeID, int? tipoNegocioID, int? familiaID, bool? showststore, bool? OmitirStock)
+        {
+            try
+            {
+                var result = await uspProductsList(productID, storeID, tipoNegocioID, familiaID, showststore, OmitirStock);
+
+                return (IEnumerable<ProductosInventario>)result;
+            }
+            catch (Exception ex)
+            {
+                // Manejo de excepciones según tus necesidades
+                throw ex;
+            }
+        }
+
+
+        public async Task<List<ProductosInventario>> uspProductsList(int? productID, int? storeID, int? tipoNegocioID, int? familiaID, bool? showststore, bool? OmitirStock)
+
+        {
+            List<Store.Entities.ProductosInventario> result = new List<Store.Entities.ProductosInventario>();
+
+            try
+            {
+                var sqlCommand = $@"[dbo].[GetProductosInventario] {productID},{storeID},{tipoNegocioID},{familiaID},{showststore},{OmitirStock}";
+                result = await _context.Set<ProductosInventario>().FromSqlRaw(sqlCommand).ToListAsync();
+
+            }
+            catch (Exception ex)
+            {
+
+                return null;
+            }
+            return result;
         }
     }
 }

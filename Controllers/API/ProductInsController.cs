@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Store.Data;
 using Store.Entities;
 using Store.Helpers.EntradaProductos;
@@ -21,9 +22,9 @@ namespace Store.Controllers.API
         private readonly DataContext _context;
 
         public ProductInsController(
-            DataContext context,
-            IUserHelper userHelper,
-            IProductsInHelper productsInHelper
+             DataContext context,
+             IUserHelper userHelper,
+             IProductsInHelper productsInHelper
         )
         {
             _userHelper = userHelper;
@@ -50,6 +51,7 @@ namespace Store.Controllers.API
 
             string token = HttpContext.Request.Headers["Authorization"];
             token = token["Bearer ".Length..].Trim();
+            
             if (user.UserSession.UserToken != token)
             {
                 await _userHelper.LogoutAsync(user);
@@ -106,6 +108,95 @@ namespace Store.Controllers.API
 
             return productIn;
         }
+
+
+
+        //[HttpGet("ProductsRecal")]
+        //public async Task<ActionResult> ProductsRecal(int fam, int tipoNego, int Alm, int ProductoId)
+
+        ////public async Task<ActionResult<ProductsRecal>> GetAllProductsRecal(int Fam, int TipoNego, int Alm, int ProductoId)
+        //{
+        //    string email = User.Claims
+        //        .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+        //        .Value;
+        //    User user = await _userHelper.GetUserByEmailAsync(email);
+        //    if (user.IsDefaultPass)
+        //    {
+        //        return Ok(user);
+        //    }
+        //    string token = HttpContext.Request.Headers["Authorization"];
+        //    token = token["Bearer ".Length..].Trim();
+        //    if (user.UserSession.UserToken != token)
+        //    {
+        //        await _userHelper.LogoutAsync(user);
+        //        return Ok("eX01");
+        //    }
+        //    if (!await _userHelper.IsAutorized(user.Rol, "PRODUCTS RECAL VER"))
+        //    {
+        //        return Unauthorized();
+        //    }
+        //    try
+        //    { 
+        //    var prodlist = _productsInHelper.GetAllProductsRecal(fam, tipoNego, Alm, ProductoId);
+
+        //    return Ok(prodlist);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+
+        //    //if (prodlist == null)
+        //    //{
+        //    //    return NotFound();
+        //    //}
+
+        //}
+
+
+        //[HttpGet("ProductsRecal")]
+        //public async Task<ActionResult> ProductsRecal()
+
+        ////public async Task<ActionResult<ProductsRecal>> GetAllProductsRecal(int Fam, int TipoNego, int Alm, int ProductoId)
+        //{
+        //    string email = User.Claims
+        //        .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+        //        .Value;
+        //    User user = await _userHelper.GetUserByEmailAsync(email);
+        //    if (user.IsDefaultPass)
+        //    {
+        //        return Ok(user);
+        //    }
+        //    string token = HttpContext.Request.Headers["Authorization"];
+        //    token = token["Bearer ".Length..].Trim();
+        //    if (user.UserSession.UserToken != token)
+        //    {
+        //        await _userHelper.LogoutAsync(user);
+        //        return Ok("eX01");
+        //    }
+        //    if (!await _userHelper.IsAutorized(user.Rol, "PRODUCTS RECAL VER"))
+        //    {
+        //        return Unauthorized();
+        //    }
+        //    try
+        //    {
+        //        var prodlist = _productsInHelper.GetAllProductsRecal();
+
+        //        return Ok(prodlist);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+
+        //    //if (prodlist == null)
+        //    //{
+        //    //    return NotFound();
+        //    //}
+
+        //}
+
+
 
         [HttpPost]
         [Route("PutProductIn")]

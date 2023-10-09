@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Store.Data;
 using Store.Entities;
 using Store.Models.ViewModels;
+using System.Data;
 
 namespace Store.Helpers.ProductHelper
 {
@@ -62,6 +63,7 @@ namespace Store.Helpers.ProductHelper
                 .ToListAsync();
         }
 
+
         public async Task<ICollection<Kardex>> GetKardex(GetKardexViewModel model)
         {
             return await _context.Kardex
@@ -72,6 +74,7 @@ namespace Store.Helpers.ProductHelper
                         && k.Almacen.Id == model.StoreId
                         //&& k.Fecha.DayOfYear >= model.Desde.DayOfYear
                         //&& k.Fecha.DayOfYear <= model.Hasta.DayOfYear
+
                 )
                 .ToListAsync();
         }
@@ -155,6 +158,7 @@ namespace Store.Helpers.ProductHelper
 
             return kardexByStore;
         }
+
 
         // public Task<ICollection<Producto>> SyncKardexExistencesAsync()
         // {
@@ -376,5 +380,42 @@ namespace Store.Helpers.ProductHelper
             await _context.SaveChangesAsync();
             return producto;
         }
+
+        //public async Task<ICollection<Producto>> GetProductsRecalByIdAsync(ProductViewModel model)
+        //    public async Task<Producto> GetProductsRecalByIdAsync(ProductViewModel model)
+        //{
+               
+        //}
+
+      public async Task<ICollection<Producto>> GetProductsRecalByIdAsync(int idStore)
+
+        {
+            var storeList = await _context.Almacen.ToListAsync();
+            return await _context.Productos.Where(r=>r.Existences.FirstOrDefault().Almacen.Id == idStore)
+             .Include(p => p.TipoNegocio)
+             .Include(p => p.Familia)
+             .Include(p => p.Existences)
+             .Select(
+                 x =>
+                     new Producto()
+                     {
+                         Id = x.Id,
+                         TipoNegocio = new TipoNegocio()
+                         {
+                             Id = x.TipoNegocio.Id,
+                             Description = x.TipoNegocio.Description
+                         },
+                         Familia = x.Familia,
+                         Description = x.Description,
+                         BarCode = x.BarCode,
+                         Marca = x.Marca,
+                         Modelo = x.Modelo,
+                         UM = x.UM
+                     }
+             )
+             .OrderBy(p => p.Description)
+             .ToListAsync();
+        }
+
     }
 }

@@ -12,5 +12,9 @@ namespace Store.Helpers.ProductHelper
         // Task<ICollection<Producto>> SyncKardexExistencesAsync();
         Task<ICollection<Producto>> GetProdsDifKardex();
         Task<ICollection<Kardex>> GetAllStoresKardex(GetKardexViewModel model);
+         Task<ICollection<Producto>> GetProductsRecalByIdAsync(int idStore);
+
+
+
     }
 }

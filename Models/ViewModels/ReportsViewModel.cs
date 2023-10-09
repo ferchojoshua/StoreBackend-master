@@ -139,4 +139,15 @@ namespace Store.Models.ViewModels
         [Required]
         public int StoreId { get; set; }
     }
+
+    public class ProductosInventarioViewModel
+    {
+        public int? ProductID { get; set; }
+        public int? StoreID { get; set; }
+        public int? TipoNegocioID { get; set; }
+        public int? FamiliaID { get; set; }
+        public bool? showststore { get; set; }
+        public bool? ShowCost { get; set; }
+        public bool? OmitirStock { get; set; }
+    }
 }

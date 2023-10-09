@@ -39,7 +39,7 @@ namespace Store.Helpers.User
             return await _context.Users
                 .Where(u => u.IsActive == false)
                 .Include(u => u.Rol)
-                // .Include(u => u.StoreAccess)
+                .Include(u => u.StoreAccess) /*Esta Linea se habilito para poder mostrar los almacenes solicitado por Victor GCHAVEZ 15062023*/
                 .ToListAsync();
         }
 
@@ -47,7 +47,7 @@ namespace Store.Helpers.User
         {
             return await _context.Users
                 .Include(u => u.Rol)
-                // .Include(u => u.StoreAccess)
+                .Include(u => u.StoreAccess) /*Esta Linea se habilito para poder mostrar los almacenes solicitado por Victor GCHAVEZ 15062023*/
                 .ToListAsync();
         }
 

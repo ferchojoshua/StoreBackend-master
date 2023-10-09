@@ -35,10 +35,10 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development
 {
     builder.Services.AddDbContext<DataContext>(
         opt =>
-        opt.UseSqlServer(
-            builder.Configuration.GetConnectionString("DevConnetion"),
-            x => x.UseNetTopologySuite()
-        )
+    //opt.UseSqlServer(
+    //    builder.Configuration.GetConnectionString("DevConnetion"),
+    //    x => x.UseNetTopologySuite()
+    //)
     // opt.UseSqlServer(
     //     builder.Configuration.GetConnectionString("MigConnetion"),
     //     x => x.UseNetTopologySuite()
@@ -47,10 +47,10 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development
     //     builder.Configuration.GetConnectionString("LocalConn"),
     //     x => x.UseNetTopologySuite()
     //)
-    //opt.UseSqlServer(
-    //builder.Configuration.GetConnectionString("ProdConnetion"),
-    ////x => x.UseNetTopologySuite()
-    //)
+    opt.UseSqlServer(
+    builder.Configuration.GetConnectionString("ProdConnetion"),
+    x => x.UseNetTopologySuite()
+    )
     );
 }
 else
@@ -124,13 +124,14 @@ builder.Services.AddCors(options =>
         name: MyAllowSpecificOrigins,
         builder =>
         {
-            builder
-                .WithOrigins("http://automoto.eastus.cloudapp.azure.com", "http://localhost:3000")
+            builder                
                 .AllowAnyHeader()
                 .AllowAnyMethod()
-                .AllowCredentials();
-        }
-    );
+                .AllowCredentials()
+                .WithOrigins("http://automoto.eastus.cloudapp.azure.com", "http://localhost:3000");
+        });
+
+
 });
 
 builder.Services.AddCors();

@@ -59,6 +59,7 @@ namespace Store.Data
             // modelBuilder.Entity<Familia>().HasIndex(t => t.Description).IsUnique();
 
             modelBuilder.Entity<TipoNegocio>().HasIndex(t => t.Description).IsUnique();
+            modelBuilder.Entity<ProductosInventario>().HasNoKey();
 
             // modelBuilder.Entity<Producto>().HasIndex(t => t.Description).IsUnique();
         }

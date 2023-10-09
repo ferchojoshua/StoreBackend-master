@@ -4,6 +4,7 @@ using Store.Entities;
 using Store.Helpers.AsientoContHelper;
 using Store.Models.ViewModels;
 using StoreBackend.Models.ViewModels;
+using System.Data;
 
 namespace Store.Helpers.EntradaProductos
 {
@@ -170,6 +171,53 @@ namespace Store.Helpers.EntradaProductos
             return productIn;
         }
 
+        //public Task<List<ProductsRecal>> GetAllProductsRecal(int Fam, int TipoNego, int Alm, int ProductoId)
+        //{
+        //    List<ProductsRecal> ProductsRecal = new List<ProductsRecal>();
+        //    string connectionString = "conString"; //configuration.GetConnectionString("DefaultConnection");
+        //    string query = @"dbo.uspProductsList";
+
+        //    try
+        //    {
+        //        SqlConnection connection = new SqlConnection(connectionString);
+
+        //        using (connection)
+        //        {
+        //            connection.Open();
+        //            ProductsRecal = connection.Query<ProductsRecal>(query, new { Familia = Fam, TipoNegocio = TipoNego, Almacen = Alm, ProductoId = ProductoId }, commandType: CommandType.StoredProcedure).ToList();
+        //        }
+        //    }
+        //    catch (Exception)
+        //    {
+        //        throw;
+        //    }
+        //    return Task.FromResult(ProductsRecal);
+        //}
+        //public Task<List<ProductsRecal>> GetAllProductsRecal()
+        //{
+        //    List<ProductsRecal> ProductsRecal = new List<ProductsRecal>();
+        //    string connectionString = "conString"; //configuration.GetConnectionString("DefaultConnection");
+        //    string query = @"dbo.uspProductsList";
+
+        //    try
+        //    {
+        //        SqlConnection connection = new SqlConnection(connectionString);
+
+        //        using (connection)
+        //        {
+        //            connection.Open();
+        //            ProductsRecal = connection.Query<ProductsRecal>(query, new { }, commandType: CommandType.StoredProcedure).ToList();
+        //        }
+        //    }
+        //    catch (Exception)
+        //    {
+        //        throw;
+        //    }
+        //    return Task.FromResult(ProductsRecal);
+        //}
+
+
+
         public async Task<ProductIn> PagarFacturaAsync(int id)
         {
             ProductIn productIn = await _context.ProductIns.FirstOrDefaultAsync(pI => pI.Id == id);
@@ -178,6 +226,31 @@ namespace Store.Helpers.EntradaProductos
             await _context.SaveChangesAsync();
             return productIn;
         }
+
+
+        //public Task<List<ProductsRecal>> GetAllProductsRecal(int Fam, int TipoNego, int Alm, int ProductoId)
+        //{
+        //    List<ProductsRecal> ProductsRecal = new List<ProductsRecal>();
+        //    string connectionString = "conString"; //configuration.GetConnectionString("DefaultConnection");
+        //         //    string connectionString = configuration.GetConnectionString("conString");
+        //    string query = @"dbo.uspProductsList";
+
+        //    try
+        //    {
+        //        SqlConnection connection = new SqlConnection(connectionString);
+
+        //        using (connection)
+        //        {
+        //            connection.Open();
+        //            ProductsRecal = connection.Query<ProductsRecal>(query, new { Familia = Fam, TipoNegocio = TipoNego, Almacen = Alm, ProductoId = ProductoId }, commandType: CommandType.StoredProcedure).ToList();
+        //        }
+        //    }
+        //    catch (Exception)
+        //    {
+        //        throw;
+        //    }
+        //    return Task.FromResult(ProductsRecal);
+        //}
 
         public async Task<ProductIn> UpdateProductInAsync(
             UpdateEntradaProductoViewModel model,

@@ -7,7 +7,7 @@ using Store.Helpers.SalesHelper;
 using Store.Helpers.User;
 using Store.Models.ViewModels;
 
-namespace Store.Controllers.API
+namespace Store.Controllers
 {
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
