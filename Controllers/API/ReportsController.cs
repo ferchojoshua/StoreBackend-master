@@ -376,19 +376,6 @@ namespace Store.Controllers.API
 
                     var result = await _reportHelper.GetProductosInventarioAsync(model.ProductID, model.StoreID, model.TipoNegocioID, model.FamiliaID,model.showststore, model.OmitirStock);
 
-                    //int? productID = 26882;  
-                    //int? storeID = 1;
-                    //int? tipoNegocioID = 4;
-
-                    //var requestModel = new ProductosInventarioViewModel
-                    //{
-                    //    ProductID = productID,
-                    //    StoreID = storeID,
-                    //    TipoNegocioID = tipoNegocioID
-                    //};
-
-                    //var result = await _reportHelper.GetProductosInventarioAsync(int productID, int storeID, int tipoNegocioID);
-
                     return Ok(result);
                 }
                 catch (Exception ex)

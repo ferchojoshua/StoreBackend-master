@@ -24,32 +24,92 @@ namespace Store.Helpers.User
         }
 
         #region Metodos User
+        //public async Task<ICollection<Entities.User>> GetActiveUsersAsync()
+        //{
+        //    return await _context.Users
+        //        .Where(u => u.IsActive == true
+        //        && u.Id != "cb44660e-0ec5-4328-8a88-7843241cbf72")
+        //        .Include(u => u.Rol)
+        //        //.Include(u => u.StoreAccess)    /*Esta Linea se habilito para poder mostrar los almacenes solicitado por Victor GCHAVEZ 15062023*/
+        //        .ToListAsync();
+        //}
         public async Task<ICollection<Entities.User>> GetActiveUsersAsync()
-            {
-            return await _context.Users
-                .Where(u => u.IsActive == true 
-                && u.Id != "cb44660e-0ec5-4328-8a88-7843241cbf72")
+        {
+            //var userIdToExclude = "cb44660e-0ec5-4328-8a88-7843241cbf72";
+
+            var activeUsers = await _context.Users
+                .Where(u => u.IsActive == true && u.Id != "cb44660e-0ec5-4328-8a88-7843241cbf72")
                 .Include(u => u.Rol)
-                .Include(u => u.StoreAccess)    /*Esta Linea se habilito para poder mostrar los almacenes solicitado por Victor GCHAVEZ 15062023*/
+                .ThenInclude(ur => ur.Permissions)
+                .Include(s => s.UserSession)
+                .Include(u => u.StoreAccess)
                 .ToListAsync();
+            activeUsers.ForEach(u =>
+            {
+                u.StoreAccess = u.StoreAccess.Select(sa => new Almacen { Id = sa.Id, Name = sa.Name }).ToList();
+            });
+
+            return activeUsers;
         }
+
+
+
+
+        //public async Task<ICollection<Entities.User>> GetInactiveUsersAsync()
+        //{
+        //    return await _context.Users
+        //        .Where(u => u.IsActive == false)
+        //        .Include(u => u.Rol)
+        //        // .Include(u => u.StoreAccess)
+        //        .ToListAsync();
+        //}
 
         public async Task<ICollection<Entities.User>> GetInactiveUsersAsync()
         {
-            return await _context.Users
+            var inactiveUsers = await _context.Users
                 .Where(u => u.IsActive == false)
                 .Include(u => u.Rol)
-                .Include(u => u.StoreAccess) /*Esta Linea se habilito para poder mostrar los almacenes solicitado por Victor GCHAVEZ 15062023*/
+                .ThenInclude(ur => ur.Permissions)
+                .Include(s => s.UserSession)
+                .Include(u => u.StoreAccess)
                 .ToListAsync();
+
+            inactiveUsers.ForEach(u =>
+            {
+                u.StoreAccess = u.StoreAccess.Select(sa => new Almacen { Id = sa.Id, Name = sa.Name }).ToList();
+            });
+
+            return inactiveUsers;
         }
+
+
+        //public async Task<ICollection<Entities.User>> GetAllUsersAsync()
+        //{
+        //    return await _context.Users
+        //        .Include(u => u.Rol)
+        //        // .Include(u => u.StoreAccess)
+        //        .ToListAsync();
+        //}
 
         public async Task<ICollection<Entities.User>> GetAllUsersAsync()
         {
-            return await _context.Users
+            var allUsers = await _context.Users
                 .Include(u => u.Rol)
-                .Include(u => u.StoreAccess) /*Esta Linea se habilito para poder mostrar los almacenes solicitado por Victor GCHAVEZ 15062023*/
+                .ThenInclude(ur => ur.Permissions)
+                .Include(s => s.UserSession)
+                .Include(u => u.StoreAccess)
                 .ToListAsync();
+
+
+            allUsers.ForEach(u =>
+            {
+                u.StoreAccess = u.StoreAccess.Select(sa => new Almacen { Id = sa.Id, Name = sa.Name }).ToList();
+            });
+
+            return allUsers;
         }
+
+
 
         public async Task<IdentityResult> AddUserAsync(Entities.User user, string password)
         {
@@ -58,13 +118,13 @@ namespace Store.Helpers.User
 
         public async Task<Entities.User> GetUserAsync(string userName)
         {
-                return await _context.Users
-                .Where(u => u.IsActive == true)
-                .Include(u => u.Rol)
-                .ThenInclude(ur => ur.Permissions)
-                .Include(s => s.UserSession)
-                .Include(u => u.StoreAccess)
-                .FirstOrDefaultAsync(u => u.UserName == userName);
+            return await _context.Users
+            .Where(u => u.IsActive == true)
+            .Include(u => u.Rol)
+            .ThenInclude(ur => ur.Permissions)
+            .Include(s => s.UserSession)
+            .Include(u => u.StoreAccess)
+            .FirstOrDefaultAsync(u => u.UserName == userName);
         }
 
         public async Task<Entities.User> GetUserByEmailAsync(string email)
