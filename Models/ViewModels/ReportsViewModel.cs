@@ -122,6 +122,9 @@ namespace Store.Models.ViewModels
         public DateTime Hasta { get; set; }
 
         [Required]
+        public int? StoreId { get; set; }
+
+        [Required]
         public bool ContadoCompras { get; set; }
 
         [Required]

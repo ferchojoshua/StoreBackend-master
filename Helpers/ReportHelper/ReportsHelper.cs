@@ -26,7 +26,7 @@ namespace Store.Helpers.ReportHelper
                 {
                     result = await _context.Sales
                         .Include(s => s.Client)
-                        .Include(s => s.SaleDetails)
+                        .Include(s => s.SaleDetails)  
                         .Include(s => s.Store)
                         .Where(
                             s =>
@@ -120,6 +120,7 @@ namespace Store.Helpers.ReportHelper
                                 && s.IsContado == false
                         )
                         .ToListAsync();
+
                     return result;
                 }
             }
@@ -636,6 +637,7 @@ namespace Store.Helpers.ReportHelper
             if (model.StoreId != 0)
             {
                 var cajaMovsById = await _context.CajaMovments
+                     .Include(c => c.Store)
                     .Where(
                         c =>
                             c.Fecha.Date >= model.Desde.Date
@@ -648,6 +650,7 @@ namespace Store.Helpers.ReportHelper
             }
 
             var cajaMovs = await _context.CajaMovments
+                .Include(c => c.Store)
                 .Where(
                     c =>
                         c.Fecha.Date >= model.Desde.Date
@@ -974,19 +977,73 @@ namespace Store.Helpers.ReportHelper
             return ingresos;
         }
 
+        //public async Task<ICollection<ProductIn>> ReportCompras(ComprasViewModel model)
         public async Task<ICollection<ProductIn>> ReportCompras(ComprasViewModel model)
         {
-            if (model.ContadoCompras && model.CreditCompras)
+            List<ProductIn> result = new();
+
+            if (model.StoreId != 0)
             {
-                return await _context.ProductIns
+                //if (model.StoreId == 0)
+                //{
+                //    model.StoreId = null;
+                //}
+
+                if (model.ContadoCompras && model.CreditCompras)
+                {
+                    result = await _context.ProductIns
                     .Include(pi => pi.Provider)
+                    .Include(pi => pi.Almacen)
+                    .Where(pi => pi.FechaIngreso >= model.Desde && pi.FechaIngreso <= model.Hasta && pi.Almacen.Id == model.StoreId)
+                    .ToListAsync();
+                    return result;
+                }
+                else if (model.ContadoCompras && model.CreditCompras == false)
+                {
+                    result = await _context.ProductIns
+                    .Include(pi => pi.Provider)
+                    .Include(p => p.Almacen)
+                    .Where(
+                        pi =>
+                            pi.FechaIngreso >= model.Desde
+                            && pi.FechaIngreso <= model.Hasta
+                            && pi.Almacen.Id == model.StoreId
+                            && pi.IsCanceled == true
+                    )
+                    .ToListAsync();
+                    return result;
+                }
+                else
+                {
+                    result = await _context.ProductIns
+                    .Include(pi => pi.Provider)
+                    .Include(p => p.Almacen)
+                    .Where(
+                        pi =>
+                            pi.FechaIngreso >= model.Desde
+                            && pi.FechaIngreso <= model.Hasta
+                            && pi.Almacen.Id == model.StoreId
+                            && pi.IsCanceled == true
+                    )
+                    .ToListAsync();
+
+                }
+            }
+            else {
+                if (model.ContadoCompras && model.CreditCompras)
+                {
+                    result = await _context.ProductIns
+                    .Include(pi => pi.Provider)
+                    .Include(pi => pi.Almacen)
                     .Where(pi => pi.FechaIngreso >= model.Desde && pi.FechaIngreso <= model.Hasta)
                     .ToListAsync();
-            }
-            else if (model.ContadoCompras && model.CreditCompras == false)
-            {
-                return await _context.ProductIns
+                    return result;
+                }
+                else if (model.ContadoCompras && model.CreditCompras == false)
+                {
+                    result = await _context.ProductIns
                     .Include(pi => pi.Provider)
+                    .Include(p => p.Almacen)
                     .Where(
                         pi =>
                             pi.FechaIngreso >= model.Desde
@@ -994,11 +1051,13 @@ namespace Store.Helpers.ReportHelper
                             && pi.IsCanceled == true
                     )
                     .ToListAsync();
-            }
-            else
-            {
-                return await _context.ProductIns
+                    return result;
+                }
+                else
+                {
+                    result = await _context.ProductIns
                     .Include(pi => pi.Provider)
+                    .Include(p => p.Almacen)
                     .Where(
                         pi =>
                             pi.FechaIngreso >= model.Desde
@@ -1006,7 +1065,11 @@ namespace Store.Helpers.ReportHelper
                             && pi.IsCanceled == true
                     )
                     .ToListAsync();
-            }
+
+                    }
+                }
+            return result;
+               
         }
 
         public async Task<ICollection<TrasladoResponse>> ReportproductMovments(
@@ -1014,12 +1077,13 @@ namespace Store.Helpers.ReportHelper
         )
         {
             List<TrasladoResponse> responseList = new();
+
+
+
             if (model.StoreId != 0)
             {
                 var result = await _context.ProductMovments
-                    .Include(
-                        pm => pm.MovmentDetails.Where(pmd => pmd.AlmacenDestinoId == model.StoreId)
-                    )
+                    .Include(pm => pm.MovmentDetails.Where(pmd => pmd.AlmacenDestinoId == model.StoreId))
                     .ThenInclude(pmd => pmd.Producto)
                     .Include(pm => pm.User)
                     .Where(pd => pd.Fecha >= model.Desde && pd.Fecha <= model.Hasta)
@@ -1032,6 +1096,7 @@ namespace Store.Helpers.ReportHelper
                         decimal sumCC = 0;
                         decimal sumVM = 0;
                         decimal sumVD = 0;
+                        List<string> almacenesList = new List<string>();
                         foreach (var detalle in movment.MovmentDetails)
                         {
                             var existencia = await _context.Existences.FirstOrDefaultAsync(
@@ -1042,6 +1107,7 @@ namespace Store.Helpers.ReportHelper
                             sumCC += existencia.PrecioCompra;
                             sumVD += existencia.PrecioVentaDetalle;
                             sumVM += existencia.PrecioVentaMayor;
+                            almacenesList.Add(existencia.Almacen.Name);
                         }
                         TrasladoResponse response =
                             new()
@@ -1050,6 +1116,7 @@ namespace Store.Helpers.ReportHelper
                                 Usuario = movment.User.FullName,
                                 Concepto = movment.Concepto,
                                 ProductCount = movment.MovmentDetails.Count,
+                                Almacen = string.Join(", ", almacenesList.Distinct()),
                                 SumCostoCompra = sumCC,
                                 SumVentaDetalle = sumVD,
                                 SumVentaMayor = sumVM,
@@ -1075,6 +1142,7 @@ namespace Store.Helpers.ReportHelper
                         decimal sumCC = 0;
                         decimal sumVM = 0;
                         decimal sumVD = 0;
+                        List<string> almacenesList = new List<string>();
                         foreach (var detalle in movment.MovmentDetails)
                         {
                             var existencia = await _context.Existences.FirstOrDefaultAsync(
@@ -1085,6 +1153,8 @@ namespace Store.Helpers.ReportHelper
                             sumCC += existencia.PrecioCompra;
                             sumVD += existencia.PrecioVentaDetalle;
                             sumVM += existencia.PrecioVentaMayor;
+                            almacenesList.Add(existencia.Almacen.Name);
+
                         }
                         TrasladoResponse response =
                             new()
@@ -1093,6 +1163,7 @@ namespace Store.Helpers.ReportHelper
                                 Usuario = movment.User.FullName,
                                 Concepto = movment.Concepto,
                                 ProductCount = movment.MovmentDetails.Count,
+                                Almacen = string.Join(", ", almacenesList.Distinct()),
                                 SumCostoCompra = sumCC,
                                 SumVentaDetalle = sumVD,
                                 SumVentaMayor = sumVM,

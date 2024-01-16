@@ -23,7 +23,7 @@ namespace Store.Models.Responses
     public class TrasladoResponse
     {
         public int Id { get; set; }
-
+        public string Almacen { get; set; }
         public string Usuario { get; set; }
         public string Concepto { get; set; }
         public int ProductCount { get; set; }
