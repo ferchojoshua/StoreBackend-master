@@ -1,5 +1,6 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
+using NetTopologySuite.Index.HPRtree;
 using Store.Data;
 using Store.Entities;
 using Store.Models.Responses;
@@ -121,7 +122,7 @@ namespace Store.Helpers.ReportHelper
                         )
                         .ToListAsync();
 
-                    return result;
+                     return result;
                 }
             }
         }
@@ -371,6 +372,7 @@ namespace Store.Helpers.ReportHelper
                     }
                     else
                     {
+
                         sales = await _context.Sales
                             .Include(s => s.Client)
                             .Include(s => s.Store)
@@ -424,6 +426,7 @@ namespace Store.Helpers.ReportHelper
                                     sd.Key.Description,
                                     CantidadVendida = sd.Sum(x => x.Cantidad),
                                     CostoCompra = sd.Sum(x => x.CostoTotal - x.Ganancia),
+                                    Descuento = sd.Sum(x => x.Descuento),
                                     MontoVenta = sd.Sum(x => x.CostoTotal),
                                     Utilidad = sd.Sum(x => x.Ganancia)
                                 }
@@ -436,6 +439,7 @@ namespace Store.Helpers.ReportHelper
                             Producto = item.Description,
                             CantidadVendida = item.CantidadVendida,
                             CostoCompra = item.CostoCompra,
+                            Descuento = item.Descuento,
                             MontoVenta = item.MontoVenta,
                             Utilidad = item.Utilidad
                         };
@@ -456,6 +460,7 @@ namespace Store.Helpers.ReportHelper
                                     CantidadVendida = sd.Sum(x => x.Cantidad),
                                     CostoCompra = sd.Sum(x => x.CostoTotal - x.Ganancia),
                                     MontoVenta = sd.Sum(x => x.CostoTotal),
+                                    Descuento = sd.Sum(x => x.Descuento),
                                     Utilidad = sd.Sum(x => x.Ganancia)
                                 }
                         );
@@ -467,6 +472,7 @@ namespace Store.Helpers.ReportHelper
                             Producto = item.Description,
                             CantidadVendida = item.CantidadVendida,
                             CostoCompra = item.CostoCompra,
+                            Descuento = item.Descuento,
                             MontoVenta = item.MontoVenta,
                             Utilidad = item.Utilidad
                         };
@@ -489,6 +495,7 @@ namespace Store.Helpers.ReportHelper
                                     sd.Key.Description,
                                     CantidadVendida = sd.Sum(x => x.Cantidad),
                                     CostoCompra = sd.Sum(x => x.CostoTotal - x.Ganancia),
+                                    Descuento = sd.Sum(x => x.Descuento),
                                     MontoVenta = sd.Sum(x => x.CostoTotal),
                                     Utilidad = sd.Sum(x => x.Ganancia)
                                 }
@@ -501,6 +508,7 @@ namespace Store.Helpers.ReportHelper
                             Producto = item.Description,
                             CantidadVendida = item.CantidadVendida,
                             CostoCompra = item.CostoCompra,
+                            Descuento = item.Descuento,
                             MontoVenta = item.MontoVenta,
                             Utilidad = item.Utilidad
                         };
@@ -519,6 +527,7 @@ namespace Store.Helpers.ReportHelper
                                     sd.Key.Description,
                                     CantidadVendida = sd.Sum(x => x.Cantidad),
                                     CostoCompra = sd.Sum(x => x.CostoTotal - x.Ganancia),
+                                    Descuento = sd.Sum(x => x.Descuento),
                                     MontoVenta = sd.Sum(x => x.CostoTotal),
                                     Utilidad = sd.Sum(x => x.Ganancia)
                                 }
@@ -531,6 +540,7 @@ namespace Store.Helpers.ReportHelper
                             Producto = item.Description,
                             CantidadVendida = item.CantidadVendida,
                             CostoCompra = item.CostoCompra,
+                            Descuento = item.Descuento,
                             MontoVenta = item.MontoVenta,
                             Utilidad = item.Utilidad
                         };

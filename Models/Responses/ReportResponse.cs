@@ -8,6 +8,7 @@ namespace Store.Models.Responses
         public string Producto { get; set; }
         public int CantidadVendida { get; set; }
         public decimal CostoCompra { get; set; }
+        public decimal Descuento { get; set; }
         public decimal MontoVenta { get; set; }
         public decimal Utilidad { get; set; }
     }
