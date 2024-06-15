@@ -163,10 +163,15 @@ namespace Store.Helpers.User
                 .Where(r => r == rol)
                 .Include(p => p.Permissions)
                 .FirstOrDefaultAsync();
-            Permission p = r.Permissions.FirstOrDefault(x => x.Description == permiso);
-            if (!p.IsEnable)
+            if (r != null && r.Permissions != null)
             {
-                return result = false;
+                //Permission p = r.Permissions.FirstOrDefault(x => x.Description == permiso);
+                //if (!p.IsEnable)
+                result = r.Permissions.Any(p => p.Description == permiso && p.IsEnable);
+            }
+            else          
+            {
+                result = false;
             }
             return result;
         }

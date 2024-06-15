@@ -50,6 +50,7 @@ namespace Store.Data
         public DbSet<TipoNegocio> TipoNegocios { get; set; }
         public DbSet<TipoPago> TipoPagos { get; set; }
         public DbSet<UserSession> UserSession { get; set; }
+        public DbSet<CreateLogo> C_Administrables { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

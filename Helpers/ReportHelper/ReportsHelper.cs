@@ -122,7 +122,7 @@ namespace Store.Helpers.ReportHelper
                         )
                         .ToListAsync();
 
-                     return result;
+                             return result;
                 }
             }
         }

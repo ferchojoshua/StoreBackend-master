@@ -169,7 +169,7 @@ namespace Store.Controllers.API
                         UserSO = ""
                     }
                 };
-                await _userHelper.AddUserAsync(user, "123456");
+                await _userHelper.AddUserAsync (user, "123456");
                 await _userHelper.AddUserToRoleAsync(user, model.RolId);
                 return Ok(user);
             }
@@ -304,7 +304,7 @@ namespace Store.Controllers.API
                 await _userHelper.LogoutAsync(usr);
                 return Ok("eX01");
             }
-            if (!await _userHelper.IsAutorized(usr.Rol, "   USER UPDATE"))
+            if (!await _userHelper.IsAutorized(usr.Rol, "USER UPDATE"))
             {
                 return Unauthorized();
             }
