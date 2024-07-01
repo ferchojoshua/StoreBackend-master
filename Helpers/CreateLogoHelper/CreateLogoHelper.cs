@@ -1,6 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Store.Data;
-using Store.Entities;
+using Store.Entities.Logo;
+using System.Data;
 
 namespace Store.Helpers.CreateLogoHelper
 {
@@ -32,14 +34,19 @@ namespace Store.Helpers.CreateLogoHelper
 
                 _context.C_Administrables.Add(admin);
                 await _context.SaveChangesAsync();
-                await _context.Database.ExecuteSqlInterpolatedAsync($"EXEC [dbo].[Create_Imagen] {admin.Id}, {storeId}, {direccion}, {ruc},{imagen},{telefono}, {telefonoWhatsApp}");
+                var mensajeParam = new SqlParameter("@Mensaje", SqlDbType.NVarChar, -1);
+                mensajeParam.Direction = ParameterDirection.Output;
+                await _context.Database.ExecuteSqlInterpolatedAsync($@" SET @Mensaje = ''; 
+                EXEC [dbo].[Create_Imagen] {admin.Id}, {storeId}, {direccion}, {ruc}, {imagen}, {telefono}, {telefonoWhatsApp}, @Mensaje OUTPUT; 
+                SELECT @Mensaje;");
 
-                return "Logo creado correctamente.";
+                string mensaje = mensajeParam.Value.ToString();
+                return mensaje;
             }
             catch (Exception ex)
             {
                 return $"Error al crear el logo: {ex.Message}";
             }
-        }
+        }   
     }
 }

@@ -1,12 +1,15 @@
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Store.Data;
 using Store.Entities;
+using Store.Entities.ProductoRecal;
 using Store.Models.ViewModels;
+using Store.Models.ViewModels.Masivo;
 using System.Data;
 
 namespace Store.Helpers.ProductHelper
 {
-    public class ProductHelper : IProductHelper
+    public class ProductHelper :   IProductHelper
     {
         private readonly DataContext _context;
 
@@ -416,6 +419,47 @@ namespace Store.Helpers.ProductHelper
              .OrderBy(p => p.Description)
              .ToListAsync();
         }
+        public async Task<ProductsRecal> UpdateProductRecallAsync(int Id, int StoreId, int Porcentaje)
+        {
+            ProductsRecal ProductRecal = new ProductsRecal
+            {
+                Id = Id,
+                StoreId = StoreId,
+                Porcentaje = Porcentaje,
+            };
+
+            try
+            {
+                _context.ProductsRecal.Add(ProductRecal);
+                await _context.SaveChangesAsync();
+
+                var mensajeParam = new SqlParameter("@Mensaje", SqlDbType.NVarChar, -1)
+                {
+                    Direction = ParameterDirection.Output
+                };
+
+                await _context.Database.ExecuteSqlInterpolatedAsync($@"
+            EXEC [dbo].[uspProductsupdate] {ProductRecal.Id}, {StoreId}, {Porcentaje}, @Mensaje OUTPUT;
+        ");
+
+                string mensaje = mensajeParam.Value.ToString();
+
+                if (string.IsNullOrEmpty(mensaje) || !mensaje.Contains("exitosamente"))
+                {
+                    throw new Exception($"Error al actualizar: {mensaje}");
+                }
+                else
+                {
+                    return ProductRecal;
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception($"Error al ejecutar el procedimiento almacenado: {ex.Message}");
+            }
+        }
+
+                
 
     }
 }

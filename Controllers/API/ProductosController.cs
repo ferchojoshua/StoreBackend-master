@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -7,8 +6,9 @@ using Store.Data;
 using Store.Entities;
 using Store.Helpers.ProductHelper;
 using Store.Helpers.User;
-using Store.Migrations;
 using Store.Models.ViewModels;
+using Store.Models.ViewModels.Logo;
+using System.Security.Claims;
 
 namespace Store.Controllers.API
 {
@@ -423,5 +423,58 @@ namespace Store.Controllers.API
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpPost ("{Id}/{StoreId}/{Porcentaje}")]
+        public async Task<ActionResult<UpdateProductRecallViewModel>> UpdaterecallProductId(int Id, int StoreId, int Porcentaje)
+        {
+            string email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (email == null)
+            {
+                return Unauthorized();
+            }
+
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"].ToString();
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync(user);
+                return Ok("eX01");
+            }
+
+            if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS VER"))
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                var UpdateProductRecallViewModel = await _productHelper.UpdateProductRecallAsync(Id, StoreId, Porcentaje);
+
+                if (UpdateProductRecallViewModel == null)
+                {
+                    return NotFound($"No se encontró ningún logo para el storeId {Id}");
+                }
+
+                return Ok(UpdateProductRecallViewModel);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error al obtener el logo para el storeId {Id}: {ex.Message}");
+            }
+        }
+
+
+
     }
 }

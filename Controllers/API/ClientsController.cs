@@ -6,7 +6,6 @@ using Store.Entities;
 using Store.Helpers.ClientService;
 using Store.Helpers.User;
 using Store.Models.ViewModels;
-
 namespace Store.Controllers.API
 {
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]

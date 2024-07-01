@@ -2,54 +2,55 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Store.Data;
+using Store.Entities.Logo;
 using Store.Entities;
 using Store.Helpers.CreateLogoHelper;
+using Store.Helpers.CreateLogoHelperList;
 using Store.Helpers.User;
 using Store.Models.ViewModels.Logo;
+using Store.Models.ViewModels;
 using System.Security.Claims;
 
 namespace Store.Controllers.API
 {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     [ApiController]
     public class CreateLogoController : Controller
     {
         private readonly IUserHelper _userHelper;
         private readonly ICreateLogoHelper _createLogoHelper;
+        private readonly ICreateLogoHelperList _createLogoHelperList;
         private readonly DataContext _context;
 
-        public CreateLogoController(IUserHelper userHelper, ICreateLogoHelper createLogoHelper, DataContext context)
+        public CreateLogoController(IUserHelper userHelper, ICreateLogoHelper createLogoHelper, ICreateLogoHelperList createLogoHelperList, DataContext context)
         {
-            _userHelper = userHelper;
             _createLogoHelper = createLogoHelper;
+            _userHelper = userHelper;
+            _createLogoHelperList = createLogoHelperList;
             _context = context;
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost]
         public async Task<ActionResult<CreateLogo>> CreateLogo([FromForm] CreateLogoViewModel model)
         {
-            // Verifica si el usuario está autenticado y obtiene su email
             string email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             if (email == null)
             {
                 return Unauthorized();
             }
 
-            // Obtiene el usuario por su email
             User user = await _userHelper.GetUserByEmailAsync(email);
             if (user == null)
             {
                 return Unauthorized();
             }
 
-            // Verifica si el usuario tiene una contraseña por defecto
             if (user.IsDefaultPass)
             {
                 return Ok(user);
             }
 
-            // Verifica el token de la sesión del usuario
             string token = HttpContext.Request.Headers["Authorization"].ToString();
             token = token["Bearer ".Length..].Trim();
             if (user.UserSession.UserToken != token)
@@ -58,7 +59,6 @@ namespace Store.Controllers.API
                 return Ok("eX01");
             }
 
-            // Verifica si el usuario tiene permiso para crear logos
             if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS CREATE"))
             {
                 return Unauthorized();
@@ -66,13 +66,11 @@ namespace Store.Controllers.API
 
             try
             {
-                // Verifica si el archivo de imagen está presente
                 if (model.Imagen == null || model.Imagen.Length == 0)
                 {
                     return BadRequest("La imagen es requerida.");
                 }
 
-                // Convierte el archivo de imagen en un arreglo de bytes
                 byte[] imageBytes;
                 using (var ms = new MemoryStream())
                 {
@@ -80,7 +78,6 @@ namespace Store.Controllers.API
                     imageBytes = ms.ToArray();
                 }
 
-                // Llama al helper para crear el logo
                 var result = await _createLogoHelper.CreateLogoAsync(
                     model.StoreId,
                     model.Direccion,
@@ -94,8 +91,57 @@ namespace Store.Controllers.API
             }
             catch (Exception ex)
             {
-                // Retorna un mensaje de error si algo falla
                 return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("{storeId}")]
+        public async Task<ActionResult<GetLogoViewModel>> GetLogoByStoreId(int storeId)
+        {
+            string email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (email == null)
+            {
+                return Unauthorized();
+            }
+
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"].ToString();
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync(user);
+                return Ok("eX01");
+            }
+
+            if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS VER"))
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                var logoViewModel = await _createLogoHelperList.GetLogoByStoreIdAsync(storeId);
+
+                if (logoViewModel == null)
+                {
+                    return NotFound($"No se encontró ningún logo para el storeId {storeId}");
+                }
+
+                return Ok(logoViewModel);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error al obtener el logo para el storeId {storeId}: {ex.Message}");
             }
         }
     }

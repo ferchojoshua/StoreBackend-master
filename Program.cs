@@ -22,6 +22,7 @@ using Store.Helpers.StoreService;
 using Store;
 using Store.Helpers.Worker;
 using Store.Helpers.ServerHelper;
+using Store.Helpers.CreateLogoHelperList;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,27 +32,29 @@ builder.Services
     .AddControllers()
     .AddJsonOptions(s => s.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
+var MyAllowSpecificOrigins = "Clients";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(
+        name: MyAllowSpecificOrigins,
+        builder =>
+        {
+            builder
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials()
+                .WithOrigins("http://automoto.eastus.cloudapp.azure.com", "http://localhost:3000");
+        });
+});
 
 if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
 {
     builder.Services.AddDbContext<DataContext>(
         opt =>
-    opt.UseSqlServer(
-        builder.Configuration.GetConnectionString("DevConnetion"),
-        x => x.UseNetTopologySuite()
-    //)
-    // opt.UseSqlServer(
-    //     builder.Configuration.GetConnectionString("MigConnetion"),
-    //     x => x.UseNetTopologySuite() 
-    // )
-    // opt.UseSqlServer(
-    //     builder.Configuration.GetConnectionString("LocalConn"),
-    //     x => x.UseNetTopologySuite()
-    //)
-    //opt.UseSqlServer(
-    //builder.Configuration.GetConnectionString("ProdConnetion"),
-    //x => x.UseNetTopologySuite()
-    )
+            opt.UseSqlServer(
+                builder.Configuration.GetConnectionString("DevConnetion"),
+                x => x.UseNetTopologySuite()
+            )
     );
 }
 else
@@ -105,6 +108,7 @@ builder.Services.AddScoped<IProductHelper, ProductHelper>();
 builder.Services.AddScoped<IProductMovementsHelper, ProductMovementsHelper>();
 builder.Services.AddScoped<IClientsHelper, ClientsHelper>();
 builder.Services.AddScoped<ICreateLogoHelper, CreateLogoHelper>();
+builder.Services.AddScoped<ICreateLogoHelperList, CreateLogoHelperList>();
 builder.Services.AddScoped<ILocationsHelper, LocationsHelper>();
 builder.Services.AddScoped<ISalesService, SalesService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
@@ -119,38 +123,12 @@ builder.Services.AddScoped<IServerService, ServerService>();
 
 builder.Services.AddHostedService<Worker>().AddSingleton<IWorkerService, WorkerService>();
 
-var MyAllowSpecificOrigins = "Clients";
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy(
-        name: MyAllowSpecificOrigins,
-        builder =>
-        {
-            builder                
-                .AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowCredentials()
-                .WithOrigins("http://automoto.eastus.cloudapp.azure.com", "http://localhost:3000");
-        });
-
-
-});
-
-builder.Services.AddCors();
 var app = builder.Build();
-
-// using (var serviceScope = app.Services.CreateAsyncScope())
-// {
-//     var services = serviceScope.ServiceProvider;
-//     var myDependency = services.GetRequiredService<IServerService>();
-//     myDependency.Config();
-// }
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -158,16 +136,17 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-app.MapHub<NotificationHub>("notificationHub");
-app.MapHub<NewSalehub>("newSaleHub");
-app.MapHub<NewFacturaHub>("newFactHub");
-app.MapHub<UpdateHub>("updateClientHub");
-app.MapHub<ServerHub>("serverHub");
 
 app.UseCors(MyAllowSpecificOrigins);
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapHub<NotificationHub>("notificationHub");
+app.MapHub<NewSalehub>("newSaleHub");
+app.MapHub<NewFacturaHub>("newFactHub");
+app.MapHub<UpdateHub>("updateClientHub");
+app.MapHub<ServerHub>("serverHub");
 
 app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
 

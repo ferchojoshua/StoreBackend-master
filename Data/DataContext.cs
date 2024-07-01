@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Store.Entities;
+using Store.Entities.Logo;
+using Store.Entities.ProductoRecal;
 
 namespace Store.Data
 {
@@ -26,6 +28,7 @@ namespace Store.Data
 
         // public DbSet<ErrorLog> ErrorLogs { get; set; }
         public DbSet<Existence> Existences { get; set; }
+        public DbSet<ProductsRecal> ProductsRecal { get; set; }
         public DbSet<ExistencesDailyCheck> ExistencesDailyChecks { get; set; }
         public DbSet<Facturacion> Facturacions { get; set; }
         public DbSet<FacturaDetails> FacturaDetails { get; set; }
@@ -51,6 +54,7 @@ namespace Store.Data
         public DbSet<TipoPago> TipoPagos { get; set; }
         public DbSet<UserSession> UserSession { get; set; }
         public DbSet<CreateLogo> C_Administrables { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
