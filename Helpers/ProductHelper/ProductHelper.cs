@@ -4,7 +4,6 @@ using Store.Data;
 using Store.Entities;
 using Store.Entities.ProductoRecal;
 using Store.Models.ViewModels;
-using Store.Models.ViewModels.Masivo;
 using System.Data;
 
 namespace Store.Helpers.ProductHelper
@@ -430,17 +429,22 @@ namespace Store.Helpers.ProductHelper
 
             try
             {
-                _context.ProductsRecal.Add(ProductRecal);
-                await _context.SaveChangesAsync();
-
                 var mensajeParam = new SqlParameter("@Mensaje", SqlDbType.NVarChar, -1)
                 {
                     Direction = ParameterDirection.Output
                 };
 
-                await _context.Database.ExecuteSqlInterpolatedAsync($@"
-            EXEC [dbo].[uspProductsupdate] {ProductRecal.Id}, {StoreId}, {Porcentaje}, @Mensaje OUTPUT;
-        ");
+                var productoIdParam = new SqlParameter("@ProductoId", Id);
+                var porcentajeParam = new SqlParameter("@Porcentaje", Porcentaje);
+                var storeIdParam = new SqlParameter("@StoreId", StoreId);
+
+                await _context.Database.ExecuteSqlRawAsync(
+                    @"EXEC [dbo].[uspProductsupdate] @ProductoId, @StoreId, @Porcentaje, @Mensaje OUTPUT;",
+                    productoIdParam,
+                    storeIdParam,
+                    porcentajeParam,
+                    mensajeParam
+                );
 
                 string mensaje = mensajeParam.Value.ToString();
 
@@ -459,7 +463,8 @@ namespace Store.Helpers.ProductHelper
             }
         }
 
-                
+
+
 
     }
 }

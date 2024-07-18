@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Store.Data;
 using Store.Entities;
+using Store.Entities.ProductoRecal;
 using Store.Helpers.ProductHelper;
 using Store.Helpers.User;
 using Store.Models.ViewModels;
@@ -81,7 +82,7 @@ namespace Store.Controllers.API
                 .ToListAsync();
         }
 
-       [HttpGet("GetProductsRecalById/{id}")]
+        [HttpGet("GetProductsRecalById/{id}")]
         public async Task<ActionResult<IEnumerable<Producto>>> GetProductsRecalById(int id)
         {
             string email = User.Claims
@@ -374,7 +375,7 @@ namespace Store.Controllers.API
             try
             {
                 var kardex = await _productHelper.GetKardex(model);
-               return Ok(kardex);
+                return Ok(kardex);
             }
             catch (Exception ex)
             {
@@ -424,8 +425,10 @@ namespace Store.Controllers.API
             }
         }
 
-        [HttpPost ("{Id}/{StoreId}/{Porcentaje}")]
-        public async Task<ActionResult<UpdateProductRecallViewModel>> UpdaterecallProductId(int Id, int StoreId, int Porcentaje)
+        [HttpPost]
+        [Route("UpdaterecallProductId")]
+        //public async Task<ActionResult<UpdateProductRecallViewModel>> UpdaterecallProductId(int Id, int StoreId, int Porcentaje)
+             public async Task<ActionResult<IEnumerable<ProductsRecal>>> UpdaterecallProductId([FromBody] UpdateProductRecallViewModel model)
         {
             string email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             if (email == null)
@@ -459,18 +462,21 @@ namespace Store.Controllers.API
 
             try
             {
-                var UpdateProductRecallViewModel = await _productHelper.UpdateProductRecallAsync(Id, StoreId, Porcentaje);
+                var UpdateProductRecallViewModel = await _productHelper.UpdateProductRecallAsync(
+                    model.Id,
+                    model.StoreId,
+                    model.Porcentaje);
 
                 if (UpdateProductRecallViewModel == null)
                 {
-                    return NotFound($"No se encontró ningún logo para el storeId {Id}");
+                    return NotFound($"No se encontró ningún logo para el storeId {model.Id}");
                 }
 
                 return Ok(UpdateProductRecallViewModel);
             }
             catch (Exception ex)
             {
-                return BadRequest($"Error al obtener el logo para el storeId {Id}: {ex.Message}");
+                return BadRequest($"Error al obtener el logo para el storeId {model.Id}: {ex.Message}");
             }
         }
 

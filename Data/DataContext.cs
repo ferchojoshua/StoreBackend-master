@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Store.Entities;
+using Store.Entities.Ajustes;
+using Store.Entities.CreateupdateConfig;
 using Store.Entities.Logo;
 using Store.Entities.ProductoRecal;
 
@@ -54,6 +56,11 @@ namespace Store.Data
         public DbSet<TipoPago> TipoPagos { get; set; }
         public DbSet<UserSession> UserSession { get; set; }
         public DbSet<CreateLogo> C_Administrables { get; set; }
+        public DbSet<Ajustes> Catalogs { get; set; }
+        public DbSet<AjustesgetList> AjustesgetList { get; set; }
+
+
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

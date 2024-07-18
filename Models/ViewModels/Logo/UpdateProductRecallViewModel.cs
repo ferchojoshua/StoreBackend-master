@@ -7,7 +7,7 @@ namespace Store.Models.ViewModels.Logo
         [Required]
         public int Id { get; set; }
 
-        [Required]
+        //[Required]
         public int StoreId { get; set; }
 
         [Required]
