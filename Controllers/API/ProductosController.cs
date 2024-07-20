@@ -425,10 +425,63 @@ namespace Store.Controllers.API
             }
         }
 
+        //[HttpPost]
+        //[Route("UpdaterecallProductId")]
+        //     public async Task<ActionResult<IEnumerable<ProductsRecal>>> UpdaterecallProductId([FromBody] UpdateProductRecallViewModel model)
+        //{
+        //    string email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        //    if (email == null)
+        //    {
+        //        return Unauthorized();
+        //    }
+
+        //    User user = await _userHelper.GetUserByEmailAsync(email);
+        //    if (user == null)
+        //    {
+        //        return Unauthorized();
+        //    }
+
+        //    if (user.IsDefaultPass)
+        //    {
+        //        return Ok(user);
+        //    }
+
+        //    string token = HttpContext.Request.Headers["Authorization"].ToString();
+        //    token = token["Bearer ".Length..].Trim();
+        //    if (user.UserSession.UserToken != token)
+        //    {
+        //        await _userHelper.LogoutAsync(user);
+        //        return Ok("eX01");
+        //    }
+
+        //    if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS VER"))
+        //    {
+        //        return Unauthorized();
+        //    }
+
+        //    try
+        //    {
+        //        var UpdateProductRecallViewModel = await _productHelper.UpdateProductRecallAsync(
+        //            model.Id,
+        //            model.StoreId,
+        //            model.Porcentaje);
+
+        //        if (UpdateProductRecallViewModel == null)
+        //        {
+        //            return NotFound($"No se encontró ningún logo para el storeId {model.Id}");
+        //        }
+
+        //        return Ok(UpdateProductRecallViewModel);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest($"Error al obtener el logo para el storeId {model.Id}: {ex.Message}");
+        //    }
+        //}
+
         [HttpPost]
         [Route("UpdaterecallProductId")]
-        //public async Task<ActionResult<UpdateProductRecallViewModel>> UpdaterecallProductId(int Id, int StoreId, int Porcentaje)
-             public async Task<ActionResult<IEnumerable<ProductsRecal>>> UpdaterecallProductId([FromBody] UpdateProductRecallViewModel model)
+        public async Task<ActionResult<IEnumerable<ProductsRecal>>> UpdaterecallProductId([FromBody] UpdateProductRecallViewModel model)
         {
             string email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             if (email == null)
@@ -462,23 +515,27 @@ namespace Store.Controllers.API
 
             try
             {
-                var UpdateProductRecallViewModel = await _productHelper.UpdateProductRecallAsync(
+                var updatedProduct = await _productHelper.UpdateProductRecallAsync(
                     model.Id,
                     model.StoreId,
-                    model.Porcentaje);
+                    model.Porcentaje,
+                    model.ActualizarVentaDetalle, // Asegúrate de que no sea nullable
+                    model.ActualizarVentaMayor);  // Asegúrate de que no sea nullable
 
-                if (UpdateProductRecallViewModel == null)
+                if (updatedProduct == null)
                 {
-                    return NotFound($"No se encontró ningún logo para el storeId {model.Id}");
+                    return NotFound($"No se encontró ningún producto para el storeId {model.Id}");
                 }
 
-                return Ok(UpdateProductRecallViewModel);
+                return Ok(updatedProduct);
             }
             catch (Exception ex)
             {
-                return BadRequest($"Error al obtener el logo para el storeId {model.Id}: {ex.Message}");
+                return BadRequest($"Error al actualizar el producto con el storeId {model.Id}: {ex.Message}");
             }
         }
+
+
 
 
 
