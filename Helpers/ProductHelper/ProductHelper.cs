@@ -2,6 +2,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Store.Data;
 using Store.Entities;
+using Store.Entities.CreateupdateConfig;
 using Store.Entities.ProductoRecal;
 using Store.Models.ViewModels;
 using System.Data;
@@ -383,11 +384,7 @@ namespace Store.Helpers.ProductHelper
             return producto;
         }
 
-        //public async Task<ICollection<Producto>> GetProductsRecalByIdAsync(ProductViewModel model)
-        //    public async Task<Producto> GetProductsRecalByIdAsync(ProductViewModel model)
-        //{
-               
-        //}
+ 
 
       public async Task<ICollection<Producto>> GetProductsRecalByIdAsync(int idStore)
 
@@ -418,7 +415,132 @@ namespace Store.Helpers.ProductHelper
              .OrderBy(p => p.Description)
              .ToListAsync();
         }
+        //public async Task<ProductsRecal> UpdateProductRecallAsync(int Id, int StoreId, int Porcentaje)
+        //{
+        //    ProductsRecal ProductRecal = new ProductsRecal
+        //    {
+        //        Id = Id,
+        //        StoreId = StoreId,
+        //        Porcentaje = Porcentaje,
+        //    };
+
+        //    try
+        //    {
+        //        var mensajeParam = new SqlParameter("@Mensaje", SqlDbType.NVarChar, -1)
+        //        {
+        //            Direction = ParameterDirection.Output
+        //        };
+
+        //        var productoIdParam = new SqlParameter("@ProductoId", Id);
+        //        var porcentajeParam = new SqlParameter("@Porcentaje", Porcentaje);
+        //        var storeIdParam = new SqlParameter("@StoreId", StoreId);
+
+        //        await _context.Database.ExecuteSqlRawAsync(
+        //            @"EXEC [dbo].[uspProductsupdate] @ProductoId, @StoreId, @Porcentaje, @Mensaje OUTPUT;",
+        //            productoIdParam,
+        //            storeIdParam,
+        //            porcentajeParam,
+        //            mensajeParam
+        //        );
+
+        //        string mensaje = mensajeParam.Value.ToString();
+
+        //        if (string.IsNullOrEmpty(mensaje) || !mensaje.Contains("exitosamente"))
+        //        {
+        //            throw new Exception($"Error al actualizar: {mensaje}");
+        //        }
+        //        else
+        //        {
+        //            return ProductRecal;
+        //        }
+        //    }
+        //    catch (SqlException ex)
+        //    {
+        //        throw new Exception($"Error al ejecutar el procedimiento almacenado: {ex.Message}");
+        //    }
+        //}
+
+        //public List<GetProductslistEntity> GetProducts(int? almacen, int? tipoNegocio, int? familia)
+        //{
+        //    var products = new List<GetProductslistEntity>();
+
+        //    using (var connection = new SqlConnection(_connectionString))
+        //    {
+        //        using (var command = new SqlCommand("uspProductslist", connection))
+        //        {
+        //            command.CommandType = CommandType.StoredProcedure;
+
+        //            command.Parameters.AddWithValue("@Almacen", (object)almacen ?? DBNull.Value);
+        //            command.Parameters.AddWithValue("@TipoNegocio", (object)tipoNegocio ?? DBNull.Value);
+        //            command.Parameters.AddWithValue("@Familia", (object)familia ?? DBNull.Value);
+
+        //            connection.Open();
+
+        //            using (var reader = command.ExecuteReader())
+        //            {
+        //                while (reader.Read())
+        //                {
+        //                    var product = new GetProductslistEntity
+        //                    {
+        //                        IdProducto = reader.GetInt32(reader.GetOrdinal("IdProducto")),
+        //                        BarCode = reader.GetString(reader.GetOrdinal("BarCode")),
+        //                        Description = reader.GetString(reader.GetOrdinal("Description")),
+        //                        Familia = reader.GetString(reader.GetOrdinal("Familia")),
+        //                        Marca = reader.GetString(reader.GetOrdinal("Marca")),
+        //                        Modelo = reader.GetString(reader.GetOrdinal("Modelo")),
+        //                        TipoNegocio = reader.GetString(reader.GetOrdinal("TipoNegocio")),
+        //                        UM = reader.GetString(reader.GetOrdinal("UM")),
+        //                        IdExistence = reader.IsDBNull(reader.GetOrdinal("IdExistence")) ? (int?)null : reader.GetInt32(reader.GetOrdinal("IdExistence")),
+        //                        Almacen = reader.GetString(reader.GetOrdinal("Almacen")),
+        //                        Exisistencia = reader.GetInt32(reader.GetOrdinal("Exisistencia")),
+        //                        PVD = reader.GetDecimal(reader.GetOrdinal("PVD")),
+        //                        PVM = reader.GetDecimal(reader.GetOrdinal("PVM")),
+        //                        PrecioCompra = reader.GetDecimal(reader.GetOrdinal("PrecioCompra"))
+        //                    };
+
+        //                    products.Add(product);
+        //                }
+        //            }
+        //        }
+        //    }
+
+        //    return products;
+        //}
+
+
+        public async Task<IEnumerable<GetProductslistEntity>> GetProductslistM(int almacen, int tipoNegocio, int familia)
+        {
+            try
+            {
+                // Ejecuta la consulta con los parámetros opcionales
+                var result = await _context.Set<GetProductslistEntity>()
+                    .FromSqlRaw("EXEC [dbo].[uspProductslist] @Almacen, @TipoNegocio, @Familia",
+                        new SqlParameter("@Almacen", (object)almacen ?? DBNull.Value),
+                        new SqlParameter("@TipoNegocio", (object)tipoNegocio ?? DBNull.Value),
+                        new SqlParameter("@Familia", (object)familia ?? DBNull.Value))
+                    .ToListAsync();
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                // Manejo de excepciones si es necesario
+                Console.WriteLine($"Error en GetProductslistM: {ex.Message}");
+                throw;
+            }
+        }
+
+
+
         public async Task<ProductsRecal> UpdateProductRecallAsync(int Id, int StoreId, int Porcentaje)
+        {
+            bool actualizarVentaDetalle = true; // Valor predeterminado
+            bool actualizarVentaMayor = true;   // Valor predeterminado
+
+            return await UpdateProductRecallAsync(Id, StoreId, Porcentaje, actualizarVentaDetalle, actualizarVentaMayor);
+        }
+
+        public async Task<ProductsRecal> UpdateProductRecallAsync(int Id, int StoreId, int Porcentaje, bool ActualizarVentaDetalle, bool ActualizarVentaMayor)
         {
             ProductsRecal ProductRecal = new ProductsRecal
             {
@@ -437,12 +559,16 @@ namespace Store.Helpers.ProductHelper
                 var productoIdParam = new SqlParameter("@ProductoId", Id);
                 var porcentajeParam = new SqlParameter("@Porcentaje", Porcentaje);
                 var storeIdParam = new SqlParameter("@StoreId", StoreId);
+                var actualizarVentaDetalleParam = new SqlParameter("@ActualizarVentaDetalle", ActualizarVentaDetalle);
+                var actualizarVentaMayorParam = new SqlParameter("@ActualizarVentaMayor", ActualizarVentaMayor);
 
                 await _context.Database.ExecuteSqlRawAsync(
-                    @"EXEC [dbo].[uspProductsupdate] @ProductoId, @StoreId, @Porcentaje, @Mensaje OUTPUT;",
+                    @"EXEC [dbo].[uspProductsupdate] @ProductoId, @StoreId, @Porcentaje, @ActualizarVentaDetalle, @ActualizarVentaMayor, @Mensaje OUTPUT;",
                     productoIdParam,
                     storeIdParam,
                     porcentajeParam,
+                    actualizarVentaDetalleParam,
+                    actualizarVentaMayorParam,
                     mensajeParam
                 );
 
@@ -462,9 +588,5 @@ namespace Store.Helpers.ProductHelper
                 throw new Exception($"Error al ejecutar el procedimiento almacenado: {ex.Message}");
             }
         }
-
-
-
-
     }
 }

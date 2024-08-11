@@ -58,6 +58,7 @@ namespace Store.Data
         public DbSet<CreateLogo> C_Administrables { get; set; }
         public DbSet<Ajustes> Catalogs { get; set; }
         public DbSet<AjustesgetList> AjustesgetList { get; set; }
+        public DbSet<GetProductslistEntity> GetProductslistEntity { get; set; }
 
 
 

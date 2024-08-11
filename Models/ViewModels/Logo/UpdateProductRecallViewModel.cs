@@ -6,11 +6,10 @@ namespace Store.Models.ViewModels.Logo
     {
         [Required]
         public int Id { get; set; }
-
-        //[Required]
         public int StoreId { get; set; }
-
         [Required]
-        public int Porcentaje { get; set; }  
+        public int Porcentaje { get; set; }
+        public bool ActualizarVentaDetalle { get; set; }
+        public bool ActualizarVentaMayor { get; set; }
     }
 }

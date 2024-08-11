@@ -14,10 +14,8 @@ namespace Store.Helpers.ProductHelper
             Task<ICollection<Producto>> GetProdsDifKardex();
             Task<ICollection<Kardex>> GetAllStoresKardex(GetKardexViewModel model);
             Task<ICollection<Producto>> GetProductsRecalByIdAsync(int idStore);
-        //Task<ProductsRecal> UpdateProductRecallAsync(int Id, int StoreId, int Porcentaje);
-
-        public async Task<ProductsRecal> UpdateProductRecallAsync(int id, int storeId, int porcentaje, bool? actualizarVentaDetalle, bool? actualizarVentaMayor);
-
+            Task<ProductsRecal> UpdateProductRecallAsync(int Id, int StoreId, int Porcentaje, bool ActualizarVentaDetalle, bool ActualizarVentaMayor);          
+            Task<IEnumerable<GetProductslistEntity>> GetProductslistM(int almacen, int tipoNegocio, int familia);
 
 
 

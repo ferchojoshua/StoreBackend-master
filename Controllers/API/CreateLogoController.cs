@@ -30,7 +30,7 @@ namespace Store.Controllers.API
      
         }
 
-        [HttpPost]
+        [HttpPost("CreateLogo")]
         public async Task<ActionResult<CreateLogo>> CreateLogo([FromForm] CreateLogoViewModel model)
         {
             string email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
@@ -94,7 +94,9 @@ namespace Store.Controllers.API
             }
         }
 
-        [HttpGet("{storeId}")]
+
+
+        [HttpGet("GetLogoByStoreId/{storeId}")]
         public async Task<ActionResult<GetLogoViewModel>> GetLogoByStoreId(int storeId)
         {
             string email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
@@ -135,6 +137,12 @@ namespace Store.Controllers.API
                 {
                     return NotFound($"No se encontró ningún logo para el storeId {storeId}");
                 }
+
+                 if (logoViewModel.Imagen != null)
+        {
+            logoViewModel.ImagenBase64 = Convert.ToBase64String(logoViewModel.Imagen);  // Mostrar el logo seleccionado
+        }
+
 
                 return Ok(logoViewModel);
             }

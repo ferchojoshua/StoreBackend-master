@@ -9,6 +9,7 @@ namespace Store.Helpers.CreateLogoHelper
     public interface ICreateLogoHelper
     {
         Task<string> CreateLogoAsync(int storeId, string direccion, string ruc, byte[] imagenBase64, string telefono, string telefonoWhatsApp);
+        Task<string> UpdateLogoAsync(int storeId, string direccion, string ruc, byte[] imagenBase64, string telefono, string telefonoWhatsApp);
         Task<GetLogoViewModel> GetLogoByStoreIdAsync(int storeId);
         Task<IEnumerable<Ajustes>> AjustesAsync(int operacion, string valor, string catalogo, string descripcion, string usuario);
 

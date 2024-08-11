@@ -52,6 +52,54 @@ namespace Store.Helpers.CreateLogoHelper
             }
         }
 
+
+
+        public async Task<string> UpdateLogoAsync(int storeId, string direccion, string ruc, byte[] imagen, string telefono, string telefonoWhatsApp)
+        {
+            try
+            {
+                var logo = await _context.C_Administrables.FirstOrDefaultAsync(l => l.StoreId == storeId);
+                if (logo == null)
+                {
+                    return "Logo no encontrado.";
+                }
+
+                // Actualizar los valores del logo existente
+                logo.Direccion = direccion;
+                logo.Ruc = ruc;
+                logo.Imagen = imagen;
+                logo.Telefono = telefono;
+                logo.TelefonoWhatsApp = telefonoWhatsApp;
+
+                _context.C_Administrables.Update(logo);
+                await _context.SaveChangesAsync();
+
+                var mensajeParam = new SqlParameter("@Mensaje", SqlDbType.NVarChar, -1);
+                mensajeParam.Direction = ParameterDirection.Output;
+                await _context.Database.ExecuteSqlInterpolatedAsync($@"
+            SET @Mensaje = ''; 
+            EXEC [dbo].[Update_Imagen] 
+                {storeId}, 
+                {direccion}, 
+                {ruc}, 
+                {telefono}, 
+                {telefonoWhatsApp}, 
+                {imagen},
+                @Mensaje OUTPUT; 
+            SELECT @Mensaje;
+        ");
+
+                string mensaje = mensajeParam.Value.ToString();
+                return mensaje;
+            }
+            catch (Exception ex)
+            {
+                return $"Error al actualizar el logo: {ex.Message}";
+            }
+        }
+
+
+
         public async Task<IEnumerable<Ajustes>> AjustesAsync( int operacion, string valor, string catalogo, string descripcion, string usuario)
         {
             try
@@ -183,15 +231,16 @@ namespace Store.Helpers.CreateLogoHelper
         public async Task<GetLogoViewModel> GetLogoByStoreIdAsync(int storeId)
         {
             try
-            { 
-           
+            {
+                // Consulta para obtener el registro
                 var existingAdmin = await _context.C_Administrables
+                    .AsNoTracking()
                     .FirstOrDefaultAsync(a => a.StoreId == storeId);
 
                 // Si no se encuentra ningún registro, retorna null
                 if (existingAdmin == null)
                 {
-                    return null;
+                    throw new Exception($"No se encontraron registros para el storeId {storeId}");
                 }
 
                 // Mapea los datos del modelo de entidad al ViewModel
@@ -200,7 +249,8 @@ namespace Store.Helpers.CreateLogoHelper
                     StoreId = existingAdmin.StoreId,
                     Direccion = existingAdmin.Direccion,
                     Ruc = existingAdmin.Ruc,
-                    Imagen = existingAdmin.Imagen != null ? Convert.ToBase64String(existingAdmin.Imagen) : null,
+                    Imagen = existingAdmin.Imagen,
+                    ImagenBase64 = existingAdmin.Imagen != null ? Convert.ToBase64String(existingAdmin.Imagen) : null,
                     Telefono = existingAdmin.Telefono,
                     TelefonoWhatsApp = existingAdmin.TelefonoWhatsApp
                 };
@@ -215,7 +265,8 @@ namespace Store.Helpers.CreateLogoHelper
         }
 
 
-        public async Task<IEnumerable<AjustesgetList>> ObtenerCatalogosAsync(int operacion)
+
+    public async Task<IEnumerable<AjustesgetList>> ObtenerCatalogosAsync(int operacion)
         {
             try
             {
@@ -228,35 +279,7 @@ namespace Store.Helpers.CreateLogoHelper
 
                     return result;
                 }
-                //else
-                //{
-                //    // Para las demás operaciones (1, 3, 4), incluye los parámetros de salida
-                //    var idParam = new SqlParameter("@ID", SqlDbType.Int) { Direction = ParameterDirection.Output };
-                //    var estadoParam = new SqlParameter("@Estado", SqlDbType.Bit) { Direction = ParameterDirection.Output };
-                //    var mensajeParam = new SqlParameter("@Mensaje", SqlDbType.NVarChar, -1) { Direction = ParameterDirection.Output };
-
-                //    await _context.Database.ExecuteSqlRawAsync(
-                //        "EXEC [dbo].[usp_CreateCatalogos] @Operacion, @Valor, @Catalogo, @Descripcion, @Usuario, @ID OUTPUT, @Estado OUTPUT, @Mensaje OUTPUT",
-                //        new SqlParameter("@Operacion", operacion),
-                //        new SqlParameter("@Valor", DBNull.Value), // O cualquier valor necesario
-                //        new SqlParameter("@Catalogo", DBNull.Value), // O cualquier valor necesario
-                //        new SqlParameter("@Descripcion", DBNull.Value), // O cualquier valor necesario
-                //        new SqlParameter("@Usuario", DBNull.Value), // O cualquier valor necesario
-                //        idParam,
-                //        estadoParam,
-                //        mensajeParam);
-
-                //    // Leer los valores de salida
-                //    var id = idParam.Value != DBNull.Value ? idParam.Value.ToString() : string.Empty;
-                //    var estado = estadoParam.Value != DBNull.Value ? (bool)estadoParam.Value : false;
-                //    var mensaje = mensajeParam.Value != DBNull.Value ? mensajeParam.Value.ToString() : string.Empty;
-
-                //    Console.WriteLine($"ID: {id}, Estado: {estado}, Mensaje: {mensaje}");
-
-                //    // Puedes retornar una lista vacía o cualquier otro valor según sea necesario
-                //    return new List<AjustesgetList>();
-                //}
-            }
+             }
             
             catch (Exception ex)
             {
@@ -268,34 +291,5 @@ namespace Store.Helpers.CreateLogoHelper
             return new List<AjustesgetList>();
         }
 
-      
-
-
-
-        //public async Task<IEnumerable<AjustesgetList>> ObtenerCatalogosAsync(int operacion)
-        //{
-        //    try
-        //    {
-
-
-        //        var operacionParam = new SqlParameter("@Operacion", operacion);
-        //        //var idParam = new SqlParameter("@ID", SqlDbType.Int) { Direction = ParameterDirection.Output };
-        //        //var estadoParam = new SqlParameter("@Estado", SqlDbType.Bit) { Direction = ParameterDirection.Output };
-        //        //var mensajeParam = new SqlParameter("@Mensaje", SqlDbType.NVarChar, -1) { Direction = ParameterDirection.Output };
-
-        //        var result = await _context.AjustesgetList
-        //            .FromSqlRaw("EXEC [dbo].[usp_CreateCatalogos] @Operacion,  operacionParam")
-
-        //            .ToListAsync();
-
-        //        //var mensaje = mensajeParam.Value.ToString();
-
-        //         return result;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw ex;
-        //    }
-        //}
     }
 }
