@@ -124,6 +124,12 @@ namespace Store.Helpers.CreateLogoHelper
                 // Define el comando SQL con el orden correcto de los parámetros
                 var sqlCommand = "EXEC [dbo].[usp_CreateCatalogos] @Operacion, @Valor, @Catalogo, @Descripcion, @Usuario, @ID OUTPUT, @Estado OUTPUT, @Mensaje OUTPUT";
 
+
+                var idParam = new SqlParameter("@ID", SqlDbType.Int)
+                {
+                    Direction = ParameterDirection.Output
+                };
+
                 var estadoParam = new SqlParameter("@Estado", SqlDbType.Bit)
                 {
                     Direction = ParameterDirection.Output
@@ -134,6 +140,7 @@ namespace Store.Helpers.CreateLogoHelper
                     Direction = ParameterDirection.Output
                 };
 
+           
                 // Ejecuta el comando SQL de forma asíncrona
                 await _context.Database.ExecuteSqlRawAsync(sqlCommand,
                     new SqlParameter("@Operacion", operacion), // Parámetro de entrada @Operacion
@@ -141,6 +148,7 @@ namespace Store.Helpers.CreateLogoHelper
                     new SqlParameter("@Catalogo", (object)catalogo ?? DBNull.Value),
                     new SqlParameter("@Descripcion", (object)descripcion ?? DBNull.Value),
                     new SqlParameter("@Usuario", (object)usuario ?? DBNull.Value),
+                    idParam,
                     estadoParam,
                     mensajeParam
                 );
