@@ -167,7 +167,7 @@ namespace Store.Helpers.User
             {
                 //Permission p = r.Permissions.FirstOrDefault(x => x.Description == permiso);
                 //if (!p.IsEnable)
-                result = r.Permissions.Any(p => p.Description == permiso && p.IsEnable);
+                 result = r.Permissions.Any(p => p.Description == permiso && p.IsEnable);
             }
             else          
             {

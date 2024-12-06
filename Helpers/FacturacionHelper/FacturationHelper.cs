@@ -99,11 +99,9 @@ namespace Store.Helpers.FacturacionHelper
 
         public async Task<ICollection<Facturacion>> GetAnulatedFacturacionAsync(int storeId)
         {
-
-            DateTime hoy = DateTime.Now;
             var result = await _context.Facturacions
                 .Include(f => f.Client)
-                .Where(f => f.IsCanceled == false && f.IsAnulado && f.FechaVenta.Year == hoy.Year && f.Store.Id == storeId )
+                .Where(f => f.IsCanceled == false && f.IsAnulado && f.Store.Id == storeId)
                 .ToListAsync();
 
             return result;
@@ -111,11 +109,10 @@ namespace Store.Helpers.FacturacionHelper
 
         public async Task<ICollection<Facturacion>> GetCancelledFacturacionAsync(int storeId)
         {
-            DateTime hoy = DateTime.Now;
             var result = await _context.Facturacions
                 .Include(f => f.Client)
                 .Include(f => f.Sale)
-                .Where(f => f.IsCanceled && f.IsAnulado == false  && f.FechaVenta.Year == hoy.Year && f.Store.Id == storeId)
+                .Where(f => f.IsCanceled && f.IsAnulado == false && f.Store.Id == storeId)
                 .ToListAsync();
 
             return result;
@@ -123,12 +120,10 @@ namespace Store.Helpers.FacturacionHelper
 
         public async Task<ICollection<Facturacion>> GetFacturacionAsync(int storeId)
         {
-            DateTime hoy = DateTime.Now;
-
             var result = await _context.Facturacions
                 .Include(f => f.Client)
                 .Include(f => f.FacturaDetails)
-                .Where(f => f.IsCanceled == false && f.FechaVenta.Year == hoy.Year && f.IsAnulado == false && f.Store.Id == storeId)
+                .Where(f => f.IsCanceled == false && f.IsAnulado == false && f.Store.Id == storeId)
                 .ToListAsync();
 
             return result;
@@ -152,35 +147,55 @@ namespace Store.Helpers.FacturacionHelper
         public async Task<Sales> PayFacturaAsync(PayFactViewModel model, Entities.User user)
         {
             Facturacion fact = await _context.Facturacions
-                .Include(f => f.Client)
-                .Include(f => f.FacturedBy)
-                .Include(f => f.FacturaDetails)
-                .ThenInclude(fd => fd.Product)
-                .Include(f => f.FacturaDetails)
-                .ThenInclude(fd => fd.Store)
-                .FirstOrDefaultAsync(f => f.Id == model.FacturaId);
-            fact.IsCanceled = true;
-            fact.IsDescuento = model.IsDescuento;
-            fact.DescuentoXPercent = model.DescuentoXPercent;
-            fact.DescuentoXMonto = model.DescuentoXMonto;
-            fact.CodigoDescuento = model.CodigoDescuento;
-            fact.MontoVenta = model.MontoVenta;
-            fact.MontoVentaAntesDescuento = model.MontoVentaAntesDescuento;
-            fact.PaidBy = user;
+              .Include(f => f.Client)
+              .Include(f => f.FacturedBy)
+              .Include(f => f.FacturaDetails)
+              .ThenInclude(fd => fd.Product)
+              .Include(f => f.FacturaDetails)
+              .ThenInclude(fd => fd.Store)
+              .FirstOrDefaultAsync(f => f.Id == model.Id);
 
-            DateTime hoy = DateTime.Now;
 
-            if (fact.Client != null)
+            if (fact == null)
             {
-                fact.Client.ContadorCompras += 1;
+                throw new Exception("Factura no encontrada");
             }
 
-            TipoPago tp = await _context.TipoPagos.FirstOrDefaultAsync(
-                t => t.Id == model.TipoPagoId
-            );
+            if (fact.FacturaDetails == null || !fact.FacturaDetails.Any())
+            {
+                throw new Exception("La factura no tiene detalles");
+            }
 
-            Sales sale =
-                new()
+            // Validar usuario
+            if (user == null)
+            {
+                throw new Exception("Usuario no válido");
+            }
+
+            try
+            {
+                fact.IsCanceled = true;
+                fact.IsDescuento = model.IsDescuento;
+                fact.DescuentoXPercent = model.DescuentoXPercent;
+                fact.DescuentoXMonto = model.DescuentoXMonto;
+                fact.CodigoDescuento = model.CodigoDescuento ?? null;
+                fact.MontoVenta = model.MontoVenta;
+                fact.MontoVentaAntesDescuento = model.MontoVentaAntesDescuento;
+                fact.PaidBy = user;
+
+                DateTime hoy = DateTime.Now;
+
+                if (fact.Client != null)
+                {
+                    fact.Client.ContadorCompras += 1;
+                }
+
+                TipoPago tp = await _context.TipoPagos.FirstOrDefaultAsync(
+                    t => t.Id == model.TipoPagoId
+                );
+
+                // Crear nueva venta
+                var sale = new Sales
                 {
                     IsEventual = fact.IsEventual,
                     NombreCliente = fact.IsEventual ? fact.NombreCliente : "CLIENTE EVENTUAL",
@@ -203,20 +218,30 @@ namespace Store.Helpers.FacturacionHelper
                     Reference = model.Reference
                 };
 
-            List<SaleDetail> detalles = new();
-            foreach (var item in fact.FacturaDetails)
-            {
-                Existence existence = await _context.Existences.FirstOrDefaultAsync(
-                    e => e.Producto == item.Product && e.Almacen == item.Store
-                );
-                existence.Existencia -= item.Cantidad;
-                existence.PrecioVentaDetalle = item.PVD;
-                existence.PrecioVentaMayor = item.PVM;
-                _context.Entry(existence).State = EntityState.Modified;
+                var detalles = new List<SaleDetail>();
+                foreach (var item in fact.FacturaDetails)
+                {
+                    if (item.Product == null || item.Store == null)
+                    {
+                        throw new Exception($"Detalle de factura inválido: Producto o Almacén faltante");
+                    }
 
-                //Se crea el objeto detalle venta
-                SaleDetail saleDetail =
-                    new()
+                    var existence = await _context.Existences.FirstOrDefaultAsync(
+                        e => e.Producto == item.Product && e.Almacen == item.Store
+                    );
+
+                    if (existence == null)
+                    {
+                        throw new Exception($"No se encontró existencia para el producto {item.Product.Description} en el almacén {item.Store.Name}");
+                    }
+
+                    if (existence.Existencia < item.Cantidad)
+                    {
+                        throw new Exception($"Existencia insuficiente para el producto {item.Product.Description}");
+                    }
+
+                    //Se crea el objeto detalle venta
+                    var saleDetail = new SaleDetail
                     {
                         Store = item.Store,
                         Product = item.Product,
@@ -234,105 +259,112 @@ namespace Store.Helpers.FacturacionHelper
                         CostoTotal = item.CostoTotal,
                         CostoCompra = item.CostoCompra
                     };
-                detalles.Add(saleDetail); //Se agrega a la lista
+                    detalles.Add(saleDetail); //Se agrega a la lista
 
-                //Agregamos el Kardex de entrada al almacen destino
-                Kardex kar = await _context.Kardex
-                    .Where(k => k.Product.Id == item.Product.Id && k.Almacen == item.Store)
-                    .OrderByDescending(k => k.Id)
-                    .FirstOrDefaultAsync();
+                    //Agregamos el Kardex de entrada al almacen destino
+                    Kardex kar = await _context.Kardex
+                        .Where(k => k.Product.Id == item.Product.Id && k.Almacen == item.Store)
+                        .OrderByDescending(k => k.Id)
+                        .FirstOrDefaultAsync();
 
-                int saldo = kar == null ? 0 : kar.Saldo;
+                    int saldo = kar == null ? 0 : kar.Saldo;
 
-                Kardex kardex =
-                    new()
-                    {
-                        Product = item.Product,
-                        Fecha = hoy,
-                        Concepto = fact.IsContado ? "VENTA DE CONTADO" : "VENTA DE CREDITO",
-                        Almacen = item.Store,
-                        Entradas = 0,
-                        Salidas = item.Cantidad,
-                        Saldo = saldo - item.Cantidad,
-                        User = user
-                    };
-                _context.Kardex.Add(kardex);
-            }
+                    Kardex kardex =
+                        new()
+                        {
+                            Product = item.Product,
+                            Fecha = hoy,
+                            Concepto = fact.IsContado ? "VENTA DE CONTADO" : "VENTA DE CREDITO",
+                            Almacen = item.Store,
+                            Entradas = 0,
+                            Salidas = item.Cantidad,
+                            Saldo = saldo - item.Cantidad,
+                            User = user
+                        };
+                    _context.Kardex.Add(kardex);
+                }
 
-            if (sale.IsContado)
-            {
-                Abono abono =
-                    new()
-                    {
-                        Sale = sale,
-                        Monto = sale.MontoVenta,
-                        RealizedBy = user,
-                        FechaAbono = hoy,
-                        Store = detalles[0].Store,
-                        TipoPago = tp,
-                        Reference = model.Reference
-                    };
-                _context.Abonos.Add(abono);
-            }
-
-            sale.SaleDetails = detalles;
-            _context.Sales.Add(sale);
-            await _context.SaveChangesAsync();
-
-            List<CountAsientoContableDetails> countAsientoContableDetailsList = new();
-
-            if (sale.IsContado == true)
-            {
-                CountAsientoContableDetails detalleDebito =
-                    new()
-                    {
-                        Cuenta = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 66),
-                        Debito = sale.MontoVenta,
-                        Credito = 0
-                    };
-                countAsientoContableDetailsList.Add(detalleDebito);
-            }
-            else
-            {
-                CountAsientoContableDetails detalleDebito =
-                    new()
-                    {
-                        Cuenta = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 72),
-                        Debito = sale.MontoVenta,
-                        Credito = 0
-                    };
-                countAsientoContableDetailsList.Add(detalleDebito);
-            }
-
-            CountAsientoContableDetails detalleCredito =
-                new()
+                if (sale.IsContado)
                 {
-                    Cuenta = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 74),
-                    Debito = 0,
-                    Credito = sale.MontoVenta
-                };
-            countAsientoContableDetailsList.Add(detalleCredito);
+                    Abono abono =
+                        new()
+                        {
+                            Sale = sale,
+                            Monto = sale.MontoVenta,
+                            RealizedBy = user,
+                            FechaAbono = hoy,
+                            Store = detalles[0].Store,
+                            TipoPago = tp,
+                            Reference = model.Reference
+                        };
+                    _context.Abonos.Add(abono);
+                }
 
-            CountAsientoContable asientosContable =
-                new()
+                sale.SaleDetails = detalles;
+                _context.Sales.Add(sale);
+                await _context.SaveChangesAsync();
+
+                List<CountAsientoContableDetails> countAsientoContableDetailsList = new();
+
+                if (sale.IsContado == true)
                 {
-                    Fecha = sale.FechaVenta,
-                    Referencia = $"VENTA DE PRODUCTOS SEGUN FACTURA: {sale.Id}",
-                    LibroContable = await _context.CountLibros.FirstOrDefaultAsync(c => c.Id == 4),
-                    FuenteContable = await _context.CountFuentesContables.FirstOrDefaultAsync(
-                        f => f.Id == 3
-                    ),
-                    Store = sale.Store,
-                    User = user,
-                    CountAsientoContableDetails = countAsientoContableDetailsList
-                };
-            _context.CountAsientosContables.Add(asientosContable);
+                    CountAsientoContableDetails detalleDebito =
+                        new()
+                        {
+                            Cuenta = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 66),
+                            Debito = sale.MontoVenta,
+                            Credito = 0
+                        };
+                    countAsientoContableDetailsList.Add(detalleDebito);
+                }
+                else
+                {
+                    CountAsientoContableDetails detalleDebito =
+                        new()
+                        {
+                            Cuenta = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 72),
+                            Debito = sale.MontoVenta,
+                            Credito = 0
+                        };
+                    countAsientoContableDetailsList.Add(detalleDebito);
+                }
 
-            await _context.SaveChangesAsync();
-            fact.Sale = sale;
-            _context.Entry(fact).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-            return sale;
+                CountAsientoContableDetails detalleCredito =
+                    new()
+                    {
+                        Cuenta = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 74),
+                        Debito = 0,
+                        Credito = sale.MontoVenta
+                    };
+                countAsientoContableDetailsList.Add(detalleCredito);
+
+                CountAsientoContable asientosContable =
+                    new()
+                    {
+                        Fecha = sale.FechaVenta,
+                        Referencia = $"VENTA DE PRODUCTOS SEGUN FACTURA: {sale.Id}",
+                        LibroContable = await _context.CountLibros.FirstOrDefaultAsync(c => c.Id == 4),
+                        FuenteContable = await _context.CountFuentesContables.FirstOrDefaultAsync(
+                            f => f.Id == 3
+                        ),
+                        Store = sale.Store,
+                        User = user,
+                        CountAsientoContableDetails = countAsientoContableDetailsList
+                    };
+                _context.CountAsientosContables.Add(asientosContable);
+
+                await _context.SaveChangesAsync();
+                fact.Sale = sale;
+                _context.Entry(fact).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+                return sale; // Return the sale object
+            }
+            catch (Exception ex)
+            {
+                // Manejo de excepciones: asegurarse de retornar algo aunque sea en caso de error
+                Console.WriteLine(ex.Message);
+                return null; // O un valor predeterminado apropiado si es necesario
+            }
         }
     }
 }

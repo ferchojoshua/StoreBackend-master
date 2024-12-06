@@ -1,8 +1,17 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using NetTopologySuite.Index.HPRtree;
+using NuGet.Packaging;
 using Store.Data;
 using Store.Entities;
+using Store.Entities.CreateupdateConfig;
+using Store.Entities.Logo;
+using Store.Migrations;
 using Store.Models.Responses;
 using Store.Models.ViewModels;
+using System;
+using System.Data;
 
 namespace Store.Helpers.SalesHelper
 {
@@ -20,28 +29,29 @@ namespace Store.Helpers.SalesHelper
             DateTime hoy = DateTime.Now;
 
             return await _context.Sales
-                .Include(s => s.Client)
-                .Include(s => s.FacturedBy)
-                .Include(s => s.SaleDetails)
-                .ThenInclude(sd => sd.Store)
-                .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado == false))
-                .ThenInclude(sd => sd.Product)
-                .Where(s => s.IsAnulado == false && s.FechaVenta.Year <= hoy.Year && s.Store.Id == idStore && s.IsContado)
-                .Select(
+                     .Include(s => s.Client)
+                     .Include(s => s.FacturedBy)
+                     .Include(s => s.SaleDetails)
+                     .ThenInclude(sd => sd.Store)
+                     .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado == false))
+                     .ThenInclude(sd => sd.Product)
+                     .Where(s => s.IsAnulado == false && s.Store.Id == idStore && s.IsContado)
+                     .Select(
                     x =>
                         new Sales()
                         {
                             Id = x.Id,
                             IsEventual = x.IsEventual,
                             NombreCliente = x.NombreCliente,
-                            Client =
-                                x.Client != null
-                                    ? new Client()
-                                    {
-                                        Id = x.Client.Id,
-                                        NombreCliente = x.Client.NombreCliente
-                                    }
-                                    : new Client() { },
+                            Client = x.Client == null ? new Client
+                            {
+                                Id = 0,
+                                NombreCliente = "CLIENTE EVENTUAL"
+                            } : new Client
+                            {
+                                Id = x.Client.Id,
+                                NombreCliente = x.Client.NombreCliente ?? "CLIENTE EVENTUAL"
+                            },
                             ProductsCount = x.ProductsCount,
                             MontoVenta = x.MontoVenta,
                             IsDescuento = x.IsDescuento,
@@ -60,12 +70,24 @@ namespace Store.Helpers.SalesHelper
                                         new SaleDetail()
                                         {
                                             Id = s.Id,
-                                            Store = new Almacen()
+                                            Store = s.Store == null ? new Almacen
+                                            {
+                                                Id = 0,
+                                                Name = "Sin Almacén"
+                                            } : new Almacen
                                             {
                                                 Id = s.Store.Id,
-                                                Name = s.Store.Name
+                                                Name = s.Store.Name ?? "Sin Nombre"
                                             },
-                                            Product = s.Product,
+                                            Product = s.Product == null ? new Producto
+                                            {
+                                                Id = 0,
+                                                Description = "Producto No Encontrado"
+                                            } : new Producto
+                                            {
+                                                Id = s.Product.Id,
+                                                Description = s.Product.Description ?? "Sin Descripción"
+                                            },
                                             Cantidad = s.Cantidad,
                                             IsDescuento = s.IsDescuento,
                                             CostoCompra = s.CostoCompra,
@@ -77,8 +99,7 @@ namespace Store.Helpers.SalesHelper
                                             PVM = s.PVM,
                                             PVD = s.PVD,
                                             CostoTotalAntesDescuento = s.CostoTotalAntesDescuento,
-                                            CostoTotalDespuesDescuento =
-                                                s.CostoTotalDespuesDescuento,
+                                            CostoTotalDespuesDescuento = s.CostoTotalDespuesDescuento,
                                             CostoTotal = s.CostoTotal,
                                             IsAnulado = s.IsAnulado,
                                             IsPartialAnulation = s.IsPartialAnulation,
@@ -106,6 +127,222 @@ namespace Store.Helpers.SalesHelper
                 .ToListAsync();
         }
 
+
+        public async Task<ICollection<Proformas>> GetContadoSalesByProfAsync()
+        {
+            DateTime hoy = DateTime.Now;
+
+            var proformas = await _context.Proformas
+                .AsNoTracking()
+                .Include(p => p.Client) 
+                .Include(p => p.FacturedBy) 
+                .Include(p => p.Store) 
+                .Include(p => p.ProformasDetails) 
+                    .ThenInclude(pd => pd.Product) 
+                .Include(p => p.ProformasDetails)
+                    .ThenInclude(pd => pd.Store) 
+                .Where(p => !p.IsContado 
+                            && !p.IsCanceled 
+                            && !p.IsAnulado
+                            && p.TipoPago == null 
+                            && p.FechaVenta.Year == hoy.Year 
+                            && p.FechaVencimiento > hoy) 
+                .OrderByDescending(p => p.FechaVenta) 
+                .Select(p => new Proformas
+                {
+                    Id = p.Id,
+                    IsEventual = p.IsEventual,
+                    NombreCliente = p.Client != null ?(
+                          !string.IsNullOrEmpty(p.Client.NombreCliente)? p.Client.NombreCliente:(
+                            !string.IsNullOrEmpty(p.NombreCliente)? p.NombreCliente: "CLIENTE EVENTUAL"
+                          )
+                        )
+                        :(
+                          !string.IsNullOrEmpty(p.NombreCliente)? p.NombreCliente: "CLIENTE EVENTUAL"
+                        ),
+                    //NombreCliente = p.Client != null ? !string.IsNullOrEmpty(p.Client.NombreCliente) ? p.Client.NombreCliente : "CLIENTE EVENTUAL" : "CLIENTE EVENTUAL", 
+                    Client = p.Client != null
+                        ? new Client
+                        {
+                            Id = p.Client.Id,
+                            NombreCliente = !string.IsNullOrEmpty(p.Client.NombreCliente) ? p.Client.NombreCliente  : "CLIENTE EVENTUAL"
+                        }
+                        : null,
+                    ProductsCount = p.ProductsCount,
+                    MontoVenta = p.MontoVenta,
+                    IsDescuento = p.IsDescuento,
+                    DescuentoXPercent = p.DescuentoXPercent,
+                    DescuentoXMonto = p.DescuentoXMonto,
+                    MontoVentaAntesDescuento = p.MontoVentaAntesDescuento,
+                    FechaVenta = p.FechaVenta,
+                    FacturedBy = p.FacturedBy != null
+                        ? new Entities.User()
+                        {
+                            FirstName = p.FacturedBy.FirstName,
+                            LastName = p.FacturedBy.LastName
+                        }
+                        : null,
+                    ProformasDetails = p.ProformasDetails
+                        .Where(s => !s.IsAnulado) // Filtra detalles no anulados
+                        .Select(s => new ProformasDetails
+                        {
+                            Id = s.Id,
+                            Store = new Almacen()
+                            {
+                                Id = s.Store.Id,
+                                Name = s.Store.Name
+                            },
+                            Product = s.Product,
+                            Cantidad = s.Cantidad,
+                            IsDescuento = s.IsDescuento,
+                            CostoCompra = s.CostoCompra,
+                            DescuentoXPercent = s.DescuentoXPercent,
+                            Descuento = s.Descuento,
+                            CodigoDescuento = s.CodigoDescuento,
+                            Ganancia = s.Ganancia,
+                            CostoUnitario = s.CostoUnitario,
+                            PVM = s.PVM,
+                            PVD = s.PVD,
+                            CostoTotalAntesDescuento = s.CostoTotalAntesDescuento,
+                            CostoTotalDespuesDescuento = s.CostoTotalDespuesDescuento,
+                            CostoTotal = s.CostoTotal,
+                            IsAnulado = s.IsAnulado,
+                            IsPartialAnulation = s.IsPartialAnulation,
+                            CantidadAnulada = s.CantidadAnulada,
+                            AnulatedBy = s.AnulatedBy,
+                            FechaAnulacion = s.FechaAnulacion
+                        }
+                                )
+                                .ToList(),
+                    IsContado = p.IsContado,
+                    IsCanceled = p.IsCanceled,
+                    Saldo = p.Saldo,
+                    FechaVencimiento = p.FechaVencimiento,
+                    IsAnulado = p.IsAnulado,
+                    FechaAnulacion = p.FechaAnulacion,
+                    Store = p.Store != null
+                        ? new Almacen
+                        {
+                            Id = p.Store.Id,
+                            Name = p.Store.Name
+                        }
+                        : null,
+                    CodigoDescuento = p.CodigoDescuento
+                })
+                .ToListAsync();
+
+            return proformas;
+        }
+
+
+        public async Task<ICollection<Proformas>> GetContadoSalesByProfAsync(int storeId)
+        {
+            DateTime hoy = DateTime.Now;
+
+            var proformas = await _context.Proformas
+                .AsNoTracking()
+                .Include(p => p.Client)
+                .Include(p => p.FacturedBy)
+                .Include(p => p.Store)
+                .Include(p => p.ProformasDetails)
+                    .ThenInclude(pd => pd.Product)
+                .Include(p => p.ProformasDetails)
+                    .ThenInclude(pd => pd.Store)
+                .Where(p => !p.IsContado
+                            && !p.IsCanceled
+                            && !p.IsAnulado
+                && p.TipoPago == null
+                            && p.Store.Id == storeId
+                            && p.FechaVenta.Year == hoy.Year
+                            && p.FechaVencimiento > hoy)
+                .OrderByDescending(p => p.FechaVenta)
+                .Select(p => new Proformas
+                {
+                    Id = p.Id,
+                    IsEventual = p.IsEventual,
+                    NombreCliente = p.Client != null ? (
+                          !string.IsNullOrEmpty(p.Client.NombreCliente) ? p.Client.NombreCliente : (
+                            !string.IsNullOrEmpty(p.NombreCliente) ? p.NombreCliente : "CLIENTE EVENTUAL"
+                          )
+                        )
+                        : (
+                          !string.IsNullOrEmpty(p.NombreCliente) ? p.NombreCliente : "CLIENTE EVENTUAL"
+                        ),
+                    //NombreCliente = p.Client != null ? !string.IsNullOrEmpty(p.Client.NombreCliente) ? p.Client.NombreCliente : "CLIENTE EVENTUAL" : "CLIENTE EVENTUAL", 
+                    Client = p.Client != null
+                        ? new Client
+                        {
+                            Id = p.Client.Id,
+                            NombreCliente = !string.IsNullOrEmpty(p.Client.NombreCliente) ? p.Client.NombreCliente : "CLIENTE EVENTUAL"
+                        }
+                        : null,
+                    ProductsCount = p.ProductsCount,
+                    MontoVenta = p.MontoVenta,
+                    IsDescuento = p.IsDescuento,
+                    DescuentoXPercent = p.DescuentoXPercent,
+                    DescuentoXMonto = p.DescuentoXMonto,
+                    MontoVentaAntesDescuento = p.MontoVentaAntesDescuento,
+                    FechaVenta = p.FechaVenta,
+                    FacturedBy = p.FacturedBy != null
+                        ? new Entities.User()
+                        {
+                            FirstName = p.FacturedBy.FirstName,
+                            LastName = p.FacturedBy.LastName
+                        }
+                        : null,
+                    ProformasDetails = p.ProformasDetails
+                        .Where(s => !s.IsAnulado) // Filtra detalles no anulados
+                        .Select(s => new ProformasDetails
+                        {
+                            Id = s.Id,
+                            Store = new Almacen()
+                            {
+                                Id = s.Store.Id,
+                                Name = s.Store.Name
+                            },
+                            Product = s.Product,
+                            Cantidad = s.Cantidad,
+                            IsDescuento = s.IsDescuento,
+                            CostoCompra = s.CostoCompra,
+                            DescuentoXPercent = s.DescuentoXPercent,
+                            Descuento = s.Descuento,
+                            CodigoDescuento = s.CodigoDescuento,
+                            Ganancia = s.Ganancia,
+                            CostoUnitario = s.CostoUnitario,
+                            PVM = s.PVM,
+                            PVD = s.PVD,
+                            CostoTotalAntesDescuento = s.CostoTotalAntesDescuento,
+                            CostoTotalDespuesDescuento = s.CostoTotalDespuesDescuento,
+                            CostoTotal = s.CostoTotal,
+                            IsAnulado = s.IsAnulado,
+                            IsPartialAnulation = s.IsPartialAnulation,
+                            CantidadAnulada = s.CantidadAnulada,
+                            AnulatedBy = s.AnulatedBy,
+                            FechaAnulacion = s.FechaAnulacion
+                        }
+                                )
+                                .ToList(),
+                    IsContado = p.IsContado,
+                    IsCanceled = p.IsCanceled,
+                    Saldo = p.Saldo,
+                    FechaVencimiento = p.FechaVencimiento,
+                    IsAnulado = p.IsAnulado,
+                    FechaAnulacion = p.FechaAnulacion,
+                    Store = p.Store != null
+                        ? new Almacen
+                        {
+                            Id = p.Store.Id,
+                            Name = p.Store.Name
+                        }
+                        : null,
+                    CodigoDescuento = p.CodigoDescuento
+                })
+                .ToListAsync();
+
+            return proformas;
+        }
+
+
         public async Task<ICollection<Sales>> GetCreditoSalesByStoreAsync(int idStore)
         {
 
@@ -117,7 +354,7 @@ namespace Store.Helpers.SalesHelper
                 .ThenInclude(sd => sd.Store)
                 .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado == false))
                 .ThenInclude(sd => sd.Product)
-                .Where(s => s.IsAnulado == false && s.FechaVenta.Year <= hoy.Year  && s.Store.Id == idStore && s.IsContado == false)
+                .Where(s => s.IsAnulado == false && s.FechaVenta.Year <= hoy.Year && s.Store.Id == idStore && s.IsContado == false)
                 .Select(
                     x =>
                         new Sales()
@@ -207,7 +444,7 @@ namespace Store.Helpers.SalesHelper
                 .ThenInclude(sd => sd.Store)
                 .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado))
                 .ThenInclude(sd => sd.Product)
-                .Where(s => s.IsAnulado &&  s.FechaVenta.Year <= hoy.Year && s.Store.Id == idStore)
+                .Where(s => s.IsAnulado && s.FechaVenta.Year <= hoy.Year && s.Store.Id == idStore)
                 .Select(
                     x =>
                         new Sales()
@@ -375,6 +612,7 @@ namespace Store.Helpers.SalesHelper
                 )
                 .ToListAsync();
         }
+
 
         public async Task<Sales> AddSaleAsync(AddSaleViewModel model, Entities.User user)
         {
@@ -569,6 +807,265 @@ namespace Store.Helpers.SalesHelper
             return sale;
         }
 
+
+      
+
+//public async Task<Sales> AddSaleAsync(AddSaleViewModel model, Entities.User user)
+//{
+//    DateTime hoy = DateTime.Now;
+//    Client cl = await _context.Clients.FirstOrDefaultAsync(c => c.Id == model.IdClient);
+//    if (cl != null)
+//    {
+//        cl.ContadorCompras += 1;
+//        if (!model.IsContado)
+//        {
+//            cl.CreditoConsumido += model.MontoVenta;
+//        }
+//        _context.Entry(cl).State = EntityState.Modified;
+//    }
+
+//    TipoPago tp = await _context.TipoPagos.FirstOrDefaultAsync(
+//        t => t.Id == model.TipoPagoId
+//    );
+
+//    //Almacen store = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == model.Storeid);
+
+//    var store = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == model.Storeid);
+
+//    Sales sale =
+//        new()
+//        {
+//            IsEventual = model.IsEventual,
+//            NombreCliente = model.IsEventual
+//              ? string.IsNullOrEmpty(model.NombreCliente) ? "CLIENTE EVENTUAL" : model.NombreCliente
+//                : "",
+//            Client = cl,
+//            ProductsCount = model.SaleDetails.Count,
+//            MontoVenta = model.MontoVenta,
+//            IsDescuento = model.IsDescuento,
+//            DescuentoXPercent = model.DescuentoXPercent,
+//            DescuentoXMonto = model.DescuentoXMonto,
+//            FechaVenta = hoy,
+//            FacturedBy = user,
+//            IsContado = model.IsContado,
+//            IsCanceled = model.IsContado, //Si es de contado, esta cancelado
+//            Saldo = model.IsContado ? 0 : model.MontoVenta,
+//            FechaVencimiento = hoy.AddDays(15),
+//            Store = store,
+//            CodigoDescuento = model.CodigoDescuento,
+//            MontoVentaAntesDescuento = model.MontoVentaAntesDescuento,
+//            TipoPago = model.IsContado ? tp : null,
+//            Reference = model.Reference
+//        };
+
+//    if (model.IsContado)
+//    {
+//        var movList = await _context.CajaMovments
+//            .Where(c => c.Store.Id == model.Storeid && c.CajaTipo.Id == 1)
+//            .ToListAsync();
+
+//        var mov = movList.Where(m => m.Id == movList.Max(k => k.Id)).FirstOrDefault();
+//    }
+
+//    List<SaleDetail> detalles = new();
+//    List<Kardex> KardexMovments = new();
+
+//    foreach (var item in model.SaleDetails)
+//    {
+
+
+//        if (store == null || item.Product?.Id == null)
+//        {
+//            throw new Exception("El Store o Product está nulo en los detalles de la venta.");
+//        }
+
+
+//        Producto prod = await _context.Productos.FirstOrDefaultAsync(
+//            p => p.Id == item.Product.Id
+//        );
+
+//        //Modificamos las existencias
+//        Existence existence = await _context.Existences.FirstOrDefaultAsync(
+//            e => e.Producto == prod && e.Almacen == store
+//        );
+//        existence.Existencia -= item.Cantidad;
+//        existence.PrecioVentaDetalle = item.PVD;
+//        existence.PrecioVentaMayor = item.PVM;
+//        _context.Entry(existence).State = EntityState.Modified;
+
+//        //Se crea el objeto detalle venta
+//        SaleDetail saleDetail =
+//            new()
+//            {
+//                Store = store,
+//                Product = prod,
+//                Cantidad = item.Cantidad,
+//                IsDescuento = item.IsDescuento,
+//                DescuentoXPercent = item.DescuentoXPercent,
+//                Descuento = item.Descuento,
+//                CodigoDescuento = item.CodigoDescuento,
+//                Ganancia = item.CostoTotal - (item.Cantidad * existence.PrecioCompra),
+//                CostoUnitario = item.CostoUnitario,
+//                PVM = item.PVM,
+//                PVD = item.PVD,
+//                CostoTotalAntesDescuento = item.CostoTotalAntesDescuento,
+//                CostoTotalDespuesDescuento = item.CostoTotalDespuesDescuento,
+//                CostoTotal = item.CostoTotal,
+//                CostoCompra = existence.PrecioCompra,
+//            };
+//        detalles.Add(saleDetail); //Se agrega a la lista
+
+
+//        //var query = _context.Kardex
+//        //.Where(k => k.Product == prod && k.Almacen == Store)
+//        //.OrderByDescending(k => k.Id);
+
+//        //Console.WriteLine(query.ToQueryString());
+
+//        //Agregamos el Kardex de entrada al almacen destino
+//        Kardex kar = await _context.Kardex
+//            .Where(k => k.Product == prod && k.Almacen.Id == store.Id)
+//            .OrderByDescending(k => k.Id)
+//            .FirstOrDefaultAsync();
+
+//        int saldo = kar == null ? 0 : kar.Saldo;
+
+//        Kardex kardex =
+//            new()
+//            {
+//                Product = prod,
+//                Fecha = hoy,
+//                Concepto = model.IsContado ? "VENTA DE CONTADO" : "VENTA DE CREDITO",
+//                Almacen = store,
+//                Entradas = 0,
+//                Salidas = item.Cantidad,
+//                Saldo = saldo - item.Cantidad,
+//                User = user
+//            };
+//        KardexMovments.Add(kardex);
+//    }
+
+//    if (sale.IsContado)
+//    {
+//        Abono abono =
+//            new()
+//            {
+//                Sale = sale,
+//                Monto = sale.MontoVenta,
+//                RealizedBy = user,
+//                FechaAbono = hoy,
+//                Store = store,
+//                TipoPago = tp,
+//                Reference = model.Reference
+//            };
+//        _context.Abonos.Add(abono);
+//    }
+
+//    //Unificamos objetos y los mandamos a la DB
+//    sale.SaleDetails = detalles;
+//    sale.KardexMovments = KardexMovments;
+//    _context.Sales.Add(sale);
+//    await _context.SaveChangesAsync();
+
+//    List<CountAsientoContableDetails> countAsientoContableDetailsList = new();
+
+//    if (sale.IsContado == true)
+//    {
+//        CountAsientoContableDetails detalleDebito =
+//            new()
+//            {
+//                Cuenta = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 66),
+//                Debito = sale.MontoVenta,
+//                Credito = 0
+//            };
+//        countAsientoContableDetailsList.Add(detalleDebito);
+//    }
+//    else
+//    {
+//        CountAsientoContableDetails detalleDebito =
+//            new()
+//            {
+//                Cuenta = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 72),
+//                Debito = sale.MontoVenta,
+//                Credito = 0
+//            };
+//        countAsientoContableDetailsList.Add(detalleDebito);
+//    }
+//    CountAsientoContableDetails detalleCredito =
+//        new()
+//        {
+//            Cuenta = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 74),
+//            Debito = 0,
+//            Credito = sale.MontoVenta
+//        };
+//    countAsientoContableDetailsList.Add(detalleCredito);
+
+//    CountAsientoContable asientosContable =
+//        new()
+//        {
+//            Fecha = sale.FechaVenta,
+//            Referencia = $"VENTA DE PRODUCTOS SEGUN FACTURA: {sale.Id}",
+//            LibroContable = await _context.CountLibros.FirstOrDefaultAsync(c => c.Id == 4),
+//            FuenteContable = await _context.CountFuentesContables.FirstOrDefaultAsync(
+//                f => f.Id == 3
+//            ),
+//            Store = sale.Store,
+//            User = user,
+//            CountAsientoContableDetails = countAsientoContableDetailsList
+//        };
+//    _context.CountAsientosContables.Add(asientosContable);
+//    await _context.SaveChangesAsync();
+//    return sale;
+//}
+
+public async Task<Proformas> FinishSalesAsync(int Id, int tipoPagoId, Entities.User user)
+        {
+            try
+            {
+                var Proformas = await _context.Proformas
+                    .Include(s => s.Client)
+                    .Include(s => s.FacturedBy)
+                    .Include(s => s.ProformasDetails)
+                        .ThenInclude(sd => sd.Product)
+                    .Include(s => s.ProformasDetails)
+                        .ThenInclude(sd => sd.Store)
+                    .Include(s => s.Store)
+                    .FirstOrDefaultAsync(s => s.Id == Id);
+
+                if (Proformas == null)
+                {
+                    throw new Exception($"Venta {Id} no encontrada");
+                }
+
+                var tipoPago = await _context.TipoPagos
+                    .FirstOrDefaultAsync(t => t.Id == tipoPagoId);
+
+                if (tipoPago == null)
+                {
+                    throw new Exception($"Tipo de pago {tipoPagoId} no encontrado");
+                }
+
+                // Actualizar venta
+                Proformas.IsContado = true;
+                Proformas.IsCanceled = true;
+                Proformas.TipoPago = tipoPago;
+                Proformas.FechaVenta = DateTime.Now;
+                Proformas.FacturedBy = user;
+
+                _context.Entry(Proformas).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+
+                return Proformas;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error al finalizar la venta: {ex.Message}");
+            }
+        }
+
+
+
+
         public async Task<ICollection<Abono>> GetQuoteListAsync(int id)
         {
             return await _context.Abonos
@@ -578,10 +1075,7 @@ namespace Store.Helpers.SalesHelper
                 .ToListAsync();
         }
 
-        public async Task<ICollection<Abono>> AddAbonoAsync(
-            AddAbonoViewModel model,
-            Entities.User user
-        )
+        public async Task<ICollection<Abono>> AddAbonoAsync(AddAbonoViewModel model, Entities.User user )
         {
             DateTime hoy = DateTime.Now;
             Abono abono = new();
@@ -729,6 +1223,154 @@ namespace Store.Helpers.SalesHelper
             await _context.SaveChangesAsync();
             return abonoList;
         }
+
+
+        public async Task<bool> UpdateSaleProductsAsync(UpdateSaleDetailsViewModel model, Entities.User user)
+        {
+            if (model == null)
+                throw new ArgumentNullException(nameof(model));
+
+            if (model.ProformasDetails == null || !model.ProformasDetails.Any())
+                throw new ArgumentException("La lista de detalles no puede estar vacía");
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                DateTime hoy = DateTime.Now;
+
+                // Cargar la proforma existente con sus detalles
+                var proforma = await _context.Proformas
+                    .Include(s => s.ProformasDetails)
+                        .ThenInclude(sd => sd.Product)
+                    .Include(s => s.Store)
+                    .FirstOrDefaultAsync(s => s.Id == model.Id);
+
+                if (proforma == null)
+                    throw new Exception($"Proforma con ID {model.Id} no encontrada");
+
+                var productIds = model.ProformasDetails.Select(d => d.ProductId).Distinct().ToList();
+                var productos = await _context.Productos
+                    .Where(p => productIds.Contains(p.Id))
+                    .ToDictionaryAsync(p => p.Id, p => p);
+
+                // 1. Eliminar registros que ya no están en el modelo
+                var detallesAEliminar = proforma.ProformasDetails
+                    .Where(pd => !model.ProformasDetails.Any(md => md.ProductId == pd.Product.Id))
+                    .ToList();
+
+                foreach (var detalle in detallesAEliminar)
+                {
+                    _context.Entry(detalle).State = EntityState.Deleted;
+                }
+
+                // 2. Actualizar o agregar nuevos registros
+                foreach (var modelDetail in model.ProformasDetails)
+                {
+                    //var producto = await _context.Productos
+                    //    .FirstOrDefaultAsync(p => p.Id == modelDetail.ProductId);
+
+                    if (!productos.TryGetValue(modelDetail.ProductId, out var producto))
+                        throw new Exception($"Producto con ID {modelDetail.ProductId} no encontrado");
+
+                    // Buscar si existe el detalle
+                    var detalleExistente = proforma.ProformasDetails
+                        .FirstOrDefault(pd => pd.Product.Id == modelDetail.ProductId);
+
+                    if (detalleExistente != null)
+                    {
+                        // Actualizar detalle existente
+                        detalleExistente.Cantidad = modelDetail.Cantidad;
+                        detalleExistente.CostoUnitario = modelDetail.CostoUnitario;
+                        detalleExistente.IsDescuento = modelDetail.IsDescuento;
+                        detalleExistente.DescuentoXPercent = modelDetail.DescuentoXPercent;
+                        detalleExistente.Descuento = modelDetail.Descuento;
+                        detalleExistente.CodigoDescuento = modelDetail.CodigoDescuento;
+                        detalleExistente.PVM = modelDetail.PVM;
+                        detalleExistente.PVD = modelDetail.PVD;
+                        detalleExistente.CostoTotalAntesDescuento = modelDetail.CostoTotalAntesDescuento;
+                        detalleExistente.CostoTotalDespuesDescuento = modelDetail.CostoTotalDespuesDescuento;
+                        detalleExistente.CostoTotal = modelDetail.CostoTotal;
+
+                        //_context.Entry(detalleExistente).State = EntityState.Modified;
+                    }
+                    else
+                    {
+                        // Crear nuevo detalle
+                        var nuevoDetalle = new ProformasDetails
+                        {
+                            Store = proforma.Store,
+                            Product = producto,
+                            Cantidad = modelDetail.Cantidad,
+                            CostoUnitario = modelDetail.CostoUnitario,
+                            IsDescuento = modelDetail.IsDescuento,
+                            DescuentoXPercent = modelDetail.DescuentoXPercent,
+                            Descuento = modelDetail.Descuento,
+                            CodigoDescuento = modelDetail.CodigoDescuento,
+                            PVM = modelDetail.PVM,
+                            PVD = modelDetail.PVD,
+                            CostoTotalAntesDescuento = modelDetail.CostoTotalAntesDescuento,
+                            CostoTotalDespuesDescuento = modelDetail.CostoTotalDespuesDescuento,
+                            CostoTotal = modelDetail.CostoTotal
+                        };
+
+                        proforma.ProformasDetails.Add(nuevoDetalle);
+                    }
+                }
+
+                // 3. Actualizar totales de la proforma
+                proforma.ProductsCount = model.ProformasDetails.Count;
+                proforma.MontoVenta = model.ProformasDetails.Sum(d => d.CostoTotal);
+                proforma.MontoVentaAntesDescuento = model.ProformasDetails.Sum(d => d.CostoTotalAntesDescuento);
+                proforma.IsDescuento = model.ProformasDetails.Any(d => d.IsDescuento);
+
+                if (proforma.IsDescuento)
+                {
+                    proforma.DescuentoXMonto = model.ProformasDetails.Sum(d => d.Descuento);
+                    var detallesConDescuento = model.ProformasDetails.Where(d => d.IsDescuento).ToList();
+                    if (detallesConDescuento.Any())
+                    {
+                        proforma.DescuentoXPercent = detallesConDescuento.Average(d => d.DescuentoXPercent);
+                    }
+                }
+                else
+                {
+                    proforma.DescuentoXMonto = 0;
+                    proforma.DescuentoXPercent = 0;
+                }
+
+                proforma.FechaVenta = hoy;
+                proforma.FechaVencimiento = hoy.AddDays(15);
+
+                //_context.Entry(proforma).State = EntityState.Modified;
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+
+        private Kardex CreateKardexEntry(Producto product, int cantidad, Almacen store, Entities.User user, DateTime fecha, string concepto)
+        {
+            return new Kardex
+            {
+                Product = product,
+                Fecha = fecha,
+                Concepto = concepto,
+                Almacen = store,
+                Entradas = concepto == "DEVOLUCIÓN DE PRODUCTO" ? cantidad : 0,
+                Salidas = concepto == "DEVOLUCIÓN DE PRODUCTO" ? 0 : cantidad,
+                User = user,
+            };
+        }
+
+
+
 
         public async Task<Sales> AnularSaleAsync(int id, Entities.User user)
         {
@@ -1130,9 +1772,7 @@ namespace Store.Helpers.SalesHelper
             return sale;
         }
 
-        public async Task<ICollection<GetSalesAndQuotesResponse>> GetSalesUncanceledByClientAsync(
-            int idClient
-        )
+        public async Task<ICollection<GetSalesAndQuotesResponse>> GetSalesUncanceledByClientAsync( int idClient )
         {
             List<GetSalesAndQuotesResponse> result = new();
             var sales = await _context.Sales
@@ -1160,10 +1800,7 @@ namespace Store.Helpers.SalesHelper
             return result;
         }
 
-        public async Task<Abono> AddAbonoEspecificoAsync(
-            AddAbonoEspecificoViewModel model,
-            Entities.User user
-        )
+        public async Task<Abono> AddAbonoEspecificoAsync( AddAbonoEspecificoViewModel model,  Entities.User user)
         {
             DateTime hoy = DateTime.Now;
 
@@ -1239,5 +1876,202 @@ namespace Store.Helpers.SalesHelper
             await _context.SaveChangesAsync();
             return abono;
         }
+        public async Task<Proformas> AddProformasAsync(AddProformasViewModel model, Entities.User user)
+        {
+            var store = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == model.Storeid);
+
+            // Crear la proforma principal
+            Proformas proformas = new()
+            {
+                IsEventual = model.IsEventual,
+                NombreCliente = model.NombreCliente,
+                Client = await _context.Clients.FirstOrDefaultAsync(c => c.Id == model.IdClient),
+                ProductsCount = model.ProformasDetails.Count,
+                MontoVenta = model.MontoVenta,
+                IsDescuento = model.IsDescuento,
+                DescuentoXMonto = model.DescuentoXMonto,
+                DescuentoXPercent = model.DescuentoXPercent,
+                MontoVentaAntesDescuento = model.MontoVentaAntesDescuento,
+                FechaVenta = DateTime.Now,
+                FechaVencimiento = DateTime.Now.AddDays(15), // Agregar fecha de vencimiento
+                FacturedBy = user,
+                IsContado = model.IsContado,
+                IsCanceled = false,
+                IsAnulado = false,
+                Store = store,
+                CodigoDescuento = model.CodigoDescuento,
+                TipoPago = null, // Se establece cuando se finaliza la proforma
+                Reference = model.Reference
+            };
+
+            // Crear la lista de detalles
+            List<ProformasDetails> proformaDetailList = new();
+
+            foreach (var item in model.ProformasDetails)
+            {
+                ProformasDetails proformaDetails = new()
+                {
+                    Store = store,
+                    Product = await _context.Productos.FirstOrDefaultAsync(p => p.Id == item.Product.Id),
+                    Cantidad = item.Cantidad,
+                    IsDescuento = item.IsDescuento,
+                    DescuentoXPercent = item.DescuentoXPercent,
+                    Descuento = item.Descuento,
+                    CodigoDescuento = item.CodigoDescuento ?? "",
+                    CostoUnitario = item.CostoUnitario,
+                    PVD = item.PVD,
+                    PVM = item.PVM,
+                    CostoTotalAntesDescuento = item.CostoTotalAntesDescuento,
+                    CostoTotalDespuesDescuento = item.CostoTotalDespuesDescuento,
+                    CostoTotal = item.CostoTotal,
+                    IsAnulado = false,
+                    IsPartialAnulation = false,
+                    CantidadAnulada = 0,
+                    CostoCompra = item.CostoCompra,
+                    Ganancia = item.Ganancia
+                };
+
+                proformaDetailList.Add(proformaDetails);
+            }
+
+            proformas.ProformasDetails = proformaDetailList;
+
+            // Agregar a la base de datos
+            _context.Proformas.Add(proformas);
+            await _context.SaveChangesAsync();
+
+            // Cargar la proforma con los detalles completos
+            var proformaWithDetails = await _context.Proformas
+                .Include(p => p.Client)
+                .Include(p => p.FacturedBy)
+                .Include(p => p.Store)
+                .Include(p => p.ProformasDetails)
+                    .ThenInclude(pd => pd.Product) // Incluye los productos relacionados
+                .Include(p => p.ProformasDetails)
+                    .ThenInclude(pd => pd.Store) // Incluye el almacén relacionado
+                .FirstOrDefaultAsync(p => p.Id == proformas.Id);
+
+            return proformaWithDetails;
+        }
+
+
+
+        public async Task<IEnumerable<Proformas>> ProformaListAsync(char Action)
+        {
+            try
+            {
+                var mensajeParam = new SqlParameter("@Mensaje", SqlDbType.NVarChar, -1)
+                {
+                    Direction = ParameterDirection.Output
+                };
+
+                if (Action == '3') 
+                {
+                    var result = await _context.Set<Proformas>()
+                    .FromSqlRaw("EXEC [dbo].[usp_Proforma] @Action = {0}, @Mensaje = {1} OUTPUT",
+                                 Action,
+                                 mensajeParam)
+                    .ToListAsync();
+
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error en ProformaListAsync: {ex.Message}");
+                throw;
+            }
+
+            return new List<Proformas>();
+        }
+
+
+        public async Task<Proformas> DeleteProformAsync(int Id, Entities.User user)
+
+        {
+            DateTime hoy = DateTime.Now;
+        Proformas P = await _context.Proformas
+          .Include(f => f.ProformasDetails)
+           .FirstOrDefaultAsync(f => f.Id == Id);
+            P.IsAnulado = true;
+            P.FechaAnulacion = hoy;
+            P.AnulatedBy = user;
+            foreach (var item in P.ProformasDetails)
+            {
+                item.IsAnulado = true;
+                item.FechaAnulacion = hoy;
+                item.AnulatedBy = user;
+            }
+           _context.Entry(P).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return P;
+        }
+
+
+
+
+public async Task<Proformas> ProformaUpdateAsync(
+      int id,
+      int action,
+      int storeId,
+      string nombreCliente,
+      string detalle,
+      //int cantidad,
+      //decimal precioUnitario,
+      decimal total,
+      decimal montoTotal,
+      DateTime fechaEmision,
+      DateTime fechaVencimiento,
+      bool proformaRealizada,
+      bool proformaVencida)
+        {
+            // Definir el parámetro de salida para el mensaje
+            var mensajeParam = new SqlParameter("@Mensaje", SqlDbType.NVarChar, -1)
+            {
+                Direction = ParameterDirection.Output
+            };
+
+            // Crear y definir los demás parámetros
+            var parameters = new[]
+            {
+        new SqlParameter("@Action", action),
+        new SqlParameter("@Id", id),
+        new SqlParameter("@StoreId", storeId),
+        new SqlParameter("@NombreCliente", nombreCliente),
+        new SqlParameter("@Detalle", detalle),
+        //new SqlParameter("@Cantidad", cantidad),
+        //new SqlParameter("@PrecioUnitario", precioUnitario),
+        new SqlParameter("@Total", total),
+        new SqlParameter("@MontoTotal", montoTotal),
+        new SqlParameter("@FechaEmision", fechaEmision),
+        new SqlParameter("@FechaVencimiento", fechaVencimiento),
+        new SqlParameter("@ProformaRealizada", proformaRealizada),
+        new SqlParameter("@ProformaVencida", proformaVencida),
+        mensajeParam // El parámetro de salida
+    };
+
+            // Ejecutar el procedimiento almacenado para actualizar la proforma
+            await _context.Database.ExecuteSqlRawAsync(
+                "EXEC [dbo].[usp_Proforma] @Action, @Id, @StoreId, @NombreCliente, @Detalle, @Cantidad, @PrecioUnitario, @Total, @MontoTotal, @FechaEmision, @FechaVencimiento, @ProformaRealizada, @ProformaVencida, @Mensaje OUTPUT",
+                parameters);
+
+            // Manejar el mensaje de salida
+            string mensaje = mensajeParam.Value.ToString();
+            if (mensaje != "OK")
+            {
+                throw new Exception($"Error en la actualización de la proforma: {mensaje}"); // Proporciona un mensaje más informativo
+            }
+
+            // Retorna la proforma actualizada, asegurando que el Id sea válido
+            var updatedProforma = await _context.Proformas.FindAsync(id); // O realiza otra consulta para obtener los detalles actualizados
+
+            if (updatedProforma == null)
+            {
+                throw new Exception("La proforma actualizada no se encontró en la base de datos."); // Proporciona un mensaje claro
+            }
+
+            return updatedProforma;
+        }   
+
     }
 }

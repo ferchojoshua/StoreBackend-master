@@ -9,6 +9,7 @@ using Store.Helpers.ProductHelper;
 using Store.Helpers.User;
 using Store.Models.ViewModels;
 using Store.Models.ViewModels.Logo;
+using Store.Models.ViewModels.Masivo;
 using System.Security.Claims;
 
 namespace Store.Controllers.API
@@ -385,9 +386,7 @@ namespace Store.Controllers.API
 
         [HttpPost]
         [Route("GetAllStoresKardex")]
-        public async Task<ActionResult<Kardex>> GetAllStoresKardex(
-            [FromBody] GetKardexViewModel model
-        )
+        public async Task<ActionResult<Kardex>> GetAllStoresKardex([FromBody] GetKardexViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -425,9 +424,51 @@ namespace Store.Controllers.API
             }
         }
 
-        //[HttpPost]
-        //[Route("UpdaterecallProductId")]
-        //     public async Task<ActionResult<IEnumerable<ProductsRecal>>> UpdaterecallProductId([FromBody] UpdateProductRecallViewModel model)
+        [HttpPost("getProductsListM")]
+        [Authorize]
+        //[Route("getProductsListM")]
+        public async Task<ActionResult<IEnumerable<GetProductslistEntity>>> getProductsListM([FromBody] GetProductslistViewModels model)
+
+        {
+            // Verifica la autenticación del usuario
+            string email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (email == null)
+            {
+                return Unauthorized();
+            }
+
+            var user = await _userHelper.GetUserByEmailAsync(email);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            // Verifica si el usuario tiene un token válido
+            string token = HttpContext.Request.Headers["Authorization"].ToString();
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync(user);
+                return Ok("eX01");
+            }
+
+            try
+            {
+                var result = await _productHelper.GetProductslistM
+                    (model.StoreId,
+                    model.TipoNegocio,
+                    model.familia);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        //[HttpGet]
+        //public async Task<IActionResult> Index(int? almacen, int? tipoNegocio, int? familia)
         //{
         //    string email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
         //    if (email == null)
@@ -454,28 +495,20 @@ namespace Store.Controllers.API
         //        return Ok("eX01");
         //    }
 
-        //    if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS VER"))
-        //    {
-        //        return Unauthorized();
-        //    }
-
         //    try
         //    {
-        //        var UpdateProductRecallViewModel = await _productHelper.UpdateProductRecallAsync(
-        //            model.Id,
-        //            model.StoreId,
-        //            model.Porcentaje);
-
-        //        if (UpdateProductRecallViewModel == null)
+        //        var products = await Task.Run(() => _productHelper.GetProducts(almacen, tipoNegocio, familia));
+        //        var viewModel = new GetProductslistViewModels
         //        {
-        //            return NotFound($"No se encontró ningún logo para el storeId {model.Id}");
-        //        }
+        //            Products = products
+        //        };
 
-        //        return Ok(UpdateProductRecallViewModel);
+        //        return View(viewModel);
         //    }
         //    catch (Exception ex)
         //    {
-        //        return BadRequest($"Error al obtener el logo para el storeId {model.Id}: {ex.Message}");
+
+        //        return StatusCode(500, $"Error al obtener productos: {ex.Message}");
         //    }
         //}
 
@@ -519,8 +552,8 @@ namespace Store.Controllers.API
                     model.Id,
                     model.StoreId,
                     model.Porcentaje,
-                    model.ActualizarVentaDetalle, // Asegúrate de que no sea nullable
-                    model.ActualizarVentaMayor);  // Asegúrate de que no sea nullable
+                    model.ActualizarVentaDetalle, 
+                    model.ActualizarVentaMayor);  
 
                 if (updatedProduct == null)
                 {

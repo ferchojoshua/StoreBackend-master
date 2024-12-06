@@ -64,6 +64,97 @@ namespace Store.Controllers.API
             }
         }
 
+
+
+        //[HttpPut("UpdateFacturacionAsync")]
+        //public async Task<ActionResult<Facturacion>> UpdateFacturacion([FromBody] AddupdateViewModel model)
+        //{
+        //    // Obtener el email del usuario autenticado
+        //    string email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        //    if (string.IsNullOrEmpty(email))
+        //    {
+        //        return Unauthorized("Usuario no autenticado.");
+        //    }
+
+        //    User user = await _userHelper.GetUserByEmailAsync(email);
+        //    if (user == null)
+        //    {
+        //        return Unauthorized("Usuario no encontrado.");
+        //    }
+
+
+        //    if (user.IsDefaultPass)
+        //    {
+        //        return Ok(user);
+        //    }
+
+        //    string token = HttpContext.Request.Headers["Authorization"];
+        //    token = token["Bearer ".Length..].Trim();
+        //    if (user.UserSession.UserToken != token)
+        //    {
+        //        await _userHelper.LogoutAsync(user);
+        //        return Ok("eX01");
+        //    }
+
+
+        //    if (!await _userHelper.IsAutorized(user.Rol, "SALES CAJA"))
+        //    {
+        //        return Unauthorized();
+        //    }
+
+        //    try
+        //    {
+        //        // Llamar a la lógica de actualización de facturación, pasando el `id` y el `model`
+        //        var updatedFacturacion = await _facturation.UpdateFacturacionAsync(model, user);
+
+        //        // Devolver la facturación actualizada
+        //        return Ok(updatedFacturacion);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest($"Error al actualizar la facturación: {ex.Message}");
+        //    }
+        //}
+
+
+
+        //[HttpGet("GetProformasFacturacion")]
+        //public async Task<ActionResult<IEnumerable<Facturacion>>> GetProformasFacturacion()
+        //{
+        //    string email = User.Claims
+        //        .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+        //        .Value;
+        //    User user = await _userHelper.GetUserByEmailAsync(email);
+        //    if (user.IsDefaultPass)
+        //    {
+        //        return Ok(user);
+        //    }
+        //    string token = HttpContext.Request.Headers["Authorization"];
+        //    token = token["Bearer ".Length..].Trim();
+        //    if (user.UserSession.UserToken != token)
+        //    {
+        //        await _userHelper.LogoutAsync(user);
+        //        return Ok("eX01");
+        //    }
+        //    if (!await _userHelper.IsAutorized(user.Rol, "SALES CAJA"))
+        //    {
+        //        return Unauthorized();
+        //    }
+        //    try
+        //    {
+        //        var facturacions = await _facturation.GetProformasFacturacionAsync();
+        //        return Ok(facturacions.OrderByDescending(s => s.FechaVenta));
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //}
+
+
+
+
+
         [HttpGet("GetFactCancelled/{id}")]
         public async Task<ActionResult<IEnumerable<Facturacion>>> GetFactCancelled(int id)
         {

@@ -4,9 +4,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Store.Entities;
+using Store.Entities.Ajustes;
 using Store.Helpers.SalesHelper;
 using Store.Helpers.User;
 using Store.Hubs;
+using Store.Migrations;
 using Store.Models.ViewModels;
 
 
@@ -58,6 +60,70 @@ namespace Store.Controllers.API
             var sales = await _salesService.GetContadoSalesByStoreAsync(id);
             return Ok(sales.OrderByDescending(s => s.FechaVenta));
         }
+
+        [HttpGet]
+        [Route("GetContadoSalesByProf")]
+        public async Task<ActionResult<IEnumerable<Sales>>> GetContadoSalesByProf()
+        {
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync(user);
+                return Ok("eX01");
+            }
+            if (
+              !await _userHelper.IsAutorized(user.Rol, "SALES VER") && !await _userHelper.IsAutorized(user.Rol, "SALES FACTURACION")
+            )
+            {
+                return Unauthorized();
+            }
+            var sales = await _salesService.GetContadoSalesByProfAsync();
+            return Ok(
+              sales.OrderByDescending(s => s.FechaVenta)
+            );
+        }
+        // Ruta para obtener proformas por almacén
+        [HttpGet]
+        [Route("GetContadoSalesByProf/{storeId}")]
+        public async Task<ActionResult<IEnumerable<Sales>>> GetContadoSalesByProfByStore(int storeId)
+        {
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync(user);
+                return Ok("eX01");
+            }
+            if (
+              !await _userHelper.IsAutorized(user.Rol, "SALES VER") && !await _userHelper.IsAutorized(user.Rol, "SALES FACTURACION")
+            )
+            {
+                return Unauthorized();
+            }
+            var sales = await _salesService.GetContadoSalesByProfAsync(storeId);
+            return Ok(
+              sales.OrderByDescending(s => s.FechaVenta)
+            );
+        }
+
+
 
         [HttpGet("GetCreditoSalesByStore/{id}")]
         public async Task<ActionResult<IEnumerable<Sales>>> GetCreditoSalesByStore(int id)
@@ -209,6 +275,9 @@ namespace Store.Controllers.API
             }
         }
 
+
+
+
         [HttpPost]
         [Route("AddAbono")]
         public async Task<ActionResult<Sales>> AddAbono([FromBody] AddAbonoViewModel model)
@@ -253,8 +322,7 @@ namespace Store.Controllers.API
 
         [HttpPost]
         [Route("AddAbonoEspecifico")]
-        public async Task<ActionResult<Sales>> AddAbonoEspecifico(
-            [FromBody] AddAbonoEspecificoViewModel model
+        public async Task<ActionResult<Sales>> AddAbonoEspecifico( [FromBody] AddAbonoEspecificoViewModel model
         )
         {
             if (!ModelState.IsValid)
@@ -387,5 +455,194 @@ namespace Store.Controllers.API
                 return BadRequest(ex.Message);
             }
         }
+
+
+   
+        [HttpPost]
+        [Route("UpdateSaleDetails")]
+        public async Task<ActionResult<Proformas>> UpdateSale([FromBody] UpdateSaleDetailsViewModel model)
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest();
+                }
+
+                string email = User.Claims
+                    .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                    .Value;
+
+                User user = await _userHelper.GetUserByEmailAsync(email);
+                if (user.IsDefaultPass)
+                {
+                    return Ok(user);
+                }
+
+            if (!await _userHelper.IsAutorized(user.Rol, "SALES VER") && !await _userHelper.IsAutorized(user.Rol, "SALES FACTURACION"))
+            {
+                return Unauthorized();
+                }
+
+                string token = HttpContext.Request.Headers["Authorization"];
+                token = token["Bearer ".Length..].Trim();
+                if (user.UserSession.UserToken != token)
+                {
+                    await _userHelper.LogoutAsync(user);
+                    return Ok("eX01");
+                }
+                try
+                {
+
+                var sale = await _salesService.UpdateSaleProductsAsync(model, user);
+                if(sale == null)
+                {
+                    return NoContent();
+                }
+                return Ok(sale);
+            }           
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+        [HttpPost]
+        [Route("finishSaleStatus")]
+        public async Task<ActionResult<Proformas>> finishSaleStatus([FromBody] FinishSalesViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
+
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+
+            if (!await _userHelper.IsAutorized(user.Rol, "SALES VER") &&  !await _userHelper.IsAutorized(user.Rol, "SALES FACTURACION"))
+            {
+                return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync(user);
+                return Ok("eX01");
+            }
+            try
+            {
+                var result = await _salesService.FinishSalesAsync(
+                    model.Id,
+                    model.TipoPagoId,
+                    user
+                );
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("ProformAdd")]
+        public async Task<ActionResult<Proformas>> ProformAdd([FromBody] AddProformasViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            // Obtener usuario autenticado
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
+
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+
+            // Verificar autorización
+            if (!await _userHelper.IsAutorized(user.Rol, "SALES VER") && !await _userHelper.IsAutorized(user.Rol, "SALES FACTURACION"))
+            {
+                return Unauthorized();
+            }
+
+            // Validar token
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync(user);
+                return Ok("eX01");
+            }
+
+            try
+            {
+                var sale = await _salesService.AddProformasAsync(model, user);
+                await _hubContext.Clients.All.SendAsync("saleUpdate");
+                return Ok(sale);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+        [HttpPost]
+        [Route("DeleteProform/{id}")]
+        public async Task<ActionResult<Sales>> DeleteProforma(int id)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
+
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+
+            if (!await _userHelper.IsAutorized(user.Rol, "SALES DELETE"))
+            {
+                return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync(user);
+                return Ok("eX01");
+            }
+            try
+            {
+                var sale = await _salesService.DeleteProformAsync(id, user);
+                return Ok(sale);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+
     }
 }

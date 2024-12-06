@@ -6,6 +6,11 @@ namespace Store.Helpers.FacturacionHelper
     public interface IFacturationHelper
     {
         Task<Facturacion> AddFacturacionAsync(AddFacturacionViewModel model, Entities.User user);
+
+        //Task<ICollection<Facturacion>> GetProformasFacturacionAsync();
+       
+        
+        //Task<Facturacion> UpdateFacturacionAsync(AddupdateViewModel model, Entities.User user);
         Task<Sales> PayFacturaAsync(PayFactViewModel model, Entities.User user);
         Task<ICollection<Facturacion>> GetFacturacionAsync(int storeId);
         Task<ICollection<TipoPago>> GetTipoPagoAsync();

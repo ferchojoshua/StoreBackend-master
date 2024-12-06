@@ -48,7 +48,7 @@ namespace Store.Models.ViewModels
 
     public class PayFactViewModel
     {
-        public int FacturaId { get; set; }
+       public int Id { get; set; }
         public int TipoPagoId { get; set; }
         public bool IsDescuento { get; set; }
         public decimal DescuentoXPercent { get; set; }
@@ -58,4 +58,45 @@ namespace Store.Models.ViewModels
         public decimal MontoVentaAntesDescuento { get; set; }
         public string Reference { get; set; }
     }
+
+
+    public class AddupdateViewModel
+    {
+        public bool IsEventual { get; set; }
+        public string NombreCliente { get; set; }
+        public int ClientId { get; set; }
+        public int ProductsCount { get; set; }
+        public decimal MontoVenta { get; set; }
+        public bool IsDescuento { get; set; }
+        public decimal DescuentoXMonto { get; set; }
+        public decimal DescuentoXPercent { get; set; }
+        public decimal MontoVentaAntesDescuento { get; set; }
+        public bool IsContado { get; set; }
+        public string CodigoDescuento { get; set; }
+        public List<AddupdateViewModelDetailViewModel> FacturaDetails { get; set; } = new List<AddupdateViewModelDetailViewModel>();
+        public int Id { get; internal set; }
+    }
+
+    public class AddupdateViewModelDetailViewModel
+    {
+        public int ProductId { get; set; }
+        public int Cantidad { get; set; }
+        public bool IsDescuento { get; set; }
+        public decimal DescuentoXPercent { get; set; }
+        public decimal Descuento { get; set; }
+        public string CodigoDescuento { get; set; }
+        public decimal CostoUnitario { get; set; }
+        public decimal PVD { get; set; }
+        public decimal PVM { get; set; }
+        public decimal CostoTotalAntesDescuento { get; set; }
+        public decimal CostoTotalDespuesDescuento { get; set; }
+        public decimal CostoTotal { get; set; }
+        public decimal CostoCompra { get; set; }
+        public bool IsAnulado { get; internal set; }
+    }
+
+
+
+
+
 }

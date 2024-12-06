@@ -77,16 +77,16 @@ namespace Store.Helpers.CreateLogoHelper
                 var mensajeParam = new SqlParameter("@Mensaje", SqlDbType.NVarChar, -1);
                 mensajeParam.Direction = ParameterDirection.Output;
                 await _context.Database.ExecuteSqlInterpolatedAsync($@"
-            SET @Mensaje = ''; 
-            EXEC [dbo].[Update_Imagen] 
-                {storeId}, 
-                {direccion}, 
-                {ruc}, 
-                {telefono}, 
-                {telefonoWhatsApp}, 
-                {imagen},
-                @Mensaje OUTPUT; 
-            SELECT @Mensaje;
+                    SET @Mensaje = ''; 
+                    EXEC [dbo].[Update_Imagen] 
+                        {storeId}, 
+                        {direccion}, 
+                        {ruc}, 
+                        {telefono}, 
+                        {telefonoWhatsApp}, 
+                        {imagen},
+                        @Mensaje OUTPUT; 
+                    SELECT @Mensaje;
         ");
 
                 string mensaje = mensajeParam.Value.ToString();

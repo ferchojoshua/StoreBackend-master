@@ -6,6 +6,7 @@ using Store.Entities.CreateupdateConfig;
 using Store.Entities.Logo;
 using Store.Entities.ProductoRecal;
 
+
 namespace Store.Data
 {
     public class DataContext : IdentityDbContext<User>
@@ -33,6 +34,8 @@ namespace Store.Data
         public DbSet<ProductsRecal> ProductsRecal { get; set; }
         public DbSet<ExistencesDailyCheck> ExistencesDailyChecks { get; set; }
         public DbSet<Facturacion> Facturacions { get; set; }
+ 
+        public DbSet<Proformas> GetProformasAsync { get; set; }
         public DbSet<FacturaDetails> FacturaDetails { get; set; }
         public DbSet<Familia> Familias { get; set; }
         public DbSet<Kardex> Kardex { get; set; }
@@ -48,6 +51,8 @@ namespace Store.Data
         public DbSet<Rol> Rols { get; set; }
         public DbSet<Sales> Sales { get; set; }
         public DbSet<SaleDetail> SaleDetails { get; set; }
+        public DbSet<Proformas> Proformas { get; set; }
+        //public DbSet<ProformasDetail> ProformasDetails { get; set; }
         public DbSet<StockAdjustment> StockAdjustments { get; set; }
         public DbSet<StockAdjustmentDetail> StockAdjustmentDetails { get; set; }
         public DbSet<SaleAnulation> SaleAnulations { get; set; }
@@ -73,8 +78,9 @@ namespace Store.Data
 
             modelBuilder.Entity<TipoNegocio>().HasIndex(t => t.Description).IsUnique();
             modelBuilder.Entity<ProductosInventario>().HasNoKey();
-
-            // modelBuilder.Entity<Producto>().HasIndex(t => t.Description).IsUnique();
+              // modelBuilder.Entity<Producto>().HasIndex(t => t.Description).IsUnique();
         }
+
+
     }
 }
