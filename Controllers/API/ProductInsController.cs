@@ -280,8 +280,7 @@ namespace Store.Controllers.API
         }
 
         [HttpPost]
-        public async Task<ActionResult<ProductIn>> PostProductIn(
-            [FromBody] AddEntradaProductoViewModel model
+        public async Task<ActionResult<ProductIn>> PostProductIn( [FromBody] AddEntradaProductoViewModel model
         )
         {
             if (!ModelState.IsValid)

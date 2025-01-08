@@ -551,14 +551,17 @@ namespace Store.Helpers.ReportHelper
 
             return result;
         }
-
+      
         public async Task<DailyCloseResponse> ReportCierreDiario(CierreDiarioViewModel model)
         {
-            DailyCloseResponse result = new();
+             DailyCloseResponse result = new();
             DateTime fechaHoraDesde = DateTime.Parse(model.Desde);
             DateTime fechaHoraHasta = DateTime.Parse(model.Hasta);
+
+      
             if (model.StoreId != 0)
             {
+                // Ventas normales
                 var salesByStore = await _context.Sales
                     .Include(s => s.Client)
                     .Include(s => s.SaleDetails)
@@ -567,23 +570,38 @@ namespace Store.Helpers.ReportHelper
                             s.Store.Id == model.StoreId
                             && s.FechaVenta >= fechaHoraDesde
                             && s.FechaVenta <= fechaHoraHasta
-                    // && s.IsAnulado == false
+                            && s.IsAnulado == false  
+                            //&& s.IsContado == true   
+                     )
+                    .ToListAsync();
+                // Anulaciones
+                var anulacionesByStore = await _context.Sales
+                    .Include(s => s.Client)
+                    .Include(s => s.SaleDetails)
+                    .Include(s => s.Store)
+                    .Where(s =>
+                        s.Store.Id == model.StoreId &&
+                        s.IsSaleCancelled == true &&
+                        s.FechaAnulacion >= fechaHoraDesde &&
+                        s.FechaAnulacion <= fechaHoraHasta
                     )
                     .ToListAsync();
+                // Devoluciones
 
                 var devolucionesByStore = await _context.SaleAnulations
-                    .Include(s => s.VentaAfectada)
-                    .ThenInclude(s => s.Client)
-                    .Include(s => s.AnulatedBy)
-                    .Include(s => s.Store)
-                    .Where(
-                        s =>
-                            s.Store.Id == model.StoreId
-                            && s.FechaAnulacion >= fechaHoraDesde
-                            && s.FechaAnulacion <= fechaHoraHasta
-                    )
-                    .ToListAsync();
+                  .Include(s => s.VentaAfectada)
+                  .ThenInclude(s => s.Client)
+                  .Include(s => s.AnulatedBy)
+                  .Include(s => s.Store)
+                  .Where(
+                      s =>
+                          s.Store.Id == model.StoreId
+                          && s.FechaAnulacion >= fechaHoraDesde
+                          && s.FechaAnulacion <= fechaHoraHasta
+                  )
+                  .ToListAsync();
 
+                 // Abonos
                 var abonoByStore = await _context.Abonos
                     .Include(a => a.Sale)
                     .ThenInclude(s => s.Client)
@@ -597,22 +615,38 @@ namespace Store.Helpers.ReportHelper
                     )
                     .ToListAsync();
 
-                result.SaleList = salesByStore;
+                 result.SaleList = salesByStore;
+                result.AnulatedforIdSaleList = anulacionesByStore;
                 result.AnulatedSaleList = devolucionesByStore;
                 result.AbonoList = abonoByStore;
-
                 return result;
             }
 
+
+            // Ventas normales (todas las tiendas)
             var sales = await _context.Sales
                 .Include(s => s.Client)
                 .Include(s => s.SaleDetails)
                 .Where(
-                    s => s.FechaVenta >= fechaHoraDesde && s.FechaVenta <= fechaHoraHasta
-                // && s.IsAnulado == false
+                    s => s.FechaVenta >= fechaHoraDesde 
+                   && s.FechaVenta <= fechaHoraHasta
+                   && s.IsAnulado == false
+                   
                 )
                 .ToListAsync();
 
+                 // Anulaciones (todas las tiendas)
+                var anulaciones = await _context.Sales
+                .Include(s => s.Client)
+                .Include(s => s.SaleDetails)
+                .Include(s => s.Store)
+                .Where(s =>
+                    s.IsSaleCancelled == true &&
+                    s.FechaAnulacion >= fechaHoraDesde &&
+                    s.FechaAnulacion <= fechaHoraHasta
+                )
+                .ToListAsync();
+            // Devoluciones (todas las tiendas)
             var devoluciones = await _context.SaleAnulations
                 .Include(s => s.VentaAfectada)
                 .ThenInclude(s => s.Client)
@@ -623,26 +657,28 @@ namespace Store.Helpers.ReportHelper
                 )
                 .ToListAsync();
 
+            // Abonos (todas las tiendas)
             var abono = await _context.Abonos
-                .Include(a => a.Sale)
-                .ThenInclude(s => s.Client)
-                .Where(
-                    a =>
-                        a.Sale.IsContado == false
-                        && a.IsAnulado == false
-                        && a.FechaAbono >= fechaHoraDesde
-                        && a.FechaAbono <= fechaHoraHasta
-                        && a.Sale.IsContado == false
-                )
-                .ToListAsync();
+          .Include(a => a.Sale)
+          .ThenInclude(s => s.Client)
+          .Where(
+              a =>
+                  a.Sale.IsContado == false
+                  && a.IsAnulado == false
+                  && a.FechaAbono >= fechaHoraDesde
+                  && a.FechaAbono <= fechaHoraHasta
+                  && a.Sale.IsContado == false
+          )
+          .ToListAsync();
 
             result.SaleList = sales;
+            result.AnulatedforIdSaleList = anulaciones;
             result.AnulatedSaleList = devoluciones;
             result.AbonoList = abono;
-            return result;
+           return result;
         }
 
-        public async Task<ICollection<CajaMovment>> ReportCajaChica(CajaChicaViewModel model)
+          public async Task<ICollection<CajaMovment>> ReportCajaChica(CajaChicaViewModel model)
         {
             if (model.StoreId != 0)
             {

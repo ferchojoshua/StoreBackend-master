@@ -24,6 +24,7 @@ namespace Store.Entities
         public decimal Saldo { get; set; }
         public DateTime FechaVencimiento { get; set; }
         public bool IsAnulado { get; set; }
+  
         public User AnulatedBy { get; set; }
         public DateTime FechaAnulacion { get; set; }
         public Almacen Store { get; set; }
@@ -31,5 +32,9 @@ namespace Store.Entities
         public string CodigoDescuento { get; set; }
         public ICollection<Kardex> KardexMovments { get; set; }
         public string Reference { get; set; }
+        public int? TipoPagoId { get; set; }
+        public bool IsSaleCancelled { get; set; }
+
+
     }
 }

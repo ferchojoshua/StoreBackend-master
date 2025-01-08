@@ -11,5 +11,6 @@ namespace Store.Entities
         public bool IsAnulado { get; set; }
         public Almacen Store { get; set; }
         public TipoPago TipoPago { get; set; }
+        public int? TipoPagoId { get; set; }
     }
 }

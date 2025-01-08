@@ -12,6 +12,9 @@ namespace Store.Helpers.SalesHelper
         Task<ICollection<Proformas>> GetContadoSalesByProfAsync(int idStore);
         Task<ICollection<Sales>> GetCreditoSalesByStoreAsync(int idStore);
         Task<ICollection<Sales>> GetAnulatedSalesByStoreAsync(int idStore);
+      
+        Task<ICollection<Sales>> GetdevolutionSalesByStoreAsync(int idStore);
+        Task<Sales> AnularSaleforIdAsync(int id, Entities.User user);
 
         Task<Proformas> FinishSalesAsync(int Id, int tipoPagoId, Entities.User user);
 

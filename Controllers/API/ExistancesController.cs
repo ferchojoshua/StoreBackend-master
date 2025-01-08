@@ -108,8 +108,7 @@ namespace Store.Controllers.API
             Existence existence = await _context.Existences
                 .Include(e => e.Almacen)
                 .Include(e => e.Producto)
-                .FirstOrDefaultAsync(
-                    e => e.Producto.Id == model.IdProduct && e.Almacen.Id == model.IdAlmacen
+                .FirstOrDefaultAsync(e => e.Producto.Id == model.IdProduct && e.Almacen.Id == model.IdAlmacen
                 );
             if (existence == null)
             {

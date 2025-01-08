@@ -123,8 +123,6 @@ namespace Store.Controllers.API
             );
         }
 
-
-
         [HttpGet("GetCreditoSalesByStore/{id}")]
         public async Task<ActionResult<IEnumerable<Sales>>> GetCreditoSalesByStore(int id)
         {
@@ -177,6 +175,34 @@ namespace Store.Controllers.API
 
             var sales = await _salesService.GetAnulatedSalesByStoreAsync(id);
             return Ok(sales.OrderByDescending(s => s.FechaVenta));
+        }
+
+
+        [HttpGet("GetDevolutionSalesByStore/{id}")]
+        public async Task<ActionResult<IEnumerable<Sales>>> GetDevolutionSalesByStore(int id)
+        {
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync(user);
+                return Ok("eX01");
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "SALES VER"))
+            {
+                return Unauthorized();
+            }
+
+            var sales = await _salesService.GetdevolutionSalesByStoreAsync(id);
+            return Ok(sales.OrderByDescending(s => s.FechaAnulacion));
         }
 
         [HttpGet("GetPaysBySaleId/{id}")]
@@ -275,9 +301,6 @@ namespace Store.Controllers.API
             }
         }
 
-
-
-
         [HttpPost]
         [Route("AddAbono")]
         public async Task<ActionResult<Sales>> AddAbono([FromBody] AddAbonoViewModel model)
@@ -322,8 +345,7 @@ namespace Store.Controllers.API
 
         [HttpPost]
         [Route("AddAbonoEspecifico")]
-        public async Task<ActionResult<Sales>> AddAbonoEspecifico( [FromBody] AddAbonoEspecificoViewModel model
-        )
+        public async Task<ActionResult<Sales>> AddAbonoEspecifico( [FromBody] AddAbonoEspecificoViewModel model )
         {
             if (!ModelState.IsValid)
             {
@@ -407,12 +429,54 @@ namespace Store.Controllers.API
                 return BadRequest(ex.Message);
             }
         }
+        [HttpPost("AnularSaleforId/{id}")]
+        public async Task<ActionResult<Sales>> AnularSaleforId(int id)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
+
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+
+            if (!await _userHelper.IsAutorized(user.Rol, "SALES DELETE"))
+            {
+                return Unauthorized();
+            }
+
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync(user);
+                return Ok("eX01");
+            }
+            try
+            {
+                var sale = await _salesService.AnularSaleforIdAsync(id, user);
+                if (sale == null)
+                {
+                    return NoContent();
+                }
+                return Ok(sale);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
         [HttpPost]
         [Route("AnularVentaParcial")]
-        public async Task<ActionResult<Sales>> AnularVentaParcial(
-            [FromBody] EditSaleViewModel model
-        )
+        public async Task<ActionResult<Sales>> AnularVentaParcial( [FromBody] EditSaleViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -455,8 +519,6 @@ namespace Store.Controllers.API
                 return BadRequest(ex.Message);
             }
         }
-
-
    
         [HttpPost]
         [Route("UpdateSaleDetails")]

@@ -152,9 +152,6 @@ namespace Store.Controllers.API
         //}
 
 
-
-
-
         [HttpGet("GetFactCancelled/{id}")]
         public async Task<ActionResult<IEnumerable<Facturacion>>> GetFactCancelled(int id)
         {

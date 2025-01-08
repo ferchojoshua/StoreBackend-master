@@ -20,7 +20,7 @@ namespace Store.Helpers.SalesHelper
         private readonly DataContext _context;
 
         public SalesService(DataContext context)
-        {
+        {   
             _context = context;
         }
 
@@ -444,7 +444,7 @@ namespace Store.Helpers.SalesHelper
                 .ThenInclude(sd => sd.Store)
                 .Include(s => s.SaleDetails.Where(sd => sd.IsAnulado))
                 .ThenInclude(sd => sd.Product)
-                .Where(s => s.IsAnulado && s.FechaVenta.Year <= hoy.Year && s.Store.Id == idStore)
+                .Where(s => s.IsAnulado && s.FechaVenta.Year <= hoy.Year && s.Store.Id == idStore && s.IsSaleCancelled == false)
                 .Select(
                     x =>
                         new Sales()
@@ -809,216 +809,7 @@ namespace Store.Helpers.SalesHelper
 
 
       
-
-//public async Task<Sales> AddSaleAsync(AddSaleViewModel model, Entities.User user)
-//{
-//    DateTime hoy = DateTime.Now;
-//    Client cl = await _context.Clients.FirstOrDefaultAsync(c => c.Id == model.IdClient);
-//    if (cl != null)
-//    {
-//        cl.ContadorCompras += 1;
-//        if (!model.IsContado)
-//        {
-//            cl.CreditoConsumido += model.MontoVenta;
-//        }
-//        _context.Entry(cl).State = EntityState.Modified;
-//    }
-
-//    TipoPago tp = await _context.TipoPagos.FirstOrDefaultAsync(
-//        t => t.Id == model.TipoPagoId
-//    );
-
-//    //Almacen store = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == model.Storeid);
-
-//    var store = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == model.Storeid);
-
-//    Sales sale =
-//        new()
-//        {
-//            IsEventual = model.IsEventual,
-//            NombreCliente = model.IsEventual
-//              ? string.IsNullOrEmpty(model.NombreCliente) ? "CLIENTE EVENTUAL" : model.NombreCliente
-//                : "",
-//            Client = cl,
-//            ProductsCount = model.SaleDetails.Count,
-//            MontoVenta = model.MontoVenta,
-//            IsDescuento = model.IsDescuento,
-//            DescuentoXPercent = model.DescuentoXPercent,
-//            DescuentoXMonto = model.DescuentoXMonto,
-//            FechaVenta = hoy,
-//            FacturedBy = user,
-//            IsContado = model.IsContado,
-//            IsCanceled = model.IsContado, //Si es de contado, esta cancelado
-//            Saldo = model.IsContado ? 0 : model.MontoVenta,
-//            FechaVencimiento = hoy.AddDays(15),
-//            Store = store,
-//            CodigoDescuento = model.CodigoDescuento,
-//            MontoVentaAntesDescuento = model.MontoVentaAntesDescuento,
-//            TipoPago = model.IsContado ? tp : null,
-//            Reference = model.Reference
-//        };
-
-//    if (model.IsContado)
-//    {
-//        var movList = await _context.CajaMovments
-//            .Where(c => c.Store.Id == model.Storeid && c.CajaTipo.Id == 1)
-//            .ToListAsync();
-
-//        var mov = movList.Where(m => m.Id == movList.Max(k => k.Id)).FirstOrDefault();
-//    }
-
-//    List<SaleDetail> detalles = new();
-//    List<Kardex> KardexMovments = new();
-
-//    foreach (var item in model.SaleDetails)
-//    {
-
-
-//        if (store == null || item.Product?.Id == null)
-//        {
-//            throw new Exception("El Store o Product está nulo en los detalles de la venta.");
-//        }
-
-
-//        Producto prod = await _context.Productos.FirstOrDefaultAsync(
-//            p => p.Id == item.Product.Id
-//        );
-
-//        //Modificamos las existencias
-//        Existence existence = await _context.Existences.FirstOrDefaultAsync(
-//            e => e.Producto == prod && e.Almacen == store
-//        );
-//        existence.Existencia -= item.Cantidad;
-//        existence.PrecioVentaDetalle = item.PVD;
-//        existence.PrecioVentaMayor = item.PVM;
-//        _context.Entry(existence).State = EntityState.Modified;
-
-//        //Se crea el objeto detalle venta
-//        SaleDetail saleDetail =
-//            new()
-//            {
-//                Store = store,
-//                Product = prod,
-//                Cantidad = item.Cantidad,
-//                IsDescuento = item.IsDescuento,
-//                DescuentoXPercent = item.DescuentoXPercent,
-//                Descuento = item.Descuento,
-//                CodigoDescuento = item.CodigoDescuento,
-//                Ganancia = item.CostoTotal - (item.Cantidad * existence.PrecioCompra),
-//                CostoUnitario = item.CostoUnitario,
-//                PVM = item.PVM,
-//                PVD = item.PVD,
-//                CostoTotalAntesDescuento = item.CostoTotalAntesDescuento,
-//                CostoTotalDespuesDescuento = item.CostoTotalDespuesDescuento,
-//                CostoTotal = item.CostoTotal,
-//                CostoCompra = existence.PrecioCompra,
-//            };
-//        detalles.Add(saleDetail); //Se agrega a la lista
-
-
-//        //var query = _context.Kardex
-//        //.Where(k => k.Product == prod && k.Almacen == Store)
-//        //.OrderByDescending(k => k.Id);
-
-//        //Console.WriteLine(query.ToQueryString());
-
-//        //Agregamos el Kardex de entrada al almacen destino
-//        Kardex kar = await _context.Kardex
-//            .Where(k => k.Product == prod && k.Almacen.Id == store.Id)
-//            .OrderByDescending(k => k.Id)
-//            .FirstOrDefaultAsync();
-
-//        int saldo = kar == null ? 0 : kar.Saldo;
-
-//        Kardex kardex =
-//            new()
-//            {
-//                Product = prod,
-//                Fecha = hoy,
-//                Concepto = model.IsContado ? "VENTA DE CONTADO" : "VENTA DE CREDITO",
-//                Almacen = store,
-//                Entradas = 0,
-//                Salidas = item.Cantidad,
-//                Saldo = saldo - item.Cantidad,
-//                User = user
-//            };
-//        KardexMovments.Add(kardex);
-//    }
-
-//    if (sale.IsContado)
-//    {
-//        Abono abono =
-//            new()
-//            {
-//                Sale = sale,
-//                Monto = sale.MontoVenta,
-//                RealizedBy = user,
-//                FechaAbono = hoy,
-//                Store = store,
-//                TipoPago = tp,
-//                Reference = model.Reference
-//            };
-//        _context.Abonos.Add(abono);
-//    }
-
-//    //Unificamos objetos y los mandamos a la DB
-//    sale.SaleDetails = detalles;
-//    sale.KardexMovments = KardexMovments;
-//    _context.Sales.Add(sale);
-//    await _context.SaveChangesAsync();
-
-//    List<CountAsientoContableDetails> countAsientoContableDetailsList = new();
-
-//    if (sale.IsContado == true)
-//    {
-//        CountAsientoContableDetails detalleDebito =
-//            new()
-//            {
-//                Cuenta = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 66),
-//                Debito = sale.MontoVenta,
-//                Credito = 0
-//            };
-//        countAsientoContableDetailsList.Add(detalleDebito);
-//    }
-//    else
-//    {
-//        CountAsientoContableDetails detalleDebito =
-//            new()
-//            {
-//                Cuenta = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 72),
-//                Debito = sale.MontoVenta,
-//                Credito = 0
-//            };
-//        countAsientoContableDetailsList.Add(detalleDebito);
-//    }
-//    CountAsientoContableDetails detalleCredito =
-//        new()
-//        {
-//            Cuenta = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 74),
-//            Debito = 0,
-//            Credito = sale.MontoVenta
-//        };
-//    countAsientoContableDetailsList.Add(detalleCredito);
-
-//    CountAsientoContable asientosContable =
-//        new()
-//        {
-//            Fecha = sale.FechaVenta,
-//            Referencia = $"VENTA DE PRODUCTOS SEGUN FACTURA: {sale.Id}",
-//            LibroContable = await _context.CountLibros.FirstOrDefaultAsync(c => c.Id == 4),
-//            FuenteContable = await _context.CountFuentesContables.FirstOrDefaultAsync(
-//                f => f.Id == 3
-//            ),
-//            Store = sale.Store,
-//            User = user,
-//            CountAsientoContableDetails = countAsientoContableDetailsList
-//        };
-//    _context.CountAsientosContables.Add(asientosContable);
-//    await _context.SaveChangesAsync();
-//    return sale;
-//}
-
-public async Task<Proformas> FinishSalesAsync(int Id, int tipoPagoId, Entities.User user)
+         public async Task<Proformas> FinishSalesAsync(int Id, int tipoPagoId, Entities.User user)
         {
             try
             {
@@ -1355,20 +1146,6 @@ public async Task<Proformas> FinishSalesAsync(int Id, int tipoPagoId, Entities.U
             }
         }
 
-        private Kardex CreateKardexEntry(Producto product, int cantidad, Almacen store, Entities.User user, DateTime fecha, string concepto)
-        {
-            return new Kardex
-            {
-                Product = product,
-                Fecha = fecha,
-                Concepto = concepto,
-                Almacen = store,
-                Entradas = concepto == "DEVOLUCIÓN DE PRODUCTO" ? cantidad : 0,
-                Salidas = concepto == "DEVOLUCIÓN DE PRODUCTO" ? 0 : cantidad,
-                User = user,
-            };
-        }
-
 
 
 
@@ -1443,7 +1220,7 @@ public async Task<Proformas> FinishSalesAsync(int Id, int tipoPagoId, Entities.U
                     {
                         Product = item.Product,
                         Fecha = hoy,
-                        Concepto = "DEVOLUCION TOTAL DE VENTA",
+                        Concepto = "DEVOLUCION DE VENTA",
                         Almacen = item.Store,
                         Entradas = item.Cantidad,
                         Salidas = 0,
@@ -1537,6 +1314,529 @@ public async Task<Proformas> FinishSalesAsync(int Id, int tipoPagoId, Entities.U
             await _context.SaveChangesAsync();
             return sale;
         }
+
+        public async Task<Sales> AnularSaleforIdAsync(int id, Entities.User user)
+        {
+            DateTime hoy = DateTime.Now;
+
+            Sales sale = await _context.Sales
+                .Include(s => s.Client)
+                .Include(s => s.SaleDetails)
+                .ThenInclude(sd => sd.Store)
+                .Include(s => s.SaleDetails)
+                .ThenInclude(sd => sd.Product)
+                .Include(s => s.Store)
+                .FirstOrDefaultAsync(s => s.Id == id);
+
+            if (sale == null)
+            {
+                return sale;
+            }
+
+            // Anulamos los abonos
+            var abono = await _context.Abonos.Where(a => a.Sale == sale).ToListAsync();
+            foreach (var item in abono)
+            {
+                item.IsAnulado = true;
+                _context.Entry(item).State = EntityState.Modified;
+            }
+
+            // Procesamos los detalles de la venta
+            List<Kardex> KardexMovments = new();
+
+            foreach (var item in sale.SaleDetails)
+            {
+                item.IsAnulado = true;
+                item.AnulatedBy = user;
+                item.FechaAnulacion = hoy;
+
+                // Actualizamos existencias
+                Existence existence = await _context.Existences.FirstOrDefaultAsync(
+                    e => e.Producto == item.Product && e.Almacen == item.Store
+                );
+                existence.Existencia += item.Cantidad;
+                _context.Entry(existence).State = EntityState.Modified;
+
+                // Creamos movimiento de Kardex
+                Kardex kar = await _context.Kardex
+                    .Where(k => k.Product.Id == item.Product.Id && k.Almacen == item.Store)
+                    .OrderByDescending(k => k.Id)
+                    .FirstOrDefaultAsync();
+
+                int saldo = kar == null ? 0 : kar.Saldo;
+
+                Kardex kardex = new()
+                {
+                    Product = item.Product,
+                    Fecha = hoy,
+                    Concepto = "ANULACION DE VENTA",
+                    Almacen = item.Store,
+                    Entradas = item.Cantidad,
+                    Salidas = 0,
+                    Saldo = saldo + item.Cantidad,
+                    User = user
+                };
+                KardexMovments.Add(kardex);
+            }
+
+            // Actualizamos la venta
+            sale.IsAnulado = true;
+            sale.FechaAnulacion = hoy;
+            sale.AnulatedBy = user;
+            sale.IsCanceled = true; 
+            sale.IsSaleCancelled = true; 
+
+            // Actualizamos datos del cliente si no es eventual
+            if (!sale.IsEventual)
+            {
+                sale.Client.ContadorCompras -= 1;
+                sale.Client.CreditoConsumido -= sale.MontoVenta;
+
+                if (hoy.Date < sale.FechaVencimiento.Date)
+                {
+                    sale.Client.SaldoVencido -= sale.MontoVenta;
+                    sale.Client.FacturasVencidas -= 1;
+                }
+            }
+
+            // Agregamos los movimientos de Kardex
+            _context.Kardex.AddRange(KardexMovments);
+            _context.Entry(sale).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+
+            // Creamos los asientos contables
+            List<CountAsientoContableDetails> countAsientoContableDetailsList = new();
+
+            // Asiento débito siempre va a ventas
+            CountAsientoContableDetails detalleDebito = new()
+            {
+                Cuenta = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 74), // Cuenta de ventas
+                Debito = sale.MontoVenta,
+                Credito = 0
+            };
+            countAsientoContableDetailsList.Add(detalleDebito);
+
+            // Para el crédito, diferenciamos según el tipo de venta
+            if (sale.IsContado)
+            {
+                // Si es de contado, NO afectamos la caja porque el dinero no entró
+                CountAsientoContableDetails detalleCredito = new()
+                {
+                    Cuenta = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 74), // Misma cuenta de ventas
+                    Debito = 0,
+                    Credito = sale.MontoVenta
+                };
+                countAsientoContableDetailsList.Add(detalleCredito);
+            }
+            else
+            {
+                // Si es crédito, afectamos cuentas por cobrar
+                CountAsientoContableDetails detalleCredito = new()
+                {
+                    Cuenta = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 72), // Cuentas por cobrar
+                    Debito = 0,
+                    Credito = sale.MontoVenta
+                };
+                countAsientoContableDetailsList.Add(detalleCredito);
+            }
+
+            CountAsientoContable asientosContable = new()
+            {
+                Fecha = sale.FechaVenta,
+                Referencia = $"ANULACION DE FACTURA: {sale.Id}",
+                LibroContable = await _context.CountLibros.FirstOrDefaultAsync(c => c.Id == 4),
+                FuenteContable = await _context.CountFuentesContables.FirstOrDefaultAsync(f => f.Id == 3),
+                Store = sale.Store,
+                User = user,
+                CountAsientoContableDetails = countAsientoContableDetailsList
+            };
+
+            _context.CountAsientosContables.Add(asientosContable);
+            await _context.SaveChangesAsync();
+
+            return sale;
+        }
+
+        //public async Task<Sales> AnularSaleforIdAsync(int id, Entities.User user)
+        //{
+        //    DateTime hoy = DateTime.Now;
+
+        //    Sales sale = await _context.Sales
+        //        .Include(s => s.Client)
+        //        .Include(s => s.SaleDetails)
+        //        .ThenInclude(sd => sd.Store)
+        //        .Include(s => s.SaleDetails)
+        //        .ThenInclude(sd => sd.Product)
+        //        .Include(s => s.Store)
+        //        .FirstOrDefaultAsync(s => s.Id == id);
+
+        //    if (sale == null)
+        //    {
+        //        return sale;
+        //    }
+
+        //    // Anulamos los abonos
+        //    var abono = await _context.Abonos.Where(a => a.Sale == sale).ToListAsync();
+        //    foreach (var item in abono)
+        //    {
+        //        item.IsAnulado = true;
+        //        _context.Entry(item).State = EntityState.Modified;
+        //    }
+
+        //    // Procesamos los detalles de la venta
+        //    List<SaleAnulationDetails> saleAnulationDetailList = new();
+        //    List<Kardex> KardexMovments = new();
+
+        //    foreach (var item in sale.SaleDetails)
+        //    {
+        //        item.IsAnulado = true;
+        //        item.AnulatedBy = user;
+        //        item.FechaAnulacion = hoy;
+
+        //        SaleAnulationDetails saleAnulationDetail = new()
+        //        {
+        //            FechaAnulacion = hoy,
+        //            CantidadAnulada = item.Cantidad,
+        //            SaleDetailAfectado = item
+        //        };
+        //        saleAnulationDetailList.Add(saleAnulationDetail);
+
+        //        // Actualizamos existencias
+        //        Existence existence = await _context.Existences.FirstOrDefaultAsync(
+        //            e => e.Producto == item.Product && e.Almacen == item.Store
+        //        );
+        //        existence.Existencia += item.Cantidad;
+        //        _context.Entry(existence).State = EntityState.Modified;
+
+        //        // Creamos movimiento de Kardex
+        //        Kardex kar = await _context.Kardex
+        //            .Where(k => k.Product.Id == item.Product.Id && k.Almacen == item.Store)
+        //            .OrderByDescending(k => k.Id)
+        //            .FirstOrDefaultAsync();
+
+        //        int saldo = kar == null ? 0 : kar.Saldo;
+
+        //        Kardex kardex = new()
+        //        {
+        //            Product = item.Product,
+        //            Fecha = hoy,
+        //            Concepto = "ANULACION DE VENTA SIN EFECTIVO",
+        //            Almacen = item.Store,
+        //            Entradas = item.Cantidad,
+        //            Salidas = 0,
+        //            Saldo = saldo + item.Cantidad,
+        //            User = user
+        //        };
+        //        KardexMovments.Add(kardex);
+        //    }
+
+        //    // Actualizamos la venta
+        //    sale.IsAnulado = true;
+        //    sale.FechaAnulacion = hoy;
+        //    sale.AnulatedBy = user;
+
+        //    // Creamos el registro de anulación
+        //    SaleAnulation saleAnulation = new()
+        //    {
+        //        VentaAfectada = sale,
+        //        MontoAnulado = sale.MontoVenta,
+        //        FechaAnulacion = hoy,
+        //        AnulatedBy = user,
+        //        SaleAnulationDetails = saleAnulationDetailList,
+        //        Store = sale.Store,
+        //        KardexMovments = KardexMovments
+        //    };
+
+        //    _context.SaleAnulations.Add(saleAnulation);
+
+        //    // Actualizamos datos del cliente si no es eventual
+        //    if (!sale.IsEventual)
+        //    {
+        //        sale.Client.ContadorCompras -= 1;
+        //        sale.Client.CreditoConsumido -= sale.MontoVenta;
+
+        //        if (hoy.Date < sale.FechaVencimiento.Date)
+        //        {
+        //            sale.Client.SaldoVencido -= sale.MontoVenta;
+        //            sale.Client.FacturasVencidas -= 1;
+        //        }
+        //    }
+
+        //    _context.Entry(sale).State = EntityState.Modified;
+        //    await _context.SaveChangesAsync();
+
+        //    // Creamos los asientos contables
+        //    List<CountAsientoContableDetails> countAsientoContableDetailsList = new();
+
+        //    // Asiento débito siempre va a ventas
+        //    CountAsientoContableDetails detalleDebito = new()
+        //    {
+        //        Cuenta = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 74), // Cuenta de ventas
+        //        Debito = sale.MontoVenta,
+        //        Credito = 0
+        //    };
+        //    countAsientoContableDetailsList.Add(detalleDebito);
+
+        //    // Para el crédito, diferenciamos según el tipo de venta
+        //    if (sale.IsContado)
+        //    {
+        //        // Si es de contado, NO afectamos la caja porque el dinero no entró
+        //        CountAsientoContableDetails detalleCredito = new()
+        //        {
+        //            // Usar una cuenta de anulaciones o la misma cuenta de ventas
+        //            Cuenta = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 74), // Misma cuenta de ventas
+        //            Debito = 0,
+        //            Credito = sale.MontoVenta
+        //        };
+        //        countAsientoContableDetailsList.Add(detalleCredito);
+        //    }
+        //    else
+        //    {
+        //        // Si es crédito, afectamos cuentas por cobrar
+        //        CountAsientoContableDetails detalleCredito = new()
+        //        {
+        //            Cuenta = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 72), // Cuentas por cobrar
+        //            Debito = 0,
+        //            Credito = sale.MontoVenta
+        //        };
+        //        countAsientoContableDetailsList.Add(detalleCredito);
+        //    }
+
+        //    CountAsientoContable asientosContable = new()
+        //    {
+        //        Fecha = sale.FechaVenta,
+        //        Referencia = $"ANULACION DE FACTURA SIN EFECTIVO: {sale.Id}",
+        //        LibroContable = await _context.CountLibros.FirstOrDefaultAsync(c => c.Id == 4),
+        //        FuenteContable = await _context.CountFuentesContables.FirstOrDefaultAsync(f => f.Id == 3),
+        //        Store = sale.Store,
+        //        User = user,
+        //        CountAsientoContableDetails = countAsientoContableDetailsList
+        //    };
+
+        //    _context.CountAsientosContables.Add(asientosContable);
+        //    await _context.SaveChangesAsync();
+
+        //    return sale;
+        //}
+
+        public async Task<ICollection<Sales>> GetdevolutionSalesByStoreAsync(int idStore)
+        {
+            return await _context.Sales
+                .Include(s => s.Client)
+                .Include(s => s.FacturedBy)
+                .Include(s => s.SaleDetails)
+                .ThenInclude(sd => sd.Store)
+                .Include(s => s.SaleDetails)
+                .ThenInclude(sd => sd.Product)
+                .Where(s => s.IsSaleCancelled == true && s.Store.Id == idStore)
+                .Select(
+                    x =>
+                        new Sales()
+                        {
+                            Id = x.Id,
+                            IsEventual = x.IsEventual,
+                            NombreCliente = x.NombreCliente,
+                            Client =
+                                x.Client != null
+                                    ? new Client()
+                                    {
+                                        Id = x.Client.Id,
+                                        NombreCliente = x.Client.NombreCliente
+                                    }
+                                    : new Client() { },
+                            ProductsCount = x.ProductsCount,
+                            MontoVenta = x.MontoVenta,
+                            IsDescuento = x.IsDescuento,
+                            DescuentoXPercent = x.DescuentoXPercent,
+                            DescuentoXMonto = x.DescuentoXMonto,
+                            MontoVentaAntesDescuento = x.MontoVentaAntesDescuento,
+                            FechaVenta = x.FechaVenta,
+                            FacturedBy = new Entities.User()
+                            {
+                                FirstName = x.FacturedBy.FirstName,
+                                LastName = x.FacturedBy.LastName
+                            },
+                            SaleDetails = x.SaleDetails
+                                .Select(
+                                    s =>
+                                        new SaleDetail()
+                                        {
+                                            Id = s.Id,
+                                            Store = new Almacen()
+                                            {
+                                                Id = s.Store.Id,
+                                                Name = s.Store.Name
+                                            },
+                                            Product = s.Product,
+                                            Cantidad = s.Cantidad,
+                                            IsDescuento = s.IsDescuento,
+                                            CostoCompra = s.CostoCompra,
+                                            DescuentoXPercent = s.DescuentoXPercent,
+                                            Descuento = s.Descuento,
+                                            CodigoDescuento = s.CodigoDescuento,
+                                            Ganancia = s.Ganancia,
+                                            CostoUnitario = s.CostoUnitario,
+                                            PVM = s.PVM,
+                                            PVD = s.PVD,
+                                            CostoTotalAntesDescuento = s.CostoTotalAntesDescuento,
+                                            CostoTotalDespuesDescuento =
+                                                s.CostoTotalDespuesDescuento,
+                                            CostoTotal = s.CostoTotal,
+                                            IsAnulado = s.IsAnulado,
+                                            IsPartialAnulation = s.IsPartialAnulation,
+                                            CantidadAnulada = s.CantidadAnulada,
+                                            AnulatedBy = s.AnulatedBy,
+                                            FechaAnulacion = s.FechaAnulacion
+                                        }
+                                )
+                                .ToList(),
+                            //IsContado = x.IsContado,
+                            IsCanceled = x.IsCanceled,
+                            Saldo = x.Saldo,
+                            FechaVencimiento = x.FechaVencimiento,
+                            IsAnulado = x.IsAnulado,
+                            AnulatedBy = new Entities.User()
+                            {
+                                FirstName = x.FacturedBy.FirstName,
+                                LastName = x.FacturedBy.LastName
+                            },
+                            FechaAnulacion = x.FechaAnulacion,
+                            Store = new Almacen() { Id = x.Store.Id, Name = x.Store.Name },
+                            CodigoDescuento = x.CodigoDescuento
+                        }
+                )
+                .ToListAsync();
+        }
+
+
+
+
+
+
+        //public async Task<Sales> GetdevolutionSalesByStoreAsync(int id, Entities.User user, string motivoAnulacion)
+        //{
+        //    DateTime hoy = DateTime.Now;
+
+        //    Sales sale = await _context.Sales
+        //        .Include(s => s.Client)
+        //        .Include(s => s.SaleDetails)
+        //        .ThenInclude(sd => sd.Store)
+        //        .Include(s => s.SaleDetails)
+        //        .ThenInclude(sd => sd.Product)
+        //        .Include(s => s.Store)
+        //        .FirstOrDefaultAsync(s => s.Id == id);
+
+        //    if (sale == null)
+        //    {
+        //        return sale;
+        //    }
+
+        //    // Validar que la venta no esté ya anulada o devuelta
+        //    if (sale.IsAnulado)
+        //    {
+        //        throw new InvalidOperationException("Esta venta ya ha sido devuelta");
+        //    }
+
+        //    // Crear lista para registrar detalles de anulación
+        //    List<SaleVoidDetails> saleVoidDetailsList = new();
+
+        //    foreach (var item in sale.SaleDetails)
+        //    {
+        //        SaleVoidDetails saleVoidDetail = new()
+        //        {
+        //            FechaAnulacion = hoy,
+        //            CantidadAnulada = item.Cantidad,
+        //            SaleDetailAfectado = item,
+        //            MotivoAnulacion = motivoAnulacion
+        //        };
+
+        //        saleVoidDetailsList.Add(saleVoidDetail);
+
+        //        // No modificamos existencias porque es anulación, no devolución
+        //        item.IsVentaAnulada = true;
+        //        item.VentaAnuladaPorId = user.Id;
+        //        item.FechaVentaAnulacion = hoy;
+        //    }
+
+        //    // Registrar la anulación
+        //    SaleVoid saleVoid = new()
+        //    {
+        //        VentaAfectada = sale,
+        //        MontoAnulado = sale.MontoVenta,
+        //        FechaAnulacion = hoy,
+        //        AnuladoPor = user,
+        //        MotivoAnulacion = motivoAnulacion,
+        //        SaleVoidDetails = saleVoidDetailsList,
+        //        Store = sale.Store
+        //    };
+
+        //    _context.SaleVoids.Add(saleVoid);
+
+        //    // Actualizar la venta
+        //    sale.IsVentaAnulada = true;
+        //    sale.FechaVentaAnulacion = hoy;
+        //    sale.VentaAnuladaPorId = user.Id;
+        //    sale.MotivoAnulacion = motivoAnulacion;
+
+        //    // Si hay pagos o abonos, marcarlos como anulados
+        //    var abonos = await _context.Abonos.Where(a => a.Sale == sale).ToListAsync();
+        //    foreach (var abono in abonos)
+        //    {
+        //        abono.IsVentaAnulada = true;
+        //        _context.Entry(abono).State = EntityState.Modified;
+        //    }
+
+        //    // Asientos contables para la anulación
+        //    List<CountAsientoContableDetails> countAsientoContableDetailsList = new();
+
+        //    // Agregar asientos contables específicos para anulación
+        //    CountAsientoContableDetails detalleDebito = new()
+        //    {
+        //        Cuenta = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 74), // Ajustar según corresponda
+        //        Debito = sale.MontoVenta,
+        //        Credito = 0
+        //    };
+        //    countAsientoContableDetailsList.Add(detalleDebito);
+
+        //    // Asiento contable según tipo de venta
+        //    if (sale.IsContado)
+        //    {
+        //        CountAsientoContableDetails detalleCredito = new()
+        //        {
+        //            Cuenta = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 66),
+        //            Debito = 0,
+        //            Credito = sale.MontoVenta
+        //        };
+        //        countAsientoContableDetailsList.Add(detalleCredito);
+        //    }
+        //    else
+        //    {
+        //        CountAsientoContableDetails detalleCredito = new()
+        //        {
+        //            Cuenta = await _context.Counts.FirstOrDefaultAsync(c => c.Id == 72),
+        //            Debito = 0,
+        //            Credito = sale.MontoVenta
+        //        };
+        //        countAsientoContableDetailsList.Add(detalleCredito);
+        //    }
+
+        //    CountAsientoContable asientosContable = new()
+        //    {
+        //        Fecha = sale.FechaVenta,
+        //        Referencia = $"ANULACIÓN DE VENTA: {sale.Id} - {motivoAnulacion}",
+        //        LibroContable = await _context.CountLibros.FirstOrDefaultAsync(c => c.Id == 4),
+        //        FuenteContable = await _context.CountFuentesContables.FirstOrDefaultAsync(f => f.Id == 3),
+        //        Store = sale.Store,
+        //        User = user,
+        //        CountAsientoContableDetails = countAsientoContableDetailsList
+        //    };
+
+        //    _context.CountAsientosContables.Add(asientosContable);
+        //    _context.Entry(sale).State = EntityState.Modified;
+
+        //    await _context.SaveChangesAsync();
+        //    return sale;
+        //}
 
         public async Task<Sales> AnularSaleParcialAsync(EditSaleViewModel model, Entities.User user)
         {
