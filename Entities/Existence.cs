@@ -11,5 +11,6 @@ namespace Store.Entities
         public decimal PrecioVentaDetalle { get; set; }
         public int Minimo { get; set; }
         public int Maximo { get; set; }
+
     }
 }

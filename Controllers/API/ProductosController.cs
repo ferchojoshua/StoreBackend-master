@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 using Store.Data;
 using Store.Entities;
 using Store.Entities.ProductoRecal;
@@ -79,7 +81,7 @@ namespace Store.Controllers.API
                             UM = x.UM
                         }
                 )
-                .OrderBy(p => p.Description)
+                .OrderByDescending(p => p.Id)
                 .ToListAsync();
         }
 
@@ -197,22 +199,31 @@ namespace Store.Controllers.API
             }
         }
 
-        // POST: api/Productos
+
         [HttpPost]
-        public async Task<ActionResult<Producto>> PostProducto([FromBody] ProductViewModel model)
+         public async Task<ActionResult<Producto>> PostProducto([FromBody] ProductViewModel model)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
+
+            // Validación de usuario y permisos
             string email = User.Claims
                 .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
-                .Value;
+                ?.Value;
+
             User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
             if (user.IsDefaultPass)
             {
                 return Ok(user);
             }
+
             if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS CREATE"))
             {
                 return Unauthorized();
@@ -228,14 +239,55 @@ namespace Store.Controllers.API
 
             try
             {
-                var prod = await _productHelper.AddProductAsync(model);
-                return Ok(prod);
+                var result = await _productHelper.AddProductAsync(model);
+                return Ok(result);
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
+
+        // POST: api/Productos
+        //[HttpPost]
+
+        //public async Task<ActionResult<Producto>> PostProducto([FromBody] ProductViewModel model)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest();
+        //    }
+        //    string email = User.Claims
+        //        .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+        //        .Value;
+        //    User user = await _userHelper.GetUserByEmailAsync(email);
+        //    if (user.IsDefaultPass)
+        //    {
+        //        return Ok(user);
+        //    }
+        //    if (!await _userHelper.IsAutorized(user.Rol, "MISCELANEOS CREATE"))
+        //    {
+        //        return Unauthorized();
+        //    }
+
+        //    string token = HttpContext.Request.Headers["Authorization"];
+        //    token = token["Bearer ".Length..].Trim();
+        //    if (user.UserSession.UserToken != token)
+        //    {
+        //        await _userHelper.LogoutAsync(user);
+        //        return Ok("eX01");
+        //    }
+
+        //    try
+        //    {
+        //        var prod = await _productHelper.AddProductAsync(model);
+        //        return Ok(prod);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //}
 
         // DELETE: api/Productos/5
         [HttpDelete("{id}")]

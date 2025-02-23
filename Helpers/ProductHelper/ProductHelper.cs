@@ -5,10 +5,12 @@ using Store.Entities;
 using Store.Entities.ProductoRecal;
 using Store.Models.ViewModels;
 using System.Data;
+using System.Linq.Expressions;
+using static Store.Helpers.ProductHelper.IProductHelper;
 
 namespace Store.Helpers.ProductHelper
 {
-    public class ProductHelper :   IProductHelper
+    public class ProductHelper : IProductHelper
     {
         private readonly DataContext _context;
 
@@ -17,37 +19,157 @@ namespace Store.Helpers.ProductHelper
             _context = context;
         }
 
+        
         public async Task<Producto> AddProductAsync(ProductViewModel model)
         {
-            Producto producto =
-                new()
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // Cargar entidades relacionadas
+                var familia = await _context.Familias.FindAsync(model.FamiliaId);
+                var tipoNegocio = await _context.TipoNegocios.FindAsync(model.TipoNegocioId);
+                var almacen = await _context.Almacen.FindAsync(4);
+
+                if (familia == null || tipoNegocio == null)
                 {
-                    Description = model.Description,
-                    Familia = await _context.Familias.FindAsync(model.FamiliaId),
-                    TipoNegocio = await _context.TipoNegocios.FindAsync(model.TipoNegocioId),
-                    BarCode = model.BarCode,
-                    Modelo = model.Modelo,
-                    Marca = model.Marca,
-                    UM = model.UM,
-                };
+                    throw new Exception("Familia o Tipo de Negocio no encontrados");
+                }
 
-            _context.Productos.Add(producto);
-
-            Existence existence =
-                new()
+                if (almacen == null)
                 {
-                    Almacen = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == 4),
-                    Producto = producto,
-                    Existencia = 0,
-                    PrecioVentaMayor = 0,
-                    PrecioVentaDetalle = 0
-                };
+                    throw new Exception("Almacén no encontrado");
+                }
 
-            await _context.SaveChangesAsync();
-            return producto;
+                // Inicializar producto como null
+                Producto producto = null;
+
+                // Verificar producto existente por código de barras
+                if (!string.IsNullOrEmpty(model.BarCode))
+                {
+                    producto = await _context.Productos
+                        .Include(p => p.Familia)
+                        .Include(p => p.TipoNegocio)
+                        .FirstOrDefaultAsync(p => p.BarCode == model.BarCode);
+                }
+
+                if (producto != null)
+                {
+                    // Actualizar producto existente
+                    _context.Entry(producto).State = EntityState.Detached;
+
+                    producto = new Producto
+                    {
+                        Id = producto.Id,
+                        Description = model.Description.ToUpper(),
+                        Familia = familia,
+                        TipoNegocio = tipoNegocio,
+                        BarCode = model.BarCode,
+                        Marca = (model.Marca ?? "S/M").ToUpper(),
+                        Modelo = (model.Modelo ?? "S/M").ToUpper(),
+                        UM = (model.UM ?? "PIEZA").ToUpper()
+                    };
+
+                    _context.Entry(producto).State = EntityState.Modified;
+                    await _context.SaveChangesAsync();
+
+                    // Verificar existencia
+                    var existence = await _context.Existences
+                        .FirstOrDefaultAsync(e => e.Producto.Id == producto.Id && e.Almacen.Id == almacen.Id);
+
+                    if (existence == null)
+                    {
+                        existence = new Existence
+                        {
+                            Almacen = almacen,
+                            Producto = producto,
+                            Existencia = 0,
+                            PrecioVentaMayor = 0,
+                            PrecioVentaDetalle = 0
+                        };
+
+                        _context.Existences.Add(existence);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+                else
+                {
+                    // Crear nuevo producto
+                    producto = new Producto
+                    {
+                        Description = model.Description.ToUpper(),
+                        Familia = familia,
+                        TipoNegocio = tipoNegocio,
+                        BarCode = model.BarCode ?? $"A&M{DateTime.Now.Ticks % 1000}",
+                        Marca = (model.Marca ?? "S/M").ToUpper(),
+                        Modelo = (model.Modelo ?? "S/M").ToUpper(),
+                        UM = (model.UM ?? "PIEZA").ToUpper()
+                    };
+
+                    _context.Productos.Add(producto);
+                    await _context.SaveChangesAsync();
+
+                    // Crear existencia para nuevo producto
+                    var newExistence = new Existence
+                    {
+                        Almacen = almacen,
+                        Producto = producto,
+                        Existencia = 0,
+                        PrecioVentaMayor = 0,
+                        PrecioVentaDetalle = 0
+                    };
+
+                    _context.Existences.Add(newExistence);
+                    await _context.SaveChangesAsync();
+                }
+
+                await transaction.CommitAsync();
+
+                // Recargar el producto con sus relaciones
+                return await _context.Productos
+                    .Include(p => p.Familia)
+                    .Include(p => p.TipoNegocio)
+                    .FirstOrDefaultAsync(p => p.Id == producto.Id);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                throw new Exception($"Error al procesar el producto: {ex.Message}", ex);
+            }
         }
 
-        public async Task<ICollection<Kardex>> GetAllStoresKardex(GetKardexViewModel model)
+        public async Task<ProductImportResult> AddProductsRangeAsync(List<ProductViewModel> models)
+        {
+            var result = new ProductImportResult();
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                foreach (var model in models)
+                {
+                    try
+                    {
+                        var producto = await AddProductAsync(model);
+                        result.ProcessedProducts.Add(producto);
+                        result.SuccessCount++;
+                    }
+                    catch (Exception ex)
+                    {
+                        result.Errors.Add($"Error en producto {model.Description}: {ex.Message}");
+                    }
+                }
+
+                await transaction.CommitAsync();
+                return result;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                throw new Exception($"Error en la importación masiva: {ex.Message}", ex);
+            }
+        }
+
+
+    public async Task<ICollection<Kardex>> GetAllStoresKardex(GetKardexViewModel model)
         {
             return await _context.Kardex
                 .Include(k => k.User)
