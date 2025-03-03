@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Store.Entities;
 using Store.Helpers.ReportHelper;
 using Store.Helpers.User;
@@ -24,9 +25,7 @@ namespace Store.Controllers.API
         }
 
         [HttpPost("GetMasterVentas")]
-        public async Task<ActionResult<IEnumerable<Sales>>> GetMasterVentas(
-            [FromBody] MasterVentasViewModel model
-        )
+        public async Task<ActionResult<IEnumerable<Sales>>> GetMasterVentas([FromBody] MasterVentasViewModel model)
         {
             string email = User.Claims
                 .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
@@ -60,9 +59,7 @@ namespace Store.Controllers.API
         }
 
         [HttpPost("GetCuentasXCobrar")]
-        public async Task<ActionResult<IEnumerable<Sales>>> GetCuentasXCobrar(
-            [FromBody] CuentasXCobrarViewModel model
-        )
+        public async Task<ActionResult<IEnumerable<Sales>>> GetCuentasXCobrar([FromBody] CuentasXCobrarViewModel model)
         {
             string email = User.Claims
                 .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
@@ -96,9 +93,7 @@ namespace Store.Controllers.API
         }
 
         [HttpPost("GetProdVendidos")]
-        public async Task<ActionResult<IEnumerable<Sales>>> GetArtVendidos(
-            [FromBody] ArtVendidosViewModel model
-        )
+        public async Task<ActionResult<IEnumerable<Sales>>> GetArtVendidos([FromBody] ArtVendidosViewModel model)
         {
             string email = User.Claims
                 .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
@@ -132,9 +127,7 @@ namespace Store.Controllers.API
         }
 
         [HttpPost("GetCierreDiario")]
-        public async Task<ActionResult<IEnumerable<Sales>>> GetCierreDiario(
-            [FromBody] CierreDiarioViewModel model
-        )
+        public async Task<ActionResult<IEnumerable<Sales>>> GetCierreDiario([FromBody] CierreDiarioViewModel model)
         {
             string email = User.Claims
                 .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
@@ -168,9 +161,7 @@ namespace Store.Controllers.API
         }
 
         [HttpPost("GetCajaChica")]
-        public async Task<ActionResult<IEnumerable<Sales>>> GetCajaChica(
-            [FromBody] CajaChicaViewModel model
-        )
+        public async Task<ActionResult<IEnumerable<Sales>>> GetCajaChica([FromBody] CajaChicaViewModel model)
         {
             string email = User.Claims
                 .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
@@ -203,9 +194,7 @@ namespace Store.Controllers.API
         }
 
         [HttpPost("GetProdNoVendidos")]
-        public async Task<ActionResult<IEnumerable<Sales>>> GetProdNoVendidos(
-            [FromBody] ArtNoVendidosViewModel model
-        )
+        public async Task<ActionResult<IEnumerable<Sales>>> GetProdNoVendidos([FromBody] ArtNoVendidosViewModel model)
         {
             string email = User.Claims
                 .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
@@ -239,9 +228,7 @@ namespace Store.Controllers.API
         }
 
         [HttpPost("GetIngresos")]
-        public async Task<ActionResult<IEnumerable<Sales>>> GetIngresos(
-            [FromBody] IngresosViewModel model
-        )
+        public async Task<ActionResult<IEnumerable<Sales>>> GetIngresos([FromBody] IngresosViewModel model)
         {
             string email = User.Claims
                 .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
@@ -275,9 +262,7 @@ namespace Store.Controllers.API
         }
 
         [HttpPost("GetCompras")]
-        public async Task<ActionResult<IEnumerable<Sales>>> GetCompras(
-            [FromBody] ComprasViewModel model
-        )
+        public async Task<ActionResult<IEnumerable<Sales>>> GetCompras([FromBody] ComprasViewModel model)
         {
             string email = User.Claims
                 .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
@@ -311,9 +296,7 @@ namespace Store.Controllers.API
         }
 
         [HttpPost("GetTrasladoInventario")]
-        public async Task<ActionResult<IEnumerable<Sales>>> GetTrasladoInventario(
-            [FromBody] TrasladoInventarioViewModel model
-        )
+        public async Task<ActionResult<IEnumerable<Sales>>> GetTrasladoInventario([FromBody] TrasladoInventarioViewModel model)
         {
             string email = User.Claims
                 .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
@@ -383,5 +366,40 @@ namespace Store.Controllers.API
                     return BadRequest(ex.Message);
                 }
             }
+
+        [HttpPost("getCuentasHXCobrar")]
+        public async Task<ActionResult<IEnumerable<Sales>>> getCuentasHXCobrar([FromBody] CuentasXCobrarViewModel model)
+        {
+            string email = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                .Value;
+            User user = await _userHelper.GetUserByEmailAsync(email);
+            if (user.IsDefaultPass)
+            {
+                return Ok(user);
+            }
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token["Bearer ".Length..].Trim();
+            if (user.UserSession.UserToken != token)
+            {
+                await _userHelper.LogoutAsync(user);
+                return Ok("eX01");
+            }
+            if (!await _userHelper.IsAutorized(user.Rol, "CUENTASXCOBRAR VER"))
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                var result = await _reportHelper.RHistoricalReceivablesDocuments(model);
+                return Ok(result.OrderBy(r => r.Cliente));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
+
     }
+}

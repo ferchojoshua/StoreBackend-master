@@ -5,6 +5,7 @@ using Store.Data;
 using Store.Entities;
 using Store.Models.Responses;
 using Store.Models.ViewModels;
+using System;
 using System.Data;
 
 namespace Store.Helpers.ReportHelper
@@ -202,8 +203,9 @@ namespace Store.Helpers.ReportHelper
             }
         }
 
-        public async Task<ICollection<ReportResponse>> ReportArticulosVendidos(
-            ArtVendidosViewModel model
+
+
+        public async Task<ICollection<ReportResponse>> ReportArticulosVendidos(ArtVendidosViewModel model
         )
         {
             List<ReportResponse> result = new();
@@ -707,9 +709,7 @@ namespace Store.Helpers.ReportHelper
             return cajaMovs;
         }
 
-        public async Task<ICollection<Existence>> ReportArticulosNoVendidos(
-            ArtNoVendidosViewModel model
-        )
+        public async Task<ICollection<Existence>> ReportArticulosNoVendidos(ArtNoVendidosViewModel model)
         {
             List<Sales> sales = new();
             if (model.StoreId != 0)
@@ -1118,9 +1118,7 @@ namespace Store.Helpers.ReportHelper
                
         }
 
-        public async Task<ICollection<TrasladoResponse>> ReportproductMovments(
-            TrasladoInventarioViewModel model
-        )
+        public async Task<ICollection<TrasladoResponse>> ReportproductMovments(TrasladoInventarioViewModel model)
         {
             List<TrasladoResponse> responseList = new();
 
@@ -1256,5 +1254,161 @@ namespace Store.Helpers.ReportHelper
             }
             return result;
         }
-    }
-}
+
+   
+        public async Task<bool> GenerarHistoricoDocumentosPorCobrarAsync()
+        {
+            try
+            {
+                Console.WriteLine($"Iniciando generación de documentos: {DateTime.Now}");
+
+                var mesAnterior = DateTime.Now.AddMonths(-1);
+                var fechaInicio = new DateTime(mesAnterior.Year, mesAnterior.Month, 1);
+                var fechaFin = fechaInicio.AddMonths(1).AddDays(-1);
+                var historicalPeriod = $"{fechaInicio:yyyy-MM}";
+
+                var registroencontrados = await _context.HistoricalReceivablesDocuments
+                    .Where(h => h.Periodo == historicalPeriod)
+                    .AnyAsync();
+
+                if (registroencontrados)
+                {
+                    Console.WriteLine($"Ya existen registros para el período {historicalPeriod}");
+                    return false;
+                }
+
+                var model = new CuentasXCobrarViewModel
+                {
+                    Desde = fechaInicio,
+                    Hasta = fechaFin,
+                    StoreId = 0,
+                    ClientId = 0
+                };
+
+                var ventas = await ReportCuentasXCobrar(model);
+                     var documentos = ventas.Select(v => new HistoricalReceivablesDocuments
+                {
+                    FechaVenta = v.FechaVenta,
+                    FechaVencimiento = v.FechaVencimiento,
+                    DiasAtraso = (int)(DateTime.Now - v.FechaVencimiento).TotalDays,
+                    FacturaId = v.Id,
+                    Almacen = v.Store?.Name?.Trim() ?? "Sin Almacén",
+                    Cliente = v.Client?.NombreCliente?.Trim() ?? "Sin Cliente",
+                    MontoVenta = v.MontoVenta,
+                    TotalAbonado = v.MontoVenta - v.Saldo,
+                    Saldo = v.Saldo,
+                    FechaGeneracion = DateTime.Now,
+                    Periodo = historicalPeriod,
+                    IsContado = v.IsContado,
+                    IsAnulado = v.IsAnulado
+                }).ToList();
+
+ 
+                foreach (var doc in documentos)
+                {
+                    if (doc.Almacen.Length > 100) 
+                    {
+                        doc.Almacen = doc.Almacen.Substring(0, 100);
+                    }
+                    if (doc.Cliente.Length > 200) 
+                    {
+                        doc.Cliente = doc.Cliente.Substring(0, 200);
+                    }
+                    doc.MontoVenta = Math.Round(doc.MontoVenta, 2);
+                    doc.TotalAbonado = Math.Round(doc.TotalAbonado, 2);
+                    doc.Saldo = Math.Round(doc.Saldo, 2);
+                }
+
+                try
+                {
+                    await _context.HistoricalReceivablesDocuments.AddRangeAsync(documentos);
+                    await _context.SaveChangesAsync();
+
+                    Console.WriteLine($"Documentos generados exitosamente: {DateTime.Now}");
+                    Console.WriteLine($"Total documentos generados: {documentos.Count}");
+
+                    return true;
+                }
+                catch (DbUpdateException ex)
+                {
+                    Console.WriteLine($"Error al guardar en la base de datos: {ex.Message}");
+                    if (ex.InnerException != null)
+                    {
+                        Console.WriteLine($"Error interno: {ex.InnerException.Message}");
+                    }
+
+                    if (ex.Entries != null)
+                    {
+                        foreach (var entry in ex.Entries)
+                        {
+                            Console.WriteLine($"Entidad con error: {entry.Entity.GetType().Name}");
+                            Console.WriteLine($"Estado: {entry.State}");
+                        }
+                    }
+
+                    throw; 
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error general: {ex.Message}");
+                Console.WriteLine($"StackTrace: {ex.StackTrace}");
+                return false;
+            }
+        }
+
+        public async Task<ICollection<HistoricalReceivablesDocuments>> RHistoricalReceivablesDocuments(CuentasXCobrarViewModel model)
+            {
+            List<HistoricalReceivablesDocuments> result = new();
+
+            try
+            {
+                string clientName = "";
+                if(model.ClientId != 0)
+                {
+                    var client = await _context.Clients.FindAsync(model.ClientId);
+                    clientName = client?.NombreCliente ?? "";
+
+                }
+
+                String nameStore = "";
+                 if(model.StoreId != 0) 
+                {
+                    var store = await _context.Almacen.FindAsync(model.StoreId);
+                    nameStore = store?.Name ?? "";
+                }
+
+                var query = _context.HistoricalReceivablesDocuments
+                   .Where(h =>
+                       h.FechaVenta.Date >= model.Desde.Date &&
+                       h.FechaVenta.Date <= model.Hasta.Date &&
+                       h.IsAnulado == false
+                    );
+
+                if (model.StoreId != 0) 
+                {
+                    query = query.Where(h => h.Cliente == clientName);
+                }
+
+                if (model.ClientId != 0)
+                {
+                    query = query.Where(h => h.Almacen == nameStore);
+
+                }
+
+                result = await query.ToListAsync();
+                
+                return result;
+
+               }
+
+            catch (Exception ex)
+            {
+
+                throw new Exception($"Error al Obtener el Documento Historico:{ex.Message}");
+            }
+        }
+     }
+
+  }
+

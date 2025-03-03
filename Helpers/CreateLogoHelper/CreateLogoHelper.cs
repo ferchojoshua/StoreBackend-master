@@ -25,8 +25,7 @@ namespace Store.Helpers.CreateLogoHelper
                 // Crear un nuevo objeto Admin y asignarle valores
                 var admin = new CreateLogo
                 {
-                    //Nombre = nombre,
-                    StoreId = storeId,
+                     StoreId = storeId,
                     Direccion = direccion,
                     Ruc = ruc,
                     Imagen = imagen,
@@ -244,14 +243,11 @@ namespace Store.Helpers.CreateLogoHelper
                 var existingAdmin = await _context.C_Administrables
                     .AsNoTracking()
                     .FirstOrDefaultAsync(a => a.StoreId == storeId);
-
-                // Si no se encuentra ningún registro, retorna null
                 if (existingAdmin == null)
                 {
                     throw new Exception($"No se encontraron registros para el storeId {storeId}");
                 }
 
-                // Mapea los datos del modelo de entidad al ViewModel
                 var viewModel = new GetLogoViewModel
                 {
                     StoreId = existingAdmin.StoreId,

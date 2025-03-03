@@ -27,6 +27,7 @@ namespace Store.Data
         public DbSet<CountGroup> CountGroups { get; set; }
         public DbSet<CountLibros> CountLibros { get; set; }
         public DbSet<CuentasXCobrarDailyCheck> CuentasXCobrarDailyChecks { get; set; }
+        public DbSet<HistoricalReceivablesDocuments> HistoricalReceivablesDocuments { get; set; }
         public DbSet<Department> Departments { get; set; }
 
         // public DbSet<ErrorLog> ErrorLogs { get; set; }
