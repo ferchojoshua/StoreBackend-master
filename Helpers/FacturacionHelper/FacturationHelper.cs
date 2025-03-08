@@ -166,6 +166,24 @@ namespace Store.Helpers.FacturacionHelper
                 if (user == null)
                     throw new Exception("Usuario no válido");
 
+                DateTime hoy = DateTime.Now;
+
+                if(fact.IsEventual && !fact.IsContado)
+                {
+                    throw new Exception(" No se puede realizar venta a crédito a clientes eventuales");
+                }
+
+                int diasCredito = 0;
+                if (fact.IsEventual && fact.Client !=null && fact.IsContado)
+                {
+                    if(fact.Client.Valor <=0)
+                    {
+                        throw new Exception($"El cliente {fact.Client.NombreCliente} no tiene configurado un período de crédito válido");
+                    }
+                    diasCredito = fact.Client.Valor;
+
+                }
+
                 // Actualizar factura
                 fact.IsCanceled = true;
                 fact.IsDescuento = model.IsDescuento;
@@ -176,11 +194,14 @@ namespace Store.Helpers.FacturacionHelper
                 fact.MontoVentaAntesDescuento = model.MontoVentaAntesDescuento;
                 fact.PaidBy = user;
 
-                DateTime hoy = DateTime.Now;
 
                 if (fact.Client != null)
                 {
                     fact.Client.ContadorCompras += 1;
+                    if (!fact.IsContado)
+                    {
+                        fact.Client.CreditoConsumido += fact.MontoVenta;
+                    }
                 }
 
                 // Validar tipo de pago
@@ -201,11 +222,15 @@ namespace Store.Helpers.FacturacionHelper
                     DescuentoXMonto = fact.DescuentoXMonto,
                     FechaVenta = hoy,
                     FacturedBy = fact.FacturedBy,
-                    IsContado = fact.IsContado,
-                    IsCanceled = fact.IsContado,
-                    Saldo = fact.IsContado ? 0 : fact.MontoVenta,
-                    FechaVencimiento = hoy.AddDays(15),
-                    Store = fact.Store,
+                    IsContado = fact.IsEventual ? true : fact.IsContado,
+                    IsCanceled = fact.IsEventual ? true : fact.IsContado,
+                    Saldo = fact.IsEventual ? 0 : (fact.IsContado ? 0 : fact.MontoVenta),
+                    FechaVencimiento = (fact.IsEventual || fact.IsContado) ? hoy : hoy.AddDays(diasCredito),
+                    //IsContado = fact.IsContado,
+                    //IsCanceled = fact.IsContado,
+                    //Saldo = fact.IsContado ? 0 : fact.MontoVenta,
+                    //FechaVencimiento = hoy.AddDays(15),
+                    //Store = fact.Store,
                     CodigoDescuento = fact.CodigoDescuento,
                     MontoVentaAntesDescuento = fact.MontoVentaAntesDescuento,
                     TipoPago = tp,

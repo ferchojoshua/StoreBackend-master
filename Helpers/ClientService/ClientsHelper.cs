@@ -44,7 +44,8 @@ namespace Store.Helpers.ClientService
                     Direccion = model.Direccion,
                     CreadoPor = user,
                     Store = await _context.Almacen.FirstOrDefaultAsync(a => a.Id == model.IdStore),
-                    LimiteCredito = model.CreditLimit
+                    LimiteCredito = model.CreditLimit,
+                    Valor = model.Valor
                 };
             _context.Clients.Add(cl);
             await _context.SaveChangesAsync();
@@ -70,6 +71,7 @@ namespace Store.Helpers.ClientService
             cl.EditadoPor = user.UserName;
             cl.FechaEdicion = DateTime.Now;
             cl.LimiteCredito = model.CreditLimit;
+            cl.Valor = model.Valor;
 
             _context.Entry(cl).State = EntityState.Modified;
             await _context.SaveChangesAsync();

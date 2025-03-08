@@ -614,12 +614,32 @@ namespace Store.Helpers.SalesHelper
         }
 
 
-        public async Task<Sales> AddSaleAsync(AddSaleViewModel model, Entities.User user)
+        public async Task<Sales> AddSaleAsync(AddSaleViewModel model, Entities.User user)   
         {
             DateTime hoy = DateTime.Now;
-            Client cl = await _context.Clients.FirstOrDefaultAsync(c => c.Id == model.IdClient);
-            if (cl != null)
+            if (model.IsEventual && !model.IsContado)
             {
+                throw new Exception("No se puede realizar venta a crédito a clientes eventuales");
+            }
+            Client cl = null;
+            int diasCredito = 0;
+            
+            if(!model.IsEventual)
+            {
+                cl = await _context.Clients.FirstOrDefaultAsync(c => c.Id == model.IdClient);
+
+
+                if (cl == null)
+                {
+                    throw new Exception("Cliente no Encontrado");
+                }
+                if(!model.IsContado && cl.Valor <= 0)
+                {
+                    throw new Exception("El Cliente {cl.NombreCliente} no tiene configurado un período de crédito válido");
+                }
+
+
+                diasCredito = cl.Valor;
                 cl.ContadorCompras += 1;
                 if (!model.IsContado)
                 {
@@ -651,11 +671,12 @@ namespace Store.Helpers.SalesHelper
                     DescuentoXMonto = model.DescuentoXMonto,
                     FechaVenta = hoy,
                     FacturedBy = user,
-                    IsContado = model.IsContado,
-                    IsCanceled = model.IsContado, //Si es de contado, esta cancelado
-                    Saldo = model.IsContado ? 0 : model.MontoVenta,
-                    FechaVencimiento = hoy.AddDays(15),
+                    IsContado = model.IsEventual ? true : model.IsContado,
+                    IsCanceled = model.IsEventual ? true : model.IsContado, //Si es de contado, esta cancelado
+                    Saldo = model.IsEventual ? 0 : (model.IsContado ? 0 : model.MontoVenta),
+                    //FechaVencimiento = hoy.AddDays(15),
                     Store = store,
+                    FechaVencimiento = (model.IsEventual || model.IsContado) ? hoy : hoy.AddDays(diasCredito),
                     CodigoDescuento = model.CodigoDescuento,
                     MontoVentaAntesDescuento = model.MontoVentaAntesDescuento,
                     TipoPago = model.IsContado ? tp : null,

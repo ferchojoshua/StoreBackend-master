@@ -28,7 +28,10 @@ namespace Store.Models.ViewModels
         public string Direccion { get; set; }
 
         [Required]
-        public decimal CreditLimit { get; set; }
+        public decimal CreditLimit { get; set; }   
+
+        [Required]
+        public int Valor { get; set; }
     }
 
     public class UpdateClientViewModel
@@ -55,6 +58,9 @@ namespace Store.Models.ViewModels
 
         [Required]
         public decimal CreditLimit { get; set; }
+
+        [Required]
+        public int Valor { get; set; }
     }
 
     public class GetRouteClientViewModel

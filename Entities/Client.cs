@@ -24,5 +24,6 @@ namespace Store.Entities
         public string TipoCliente { get; set; }
         public int ContadorCompras { get; set; }
         public Point ClientCoords { get; set; }
+        public int Valor { get; set; }
     }
 }
